@@ -1,0 +1,20 @@
+<!-- @dsCard group="Forms" height=256 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>TimeField - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv', style: { flexDirection: 'row', flexWrap: 'wrap', gap: 'var(--space-6)', alignItems: 'flex-start' } },
+  h(R.TimeField, { label: 'Giờ bắt đầu', value: '11:00', required: true }),
+  h(R.TimeField, { label: 'Giờ kết thúc', value: '24:00', endOfDay: true, required: true }),
+  h(R.TimeField, { label: 'Giờ đổi danh sách', value: '18:15', step: 15 }),
+  h(R.TimeField, { label: 'Giờ kết thúc', value: '10:00', required: true, helper: false, error: 'Giờ kết thúc phải sau 11:00.' }))
+  );
+</script>
+</body>
+</html>

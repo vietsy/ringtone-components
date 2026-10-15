@@ -1,0 +1,23 @@
+<!-- @dsCard group="Page" height=120 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>Link - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv', style: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 'var(--space-6)' } },
+  h(R.Link, { href: '#', back: true, variant: 'standalone' }, 'Quay lại dịch vụ'),
+  h(R.Link, { href: '#' }, 'Xem lịch phát'),
+  h(R.Link, { href: 'https://example.org', external: true, locale: 'vi' }, 'Trang chuẩn công khai'),
+  h(R.Link, { href: '#', variant: 'quiet', size: 'sm' }, 'Cách RightOne quyết định'),
+  h(R.Link, { href: '#', variant: 'standalone', size: 'touch' }, 'Đăng ký cơ sở'),
+  h(R.Link, { href: '#', current: true }, 'Tổng quan'),
+  h('span', { style: { width: 'var(--space-40)' } }, h(R.Link, { href: '#' }, 'Xem quyết định OBD-3FJW6NRA5C')))
+  );
+</script>
+</body>
+</html>

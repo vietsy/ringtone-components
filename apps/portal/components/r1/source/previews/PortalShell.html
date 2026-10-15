@@ -1,0 +1,15 @@
+<!-- @dsCard group="Shells" height=360 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>PortalShell - preview</title>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { style: { height: 'var(--space-80)' } }, h(R.PortalShell, { account: 'Trần Thị Mỹ Hạnh', nav: [{ label: 'Cơ sở' }, { label: 'Đăng ký' }, { label: 'Thanh toán' }, { label: 'Giấy xác nhận' }, { label: 'Player', current: true }, { label: 'Vụ việc' }], context: { premises: 'Khách sạn Mây Sông – Chi nhánh Tôn Đức Thắng', period: R.format.period('2026-09-01', '2026-09-30') } }, h('h1', { className: 'r1-page-title' }, 'Thiết bị Player')))
+  );
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<!-- @dsCard group="Values" height=120 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>Identifier - preview</title>
+<style>.pv { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv' }, h(R.Identifier, { value: 'R1-CER-2026-J7K2M4QP' }), h(R.Identifier, { value: 'PLY-0031', size: 'sm' }), h(R.Identifier, { value: 'SUP-8KD4QW7TXN', size: 'lg' }), h(R.Identifier, { value: null, missing: 'Chưa cấp' }), h(R.Identifier, { value: 'DSP-0104', locale: 'en' }))
+  );
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<!-- @dsCard group="Operations" height=980 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>ScanView - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, var(--container-3xs)), 1fr))', alignItems: 'start' } },
+  h(R.ScanView, { state: 'asking', recordNoun: 'giấy xác nhận' }),
+  h(R.ScanView, { state: 'scanning', recordNoun: 'giấy xác nhận' }),
+  h(R.ScanView, { state: 'found', code: 'R1-CER-2026-T7QM4BWJ', recordNoun: 'giấy xác nhận' }),
+  h(R.ScanView, { state: 'denied' }),
+  h(R.ScanView, { state: 'unavailable', recordNoun: 'giấy xác nhận', reason: 'Khoá xác minh trên máy đã hết hạn nên chưa đọc được mã. Nhập mã in bên cạnh mã QR, hoặc kết nối mạng để tải khoá mới.' }),
+  h(R.ScanView, { state: 'scanning', labels: { scanning: 'Đưa mã QR trên tờ giấy treo tại quầy vào giữa khung.', manual: 'Nhập mã bằng tay' } }))
+  );
+</script>
+</body>
+</html>

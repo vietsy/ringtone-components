@@ -1,0 +1,18 @@
+<!-- @dsCard group="Player" height=120 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>Clock - preview</title>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  var d = new Date('2026-09-28T12:28:00+07:00');
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { 'data-theme': 'player', style: { background: 'var(--page)', color: 'var(--on-surface)', padding: 'var(--space-6)', display: 'flex', gap: 'var(--space-12)' } },
+  h(R.Clock, { time: d, locale: 'vi' }),
+  h(R.Clock, { time: d, locale: 'en' }))
+  );
+</script>
+</body>
+</html>

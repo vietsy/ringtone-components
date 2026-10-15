@@ -1,0 +1,19 @@
+<!-- @dsCard group="Data" height=180 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>Pagination - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv' },
+  h(R.Pagination, { summary: '11–20 trong 46 thiết bị', hasPrev: true, hasNext: true, pageSizes: [10, 25, 50], pageSize: 10 }),
+  h(R.Pagination, { summary: '41–46 trong 46 thiết bị', hasPrev: true, hasNext: false }),
+  h(R.Pagination, { summary: '21–30 trong 46 thiết bị', hasPrev: true, hasNext: true, loading: 'next' }))
+  );
+</script>
+</body>
+</html>

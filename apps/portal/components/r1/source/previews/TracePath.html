@@ -1,0 +1,26 @@
+<!-- @dsCard group="Data" height=320 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>TracePath - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv', style: { gap: 'var(--space-8)' } }, h(R.TracePath, { label: 'Cách tính phí', steps: [
+  { label: 'Diện tích khai báo', value: 96, kind: 'count', unit: 'm²' }, { label: 'Nhóm cơ sở', value: 'Quán cà phê' }, { label: 'Bậc', value: '60–120 m²' },
+  { label: 'Quy tắc', value: 'Biểu phí 2027, phiên bản 1', href: '#' }, { label: 'Số tiền mỗi tháng', value: 243000, kind: 'money' }, { label: 'Áp dụng từ', value: '2027-01-01', kind: 'date' } ] }),
+  // A held amount whose payer and obligation are missing: two gaps, two links not reached yet, the settlement found.
+  h(R.TracePath, { label: 'Sáu liên kết của khoản tiền', steps: [
+  { label: 'Quyết định nghĩa vụ', value: null, missing: 'Thiếu: không tìm thấy', state: 'gap' },
+  { label: 'Người trả', value: null, missing: 'Thiếu: chưa xác định', state: 'gap' },
+  { label: 'Phân bổ', value: null, missing: 'Chưa có: khoản tiền còn đang giữ', state: 'pending' },
+  { label: 'Hoá đơn', value: null, missing: 'Chưa có: khoản tiền còn đang giữ', state: 'pending' },
+  { label: 'Quyết toán', value: '2026-09-19T09:12:00+07:00', kind: 'datetime', detail: 'Nội dung PHI AM NHAC THANG 9' },
+  { label: 'Điều chỉnh sau đó', value: 'COR-7MXK2PVT9D', kind: 'id', href: '#', detail: 'Đòi lại qua thẻ' } ] }))
+  );
+</script>
+</body>
+</html>

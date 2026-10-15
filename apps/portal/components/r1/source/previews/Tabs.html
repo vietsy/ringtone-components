@@ -1,0 +1,18 @@
+<!-- @dsCard group="Page" height=170 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>Tabs - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv' }, h(R.Tabs, { label: 'Hồ sơ cơ sở', value: 'dev', tabs: [{ id: 'ov', label: 'Tổng quan' }, { id: 'dev', label: 'Thiết bị', count: 3 }, { id: 'pay', label: 'Thanh toán', count: 0 }, { id: 'his', label: 'Lịch sử' }] },
+  h('p', { style: { margin: 0, fontSize: 'var(--text-sm)', lineHeight: 'var(--leading-sm)', color: 'var(--on-surface-secondary)' } }, 'Ba thiết bị đã ghép với Then Cửa Coffee & Tea – Pasteur.')),
+  h(R.Tabs, { label: 'Hàng chờ', density: 'console', value: 'open', tabs: [{ id: 'open', label: 'Đang mở', count: 14 }, { id: 'mine', label: 'Của tôi', count: 3 }, { id: 'done', label: 'Đã xử lý' }] }))
+  );
+</script>
+</body>
+</html>

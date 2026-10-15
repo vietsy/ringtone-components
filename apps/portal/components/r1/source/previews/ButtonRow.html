@@ -1,0 +1,32 @@
+<!-- @dsCard group="Actions" height=520 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>ButtonRow - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-6); padding: var(--space-4); max-width: var(--container-xl); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv' },
+  h(R.ButtonRow, { label: 'Quyết định' },
+    h(R.Button, { variant: 'primary', size: 'sm', icon: 'link', disabled: true, disabledReason: 'Chọn cách xử lý bản ghi thay đổi trước.' }, 'Gộp hai bản ghi'),
+    h(R.Button, { size: 'sm' }, 'Không phải cùng chủ thể')),
+  h(R.ButtonRow, null,
+    h(R.Button, { variant: 'primary', disabled: true, disabledReason: 'Nhập số đăng ký kinh doanh trước.' }, 'Gửi khai báo'),
+    h(R.Button, { disabled: true, disabledReason: 'Bản nháp chỉ lưu được khi có tên cơ sở.' }, 'Lưu bản nháp'),
+    h(R.Button, { variant: 'quiet', href: '#' }, 'Quay lại danh sách')),
+  h(R.ButtonRow, { align: 'end' },
+    h(R.Button, { size: 'sm' }, 'Xuất danh sách'),
+    h(R.Button, { variant: 'primary', size: 'sm' }, 'Mở rà soát')),
+  h(R.Panel, { title: 'Khai báo cơ sở' },
+    h(R.TextField, { label: 'Tên cơ sở', value: 'Then Cửa Bakery – Hai Bà Trưng', required: true }),
+    h(R.TextField, { label: 'Diện tích phát nhạc', value: '86', suffix: 'm²' }),
+    h(R.ButtonRow, { sticky: true, label: 'Gửi khai báo' },
+      h(R.Button, { variant: 'primary', fullWidth: true }, 'Gửi khai báo'),
+      h(R.Button, { variant: 'quiet', fullWidth: true }, 'Lưu bản nháp'))))
+  );
+</script>
+</body>
+</html>

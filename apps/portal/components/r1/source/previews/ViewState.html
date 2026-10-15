@@ -1,0 +1,19 @@
+<!-- @dsCard group="Feedback" height=600 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>ViewState - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv' },
+  h(R.ViewState, { view: 'empty', empty: { variant: 'governed', title: 'Không có phát hiện toàn vẹn nào trong ' + R.format.period('2026-09-01', '2026-09-14') + '.', text: 'Đã kiểm tra 46 thiết bị. Không thiếu chuỗi nào, không có kỳ nào bị hở và không hồ sơ nào bị sửa.' } }),
+  h(R.ViewState, { view: 'error', errorTitle: 'Chưa tải được danh sách thiết bị.', errorText: 'Dịch vụ thiết bị không trả lời. Thử lại, hoặc mở trang trạng thái dịch vụ để xem khi nào dịch vụ trở lại.', errorAction: { label: 'Xem trạng thái dịch vụ', onClick: function () {} }, traceId: '3c9e0b71a4d25f86' }),
+  h(R.ViewState, { view: 'refused' }))
+  );
+</script>
+</body>
+</html>

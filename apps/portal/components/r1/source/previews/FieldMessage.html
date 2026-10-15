@@ -1,0 +1,19 @@
+<!-- @dsCard group="Forms" height=140 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>FieldMessage - preview</title>
+<style>.pv { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv', style: { display: 'grid', gap: 'var(--space-2)' } },
+  h(R.FieldMessage, { severity: 'error' }, 'Nhập mã số thuế gồm 10 hoặc 13 chữ số.'),
+  h(R.FieldMessage, { severity: 'warning', acknowledgeable: true }, 'Cơ sở này có thể trùng một hồ sơ đã có.'),
+  h(R.FieldMessage, { severity: 'info' }, 'Giá trị này lấy từ chính sách phiên bản 2.'))
+  );
+</script>
+</body>
+</html>

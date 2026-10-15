@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Refuses a commit whose message breaks conventions.md §7: a Conventional Commits header, a scope
+# from the closed set, and a trailing `Refs: R1-<number>`. The rules live in
+# scripts/check-commit-msg.py; this file only finds a Python to run them with.
+#
+# Git runs a hook with the PATH of whatever started the commit. From a terminal that is the shell's
+# PATH; from a GUI client it is often /usr/bin:/bin, where `python3` may be missing or older. Hence
+# the search, and the way to pin one: git config hooks.python "$(command -v python3)"
+set -uo pipefail
+cd "$(git rev-parse --show-toplevel)" || exit 1
+
+for candidate in "$(git config hooks.python 2>/dev/null)" "$(command -v python3 2>/dev/null)" \
+    /usr/local/bin/python3 /opt/homebrew/bin/python3 /usr/bin/python3; do
+  if [ -n "$candidate" ] && [ -x "$candidate" ] &&
+    "$candidate" -c 'import sys; sys.exit(sys.version_info < (3, 9))' 2>/dev/null; then
+    exec "$candidate" scripts/check-commit-msg.py "$1"
+  fi
+done
+
+echo "commit-msg: found no Python 3.9 or newer to check the message with." >&2
+echo "  Point the hook at one: git config hooks.python \"\$(command -v python3)\"" >&2
+exit 1

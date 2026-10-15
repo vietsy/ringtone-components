@@ -1,0 +1,34 @@
+// Jenkinsfile.harbor - configuration only. The pipeline itself lives in plw-jenkins-library
+// (plwPipeline); changing its behaviour is a new tag of that library, not an edit here.
+//
+// This is the trusted half of this repository's delivery (platform-infra ADR-0022 and ADR-0024).
+// A pull request is checked by .github/workflows/ci.yml on one-job runners that hold no secret.
+// A merge to main is built here, where the registry credentials are: secret scan, the same checks
+// again on the merge result, one image pushed to Harbor by digest, and the Trivy gate.
+//
+// DEPLOYS TO RightOne DEV, and nowhere else. A green build of main puts the Portal image into the
+// DEV environment unit on node-21 (platform-infra ADR-0025) through
+// playbooks/rightone-env-deploy.yml, which takes the unit's lock, checks health after the change
+// and puts the previous image back if the check fails. UAT never takes a build from here: the
+// Jenkins job rightone-env-promote copies what DEV runs.
+//
+// No deployDev and no deployProd: those are the fleet's shared environments, which RightOne does
+// not use, and RightOne production does not exist yet.
+@Library('plw-pipeline@v1') _
+plwPipeline(
+  title: 'RightOne Portal', deployBranch: 'main', rollbackApp: 'rightone-portal',
+  images: [
+    [name: 'rightone-portal', key: 'portal', context: '.', dockerfile: 'deploy/docker/Dockerfile.portal'],
+  ],
+  tests: [
+    // git clean first: the pipeline leaves its own scaffolding in the workspace (ci/, .plw/, ca.crt),
+    // and the README gate would count those directories as part of this repository.
+    [name: 'checks', image: 'node:22',
+     cmd: 'git config --global --add safe.directory /src && git clean -fdxq && npm install -g pnpm@10.33.0 >/dev/null && PNPM_STORE_DIR=/root/.local/share/pnpm/store scripts/install && scripts/ci',
+     cache: 'plw-pnpm-rightone-web:/root/.local/share/pnpm'],
+  ],
+  // Dependencies, against ops/sca-baseline.txt: the gate blocks when a count of critical or high
+  // gets worse than the committed line, on every branch Jenkins builds (R1-98).
+  sca: [[type: 'pnpm', image: 'node:22', target: '.']],
+  deployUnits: [[unit: 'dev', images: [portal: 'portal']]],
+)

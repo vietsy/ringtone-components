@@ -1,0 +1,18 @@
+<!-- @dsCard group="Forms" height=200 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>SegmentedControl - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv', style: { flexDirection: 'row', flexWrap: 'wrap', gap: 'var(--space-8)', alignItems: 'flex-start' } },
+  h(R.SegmentedControl, { label: 'Loại', value: 'all', options: [{ value: 'all', label: 'Tất cả', count: 14 }, { value: 'g', label: 'Cổng', count: 3 }, { value: 'p', label: 'Chính sách', count: 8 }, { value: 'r', label: 'Rủi ro', count: 0, disabled: true, reason: 'Kỳ này chưa có rủi ro nào được ghi nhận.' }] }),
+  h(R.SegmentedControl, { label: 'Từng khung giờ', density: 'portal', value: 'd4', options: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map(function (d, i) { return { value: 'd' + i, label: d }; }) }))
+  );
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<!-- @dsCard group="Icons" height=150 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>Icon - preview</title>
+<style>.pv { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv', style: { color: 'var(--on-surface-secondary)' } }, ['wifi','wifi-off','play','hard-drive','shield-check','file-check','archive','inbox','scale','database','arrow-right-left','power','qr-code','clock','history','route','users','building-2','search','copy','banknote','credit-card','approximately-equal','circle-dashed','image'].map(function (n) { return h('span', { key: n, title: n, style: { display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-1)', width: 'calc(var(--spacing) * 18)', fontSize: 'var(--text-xs)', lineHeight: 'var(--leading-xs)' } }, h(R.Icon, { name: n, size: 24 }), n); }))
+  );
+</script>
+</body>
+</html>

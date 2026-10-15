@@ -1,0 +1,31 @@
+<!-- @dsCard group="Player" height=420 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>PlayerFrame - preview</title>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  var at = function (hm) { return new Date('2026-09-28T' + hm + ':00+07:00'); };
+  var title = 'Để anh nói nốt';
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { style: { width: 'calc(var(--player-width) / 2)', height: 'calc(var(--player-height) / 2)' } },
+  h('div', { style: { zoom: 0.5 } },
+    h(R.PlayerFrame, { size: 'md', track: title, locale: 'vi', rail: { premises: 'Then Cửa Coffee & Tea – Pasteur', place: 'Phường Bến Thành, TP. Hồ Chí Minh', condition: 'online', detail: [{ text: 'Đồng bộ lúc {at:time}', at: at('12:24') }, { text: '{n} minh chứng chờ gửi', n: 0 }], device: 'PLY-0023', facts: [{ text: '{n} / {total} bài sẵn sàng', n: 286, total: 286 }], storage: { value: 11, max: 32 }, href: '#' } },
+      h('div', { className: 'r1-pframe__cols' },
+        h('div', { className: 'r1-pframe__centre r1-pframe__centre--deck' },
+          h(R.NowPlaying, { scale: 'device', layout: 'cover', title: title, byline: 'Vy Sa ft. Duy Khê', credits: { composer: 'Võ Duy Khê', lyricist: 'Võ Duy Khê, Vy Sa', performer: 'Vy Sa, Duy Khê', producer: 'Lầu 3 Studio' }, locale: 'vi' },
+            h(R.Artwork, { variant: 'groove', title: title, size: 320, locale: 'vi' })),
+          h('div', { className: 'r1-pframe__deck' },
+            h(R.WaveBar, { elapsed: 84, duration: 276, title: title, locale: 'vi' }),
+            h(R.PlayerControls, { transport: true, progress: false, elapsed: 84, duration: 276, volume: 60, locale: 'vi' }))),
+        h('div', { className: 'r1-pframe__rule' }),
+        h('div', { className: 'r1-pframe__side' },
+          h(R.Clock, { time: at('12:28'), locale: 'vi' }),
+          h(R.UpNext, { schedule: 'Lịch “Giờ trưa”', start: at('11:00'), end: at('14:00'), left: 92 * 60000, locale: 'vi',
+            next: [{ time: at('12:31'), title: 'Bossa cho buổi trưa', performer: 'Hạt Tiêu Trio' }, { time: at('12:35'), title: 'Về đi, trời mưa rồi', performer: 'Na Bích' }, { time: at('12:39'), title: 'Chủ nhật lười', performer: 'Xe Đạp Điện' }] }))))))
+  );
+</script>
+</body>
+</html>

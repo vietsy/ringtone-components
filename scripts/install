@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# pnpm install that survives a stalled download.
+#
+# On the build host a long transfer is sometimes dropped mid-flight and never resumes. pnpm waits
+# on it for as long as it is allowed to: 76 minutes in one Jenkins build on 2 October 2026, on the
+# last package of 176. So each attempt gets five minutes. What an attempt has fetched stays in the
+# store, and the next attempt only asks for what is still missing.
+#
+# PNPM_STORE_DIR, when set, puts the store on a cache volume. Inside a container the default store
+# lands on the container's own filesystem, because pnpm keeps it on the same device as the project,
+# and is thrown away with it: every build then downloads everything again.
+source "$(dirname "$0")/_lib.sh"
+
+store=()
+[ -n "${PNPM_STORE_DIR:-}" ] && store=(--store-dir "$PNPM_STORE_DIR")
+
+# No `timeout` on macOS: a laptop is not behind that link, and a plain install is enough there.
+if ! command -v timeout >/dev/null 2>&1; then
+  exec pnpm install --frozen-lockfile ${store[@]+"${store[@]}"}
+fi
+
+for attempt in 1 2 3 4 5; do
+  if timeout 300 pnpm install --frozen-lockfile ${store[@]+"${store[@]}"}; then exit 0; fi
+  echo "  pnpm install did not finish, attempt $attempt" >&2
+done
+echo "pnpm install could not finish in five attempts" >&2
+exit 1

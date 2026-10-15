@@ -1,0 +1,22 @@
+<!-- @dsCard group="Values" height=252 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>MetricValue - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv', style: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', alignItems: 'start', gap: 'var(--space-6)' } },
+  h(R.MetricValue, { label: 'Minh chứng được chấp nhận', value: 12408, note: 'Tháng 9, 2026' }),
+  h(R.MetricValue, { label: 'Tỉ lệ chấp nhận', value: 96.4, kind: 'percent', state: 'derived', basis: R.format.count(12408) + ' trên ' + R.format.count(12871) + ' minh chứng', interval: [95.1, 97.6] }),
+  h(R.MetricValue, { label: 'Tỉ lệ đối soát', value: 88.2, kind: 'percent', state: 'derived' }),
+  h(R.MetricValue, { label: 'Minh chứng đang tạm giữ', value: 0, state: 'zero', note: 'Không có minh chứng nào bị tạm giữ trong tháng 9, 2026.' }),
+  h(R.MetricValue, { label: 'Tiền phân phối kỳ tháng 9', state: 'no-data', note: 'Kỳ tháng 9, 2026 chưa khoá sổ; số liệu có từ ' + R.format.date('2026-10-05') + '.' }),
+  h(R.MetricValue, { label: 'Tỉ lệ chi phí luỹ kế', value: 14, kind: 'percent', decimals: 2, state: 'derived', basis: 'chi phí và số đã thu từ ' + R.format.date('2026-07-01') }))
+  );
+</script>
+</body>
+</html>

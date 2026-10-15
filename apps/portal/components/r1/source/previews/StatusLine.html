@@ -1,0 +1,18 @@
+<!-- @dsCard group="Status" height=130 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>StatusLine - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv' },
+  h(R.StatusLine, { family: 'info', text: 'Đang đồng bộ từ ' + R.format.timestamp('2026-09-28T12:38:00+07:00'), cutout: 'surface' }),
+  h(R.StatusLine, { family: 'attention', text: 'Bộ nhớ còn 1,2 GB', detail: 'Khi đầy, thiết bị ngừng tải bài mới nhưng vẫn phát bài đã có.', cutout: 'surface' }))
+  );
+</script>
+</body>
+</html>

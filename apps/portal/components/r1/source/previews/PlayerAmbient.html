@@ -1,0 +1,32 @@
+<!-- @dsCard group="Player" height=300 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>PlayerAmbient - preview</title>
+<style>
+  body { margin: 0; }
+  .row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); padding: var(--space-4); }
+  .stage { height: calc(var(--spacing) * 67); overflow: hidden; border-radius: var(--radius-xl); background: var(--page); color: var(--on-surface); font-family: var(--font-sans); display: flex; align-items: center; justify-content: center; }
+  .pane { --glass-out: var(--space-6); display: flex; flex-direction: column; gap: var(--space-1); }
+  .pane p { margin: 0; font-size: var(--text-lg); line-height: var(--leading-lg); }
+  .pane .sub { color: var(--on-surface-secondary); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  function stage(title, tone, by) {
+    return h('div', { 'data-theme': 'player', className: 'stage r1-toned r1-tone--' + tone + ' r1-guest--ambient' },
+      h(R.PlayerAmbient, { title: title }),
+      h('div', { className: 'pane r1-glass' },
+        h('p', null, title),
+        h('p', { className: 'sub' }, by)));
+  }
+  ReactDOM.createRoot(document.getElementById('root')).render(
+    h('div', { className: 'row' },
+      stage('Để anh nói nốt', 'teal', 'Vy Sa ft. Duy Khê'),
+      stage('Bossa cho buổi trưa', 'blue', 'Hạt Tiêu Trio'))
+  );
+</script>
+</body>
+</html>

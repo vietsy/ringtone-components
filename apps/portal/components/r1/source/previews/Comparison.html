@@ -1,0 +1,21 @@
+<!-- @dsCard group="Data" height=352 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>Comparison - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv' }, h(R.Comparison, { caption: 'Biểu phí quán cà phê, phiên bản 1 và 2', columns: [{ key: 'v1', label: 'Phiên bản 1', meta: 'Đang áp dụng' }, { key: 'v2', label: 'Phiên bản 2', meta: 'Bản nháp' }], rows: [
+  { key: 'a', label: 'Quán cà phê, 60–120 m², mỗi tháng', kind: 'money', values: { v1: 231000, v2: 243000 }, changed: true },
+  { key: 'b', label: 'Phụ thu sau 22:00', kind: 'percent', decimals: 2, values: { v1: 10, v2: 12.5 }, changed: true },
+  { key: 'c', label: 'Giảm khi đăng ký sớm', kind: 'percent', values: { v1: 5, v2: 5 } },
+  { key: 'd', label: 'Hiệu lực từ', kind: 'date', values: { v1: '2026-01-01', v2: '2027-01-01' }, changed: true },
+  { key: 'e', label: 'Người duyệt', values: { v1: 'Nguyễn Hạnh Dung', v2: null }, missing: 'Chưa duyệt', changed: true } ] }))
+  );
+</script>
+</body>
+</html>

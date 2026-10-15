@@ -1,0 +1,20 @@
+<!-- @dsCard group="Values" height=230 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>ProvenanceChip - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); } .pv__row { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  var dat = ['authoritative', 'declared', 'derived', 'estimated', 'imputed', 'illustrative'];
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv' },
+  h('div', { className: 'pv__row' }, ['registry-sourced', 'declared', 'evidenced', 'corrected', 'derived'].map(function (k) { return h(R.ProvenanceChip, { key: k, kind: k, detail: k === 'registry-sourced' ? 'Cổng ĐKKD, ' + R.format.date('2026-09-17') : null }); })),
+  h('div', { className: 'pv__row' }, dat.map(function (k) { return h(R.ProvenanceChip, { key: k, kind: k, detail: k === 'estimated' ? 'Theo diện tích khai, ' + R.format.date('2026-10-01') : null }); })),
+  h('div', { className: 'pv__row' }, dat.map(function (k) { return h(R.ProvenanceChip, { key: k, kind: k, words: 'plain' }); })))
+  );
+</script>
+</body>
+</html>

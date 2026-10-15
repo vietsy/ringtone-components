@@ -1,0 +1,26 @@
+<!-- @dsCard group="Forms" height=512 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>FieldRows - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  var rights = [{ value: 'perf', label: 'Biểu diễn công cộng' }, { value: 'rep', label: 'Sao chép' }, { value: 'dist', label: 'Phân phối' }, { value: 'comm', label: 'Truyền đạt đến công chúng' }, { value: 'rent', label: 'Cho thuê' }];
+  var regions = [{ value: 'hcm', label: 'TP. Hồ Chí Minh' }, { value: 'hn', label: 'Hà Nội' }, { value: 'hp', label: 'Hải Phòng' }, { value: 'dn', label: 'Đà Nẵng' }, { value: 'hue', label: 'Huế' }, { value: 'ct', label: 'Cần Thơ' }];
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv', style: { maxWidth: 'var(--container-3xl)' } }, h(R.FieldRows, { legend: 'Quyền được uỷ thác', required: true, helper: 'Mỗi dòng là một loại quyền trên một vùng.', max: 5 },
+  h(R.FieldRow, { title: 'Dòng 1', columns: 3 },
+    h(R.Select, { label: 'Loại quyền', value: 'perf', options: rights }),
+    h(R.Select, { label: 'Vùng', value: 'hcm', options: regions }),
+    h(R.TextField, { label: 'Phần tác phẩm', value: '*', mono: true })),
+  h(R.FieldRow, { title: 'Dòng 2', columns: 3 },
+    h(R.Select, { label: 'Loại quyền', value: 'perf', options: rights }),
+    h(R.Select, { label: 'Vùng', value: '', placeholder: 'Chọn vùng', options: regions, error: 'Chọn vùng áp dụng.' }),
+    h(R.TextField, { label: 'Phần tác phẩm', value: '*', mono: true }))))
+  );
+</script>
+</body>
+</html>

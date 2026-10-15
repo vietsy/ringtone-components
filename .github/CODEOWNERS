@@ -1,0 +1,17 @@
+# Review ownership: path pattern, then the teams whose approval is required.
+#
+# @phanlaw/platform is the organisation's default owner; @phanlaw/techlead is added where a wrong
+# change is expensive and quiet. Both teams hold write access, which GitHub requires before a team
+# can own code.
+
+*                      @phanlaw/platform
+
+# A token change reaches every surface, and the contrast tests are what stand between a palette
+# edit and a screen an inspector cannot read in daylight.
+/packages/tokens/      @phanlaw/platform @phanlaw/techlead
+
+# The null-money rule and the four-state contract are correctness rules that look like styling.
+/packages/formatting/  @phanlaw/platform @phanlaw/techlead
+/packages/ui/          @phanlaw/platform @phanlaw/techlead
+
+/.github/              @phanlaw/platform @phanlaw/techlead

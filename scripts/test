@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Every package and the portal.
+source "$(dirname "$0")/_lib.sh"
+say "vitest"
+pnpm test
+say "test ok"

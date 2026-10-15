@@ -1,0 +1,16 @@
+{
+  "name": "@rightone/ui",
+  "version": "1.0.0",
+  "description": "The view-state contract and the status system. Logic only; the React components that render it live in the portal.",
+  "type": "module",
+  "license": "UNLICENSED",
+  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": { "@rightone/tokens": "workspace:*" },
+  "devDependencies": { "typescript": "^5.9.3", "vitest": "^3.2.4" }
+}

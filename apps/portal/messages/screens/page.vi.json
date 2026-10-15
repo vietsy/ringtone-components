@@ -1,0 +1,14 @@
+{
+  "error.title": "Chưa tải được trang này.",
+  "error.text": "Hãy thử lại; nếu vẫn chưa được, hãy báo mã bên dưới cho bộ phận hỗ trợ RightOne.",
+  "notFound.title": "Không tìm thấy trang",
+  "notFound.text": "Địa chỉ này không có trang nào.",
+  "notFound.hint": "Kiểm tra lại đường dẫn, hoặc về trang chủ.",
+  "notFound.home": "Về trang chủ",
+  "reserved.empty": "Chưa có màn nào",
+  "reserved.text": "Màn của phần này mở khi bản đặc tả thiết kế được duyệt.",
+  "artist.title": "Cổng nghệ sĩ",
+  "ops.title": "Bàn vận hành",
+  "player.title": "Player",
+  "player.text": "Phần quản lý thiết bị Player mở khi bản đặc tả thiết kế được duyệt."
+}

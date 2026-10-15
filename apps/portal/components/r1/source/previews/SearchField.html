@@ -1,0 +1,20 @@
+<!-- @dsCard group="Forms" height=250 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>SearchField - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv', style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', alignItems: 'start' } },
+  h(R.SearchField, { label: 'Tìm thiết bị', placeholder: 'Mã thiết bị, cơ sở hoặc mã tham chiếu', shortcut: '⌘K', density: 'console' }),
+  h(R.SearchField, { label: 'Tìm thiết bị', value: 'PLY-00', loading: true, density: 'console' }),
+  h(R.SearchField, { label: 'Tìm bài hát', hideLabel: true, value: 'Hẹn thứ', placeholder: 'Tên bài hoặc người trình bày' }),
+  h(R.SearchField, { label: 'Tìm đơn đăng ký', value: 'R1', error: 'Nhập ít nhất 3 ký tự để tìm.' }))
+  );
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<!-- @dsCard group="Values" height=128 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>FreshnessLine - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv' }, h(R.FreshnessLine, { period: { from: '2026-06-01', to: '2026-06-30' }, asOf: '2026-07-01T02:00:00+07:00', cadence: 'Cập nhật hằng ngày lúc 02:00' }), h(R.FreshnessLine, { asOf: '2026-09-29T09:30:00+07:00' }), h(R.FreshnessLine, {}))
+  );
+</script>
+</body>
+</html>

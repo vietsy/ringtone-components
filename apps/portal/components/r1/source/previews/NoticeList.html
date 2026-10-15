@@ -1,0 +1,19 @@
+<!-- @dsCard group="Feedback" height=312 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>NoticeList - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv', style: { maxWidth: 'var(--container-2xl)' } }, h(R.NoticeList, { items: [
+  { family: 'info', unread: true, title: 'PLY-0031 đã mất kết nối 53 giờ 48 phút', body: 'Khách sạn Mây Sông – Chi nhánh Tôn Đức Thắng. Nhạc vẫn phát; còn 18 giờ 12 phút.', at: '2026-09-28T12:36:00+07:00', href: '#' },
+  { family: 'attention', unread: true, title: 'Hồ sơ RPS-Q4NDT7WZ2K cần bổ sung giấy phép kinh doanh', body: 'Then Cửa Bakery – Hai Bà Trưng. Hạn bổ sung ' + R.format.date('2026-10-06') + '.', at: '2026-09-28T09:05:00+07:00', href: '#' },
+  { family: 'positive', title: 'Đã nhận thanh toán kỳ 4 năm 2026', body: 'Then Cửa Coffee & Tea – Pasteur, ' + R.format.money(822750) + '.', at: '2026-09-27T16:20:00+07:00', href: '#' } ] }))
+  );
+</script>
+</body>
+</html>

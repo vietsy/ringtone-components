@@ -1,0 +1,22 @@
+<!-- @dsCard group="Player" height=680 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>UpNext - preview</title>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  var at = function (hm) { return new Date('2026-09-28T' + hm + ':00+07:00'); };
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { 'data-theme': 'player', style: { background: 'var(--page)', color: 'var(--on-surface)', padding: 'var(--space-6)', display: 'flex', gap: 'var(--space-10)', alignItems: 'flex-start' } },
+  h(R.UpNext, {
+    schedule: 'Lịch “Giờ trưa”', start: at('11:00'), end: at('14:00'), left: 92 * 60000, moreCount: 18, moreUntil: at('14:00'), locale: 'vi', style: { width: 'calc(var(--spacing) * 68)' },
+    next: [{ time: at('12:31'), title: 'Bossa cho buổi trưa', performer: 'Hạt Tiêu Trio' }, { time: at('12:35'), title: 'Về đi, trời mưa rồi', performer: 'Na Bích' }, { time: at('12:39'), title: 'Chủ nhật lười', performer: 'Xe Đạp Điện' }],
+    later: [{ time: at('12:43'), title: 'Đầu ca thứ Hai (Lofi ver.)' }, { time: at('12:47'), title: 'Khẽ thôi, phố ngủ rồi' }, { time: at('12:51'), title: 'Lobby Lights at Half Past Nine' }]
+  }),
+  h(R.UpNext, { schedule: 'Lịch “Đóng cửa”', start: at('21:30'), end: at('22:00'), left: 4 * 60000, locale: 'vi', style: { width: 'calc(var(--spacing) * 68)' } }))
+  );
+</script>
+</body>
+</html>

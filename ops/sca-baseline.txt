@@ -1,0 +1,15 @@
+# The dependency gate's baseline (plw-jenkins-library, sca-gate.sh; Jenkinsfile.harbor, `sca`).
+#
+#   <kind>:<target> <critical> <high> <moderate> <low>
+#
+# The gate counts advisories against every dependency, development ones included, and blocks a
+# build when critical or high is above the number on its line. A line here is a decision, and it
+# changes only through a pull request that says why.
+#
+# Measured on main at 51ec229, 11 October 2026. The line is NOT zero: it records what is open
+# today so that the gate blocks anything worse, and it comes down as R1-107 is worked.
+#   critical  tinypool 1.1.1        through vitest (two advisories)        development
+#   high      source-map-js 1.2.1   through vitest > vite > postcss        development
+#   high      sharp 0.35.4          through apps/portal > next             PRODUCTION
+#   moderate  vitest 3.2.7, @vitest/mocker 3.2.7                           development
+pnpm:. 2 2 2 0

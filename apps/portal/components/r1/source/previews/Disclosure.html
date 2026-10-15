@@ -1,0 +1,20 @@
+<!-- @dsCard group="Page" height=290 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>Disclosure - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv', style: { maxWidth: 'var(--container-2xl)', gap: 0 } },
+  h(R.Disclosure, { title: 'Giấy xác nhận khác gì quyền sử dụng dịch vụ Player?', open: true },
+    h('p', null, 'Giấy xác nhận cho biết cơ sở đã hoàn thành nghĩa vụ bản quyền trong kỳ. Quyền sử dụng dịch vụ Player cho biết cơ sở được dùng Player.')),
+  h(R.Disclosure, { title: 'Mã QR trên giấy xác nhận dùng để làm gì?' }, h('p', null, 'Ai cũng quét được mã để xem giấy xác nhận còn hiệu lực hay không, không cần tài khoản.')),
+  h(R.Disclosure, { title: 'Quét mã mà trang báo không tìm thấy mã thì làm gì?', meta: '2 bước' }, h('p', null, 'Kiểm tra lại mã in bên cạnh mã QR. Nếu mã đúng mà vẫn không có kết quả, gửi phản ánh kèm ảnh giấy xác nhận.')))
+  );
+</script>
+</body>
+</html>

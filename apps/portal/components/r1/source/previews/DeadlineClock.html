@@ -1,0 +1,25 @@
+<!-- @dsCard group="Operations" height=360 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>DeadlineClock - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, var(--space-60)), 1fr))', alignItems: 'start', gap: 'var(--space-6)' } },
+  h(R.DeadlineClock, { label: 'Hạn trả lời cơ sở', start: '2026-09-25T09:00:00+07:00', due: '2026-10-02T17:00:00+07:00', now: '2026-09-29T10:15:00+07:00' }),
+  h(R.DeadlineClock, { label: 'Hạn xử lý khiếu nại', start: '2026-09-22T16:00:00+07:00', due: '2026-09-29T16:00:00+07:00', now: '2026-09-29T10:15:00+07:00', announceAt: [30, 5] }),
+  h(R.DeadlineClock, { label: 'Hạn quyết định tạm giữ', start: '2026-09-20T17:00:00+07:00', due: '2026-09-27T17:00:00+07:00', now: '2026-09-29T10:15:00+07:00' }),
+  h(R.DeadlineClock, { label: 'Hạn duyệt đơn đăng ký', due: '2026-09-28T17:00:00+07:00', metAt: '2026-09-26T09:40:00+07:00', now: '2026-09-29T10:15:00+07:00' }),
+  h(R.DeadlineClock, { label: 'Hạn duyệt đơn đăng ký', due: '2026-10-06T17:00:00+07:00', paused: true, pausedReason: 'Chờ cơ sở bổ sung giấy phép kinh doanh.', now: '2026-09-29T10:15:00+07:00' }),
+  h(R.DeadlineClock, { label: 'Hạn bổ sung chứng từ', now: '2026-09-29T10:15:00+07:00' }),
+  h('div', { style: { display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' } },
+    h(R.DeadlineClock, { size: 'sm', due: '2026-09-29T16:00:00+07:00', now: '2026-09-29T10:15:00+07:00' }),
+    h(R.DeadlineClock, { size: 'sm', due: '2026-09-27T17:00:00+07:00', now: '2026-09-29T10:15:00+07:00' })))
+  );
+</script>
+</body>
+</html>

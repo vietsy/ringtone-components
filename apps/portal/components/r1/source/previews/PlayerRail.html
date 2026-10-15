@@ -1,0 +1,18 @@
+<!-- @dsCard group="Player" height=800 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>PlayerRail - preview</title>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  var at = function (s) { return new Date(s + '+07:00'); };
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { 'data-theme': 'player', style: { background: 'var(--page)', color: 'var(--on-surface)', display: 'flex', gap: 'var(--space-6)', height: 'var(--player-height)' } },
+  h(R.PlayerRail, { premises: 'Khách sạn Mây Sông – Chi nhánh Tôn Đức Thắng', place: 'Phường Sài Gòn, TP. Hồ Chí Minh', condition: 'offline', detail: [{ text: 'Từ {at}', at: at('2026-09-26T06:48:00') }, { text: '{n} minh chứng chờ gửi', n: 614 }], meter: { value: 18.2, max: 72, note: 'Hết giờ thì nhạc dừng.' }, device: 'PLY-0031', facts: [{ text: '{n} / {total} bài sẵn sàng', n: 402, total: 402 }], href: '#', locale: 'vi', style: { width: 'var(--space-64)' } }),
+  h(R.PlayerRail, { premises: 'Then Cửa Coffee & Tea – Pasteur', place: 'Phường Bến Thành, TP. Hồ Chí Minh', condition: 'cannot-continue', detail: ['Không có lịch nào áp dụng lúc này'], device: 'PLY-0023', facts: [{ text: '{n} / {total} bài sẵn sàng', n: 286, total: 286 }], href: '#', locale: 'vi', style: { width: 'var(--space-64)' } }))
+  );
+</script>
+</body>
+</html>

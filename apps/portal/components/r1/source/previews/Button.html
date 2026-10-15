@@ -1,0 +1,24 @@
+<!-- @dsCard group="Actions" height=170 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>Button - preview</title>
+<style>.pv { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv', style: { alignItems: 'flex-start' } },
+  h(R.Button, { variant: 'primary', icon: 'check' }, 'Ghi nhận quyết định'),
+  h(R.Button, null, 'Xem thiết bị'),
+  h(R.Button, { variant: 'quiet', icon: 'download' }, 'Xuất ngày'),
+  h(R.Button, { variant: 'danger' }, 'Ngừng dùng thiết bị PLY-0009'),
+  h(R.Button, { icon: 'download', loading: true, loadingLabel: 'Đang xuất' }, 'Xuất danh sách'),
+  h(R.Button, { variant: 'primary', disabled: true, disabledReason: 'Cần ghi căn cứ trước khi giải toả.' }, 'Giải toả'),
+  h(R.Button, { size: 'sm', icon: 'filter' }, 'Lọc'),
+  h(R.Button, { iconOnly: true, icon: 'copy', 'aria-label': 'Sao chép mã' }))
+  );
+</script>
+</body>
+</html>

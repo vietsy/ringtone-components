@@ -1,0 +1,15 @@
+{
+  "name": "@rightone/formatting",
+  "version": "1.0.0",
+  "description": "The one place money, dates, periods and identifiers are rendered. R23.7 bans an inline toLocaleString anywhere else.",
+  "type": "module",
+  "license": "UNLICENSED",
+  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "devDependencies": { "typescript": "^5.9.3", "vitest": "^3.2.4" }
+}

@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Copies the JIRA key from the branch name into a `Refs:` trailer (conventions.md §7).
+#
+# Why a hook rather than a habit: the key is the only thing that joins a commit to its issue, and
+# typing `Refs: R1-241` on every commit is the kind of rule that lapses on a busy day, at no cost
+# until the day the trace is needed. The branch already carries it - `feat/R1-241-revocation` - so
+# this copies it down once per commit.
+#
+# Leaves alone: a message that already has a `Refs:` line (the author may be pointing this commit at
+# another issue), a branch with no key, and merges, squashes and amends, whose message git or the
+# original commit decides. Runs under git directly, or under pre-commit, which passes the message
+# source in PRE_COMMIT_COMMIT_MSG_SOURCE instead of as an argument.
+set -uo pipefail
+message="$1"
+source="${2:-${PRE_COMMIT_COMMIT_MSG_SOURCE:-}}"
+
+case "$source" in
+  merge | squash | commit) exit 0 ;;
+esac
+
+# `symbolic-ref` rather than `rev-parse --abbrev-ref`: on a branch with no commits yet HEAD is
+# unborn, rev-parse fails, and the first commit on the branch would go without its key.
+branch=$(git symbolic-ref --short -q HEAD 2>/dev/null || true)
+key=$(printf '%s' "$branch" | sed -nE 's#^([^/]+/)?(R1-[1-9][0-9]*)(-.*)?$#\2#p')
+[ -n "$key" ] || exit 0
+
+grep -qE '^Refs:' "$message" && exit 0
+
+# An empty message - the editor case, before anything is typed - needs the trailer two lines down,
+# so the author's first line stays a header on its own. One line down and git would read the
+# header and the trailer as one paragraph, and join them into a single subject.
+empty=$(awk '/^# -+ >8 -+$/ { exit } !/^#/ && NF { found = 1 }
+             END { print found ? "no" : "yes" }' "$message")
+
+git interpret-trailers --in-place --if-exists doNothing --trailer "Refs: $key" "$message" || exit 0
+if [ "$empty" = yes ]; then
+  { printf '\n'; cat "$message"; } > "$message.refs" && mv "$message.refs" "$message"
+fi
+exit 0

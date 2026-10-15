@@ -1,0 +1,19 @@
+<!-- @dsCard group="Forms" height=130 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>MoneyField - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv', style: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', alignItems: 'start' } },
+  h(R.MoneyField, { label: 'Số tiền điều chỉnh', required: true, amountMinor: 12500000, density: 'console' }),
+  h(R.MoneyField, { label: 'Số tiền hoàn lại', required: true, error: 'Nhập số tiền lớn hơn 0.', density: 'console' }),
+  h(R.MoneyField, { label: 'Đã thu', readOnly: true, amountMinor: 3290998, density: 'console' }))
+  );
+</script>
+</body>
+</html>

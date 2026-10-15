@@ -1,0 +1,21 @@
+<!-- @dsCard group="Legal" height=832 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>LegalTextViewer - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  var sections = [
+    { id: 's1', heading: '1. Phạm vi', body: 'Nghệ sĩ cấp cho dịch vụ quyền cho phép cơ sở đã đăng ký phát bản ghi này qua thiết bị được chấp thuận, trong thời hạn đã chọn.' },
+    { id: 's2', heading: '2. Thời hạn', body: 'Một, ba hoặc năm năm, hoặc không thời hạn. Mọi thời hạn đều có thể thu hồi, có hiệu lực sau 30 ngày.' },
+    { id: 's3', heading: '3. Thu hồi', body: 'Việc phát nhạc trước ngày thu hồi có hiệu lực vẫn hợp lệ.' } ];
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv' }, h(R.LegalTextViewer, { title: 'Giấy phép trực tiếp', version: '1.2', effective: '2026-10-01', progress: 38, height: 150, sections: sections }),
+  h('div', { style: { maxWidth: 'var(--container-xs)' } }, h(R.LegalTextViewer, { title: 'Giấy phép trực tiếp', version: '1.2', effective: '2026-10-01', height: 150, sections: sections })))
+  );
+</script>
+</body>
+</html>

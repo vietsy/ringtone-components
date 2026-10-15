@@ -1,0 +1,22 @@
+<!-- @dsCard group="Data" height=340 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>Meter - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv', style: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 'var(--space-8)' } },
+  h('div', { 'data-theme': 'player', style: { background: 'var(--page)', padding: 'var(--space-4)', borderRadius: 'var(--radius-lg)' } }, h(R.Meter, { variant: 'ring', value: 18.2, max: 72, size: 220, family: 'info', centerLabel: '18 giờ 12 phút', centerSub: 'còn lại trên 72 giờ', label: 'Thời gian phát khi mất kết nối', locale: 'vi' })),
+  h('div', { style: { display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', width: 'var(--space-80)' } },
+    h(R.Meter, { value: 318, max: 402, caption: 'Đã chép 318 trên 402 bài', family: 'info', label: 'Chép kho nhạc', locale: 'vi' }),
+    h(R.Meter, { value: 29.4, max: 32, caption: 'Đã dùng 29,4 trên 32 GB', family: 'attention', label: 'Bộ nhớ đã dùng', locale: 'vi' }),
+    h(R.Meter, { value: null, max: 32, caption: 'Chưa đọc được bộ nhớ của thiết bị', family: 'attention', label: 'Bộ nhớ đã dùng', locale: 'vi' }),
+    h(R.Meter, { value: 946766800, max: 1104380000, caption: 'Chuyển cho các tổ chức nhận ' + R.format.money(946766800) + ', bằng ' + R.format.percent(85.73, 'vi', { decimals: 2 }) + ' số đã thu.', family: 'info', label: 'Phần còn lại so với mức sàn', marker: { value: 938723000, label: 'Mức sàn ' + R.format.percent(85) }, locale: 'vi' })))
+  );
+</script>
+</body>
+</html>

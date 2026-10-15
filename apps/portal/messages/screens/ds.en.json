@@ -1,0 +1,20 @@
+{
+  "title": "Design system R1",
+  "meta": "{count} components, each in the states the design system’s specimen draws, rendered by the portal’s copy.",
+  "jump": "Component groups",
+  "failed": "The {name} specimen did not render",
+  "group.Actions": "Actions",
+  "group.Forms": "Forms",
+  "group.Values": "Values",
+  "group.Status": "Status",
+  "group.Feedback": "Feedback",
+  "group.Data": "Data",
+  "group.Page": "Page",
+  "group.Flows": "Flows",
+  "group.Shells": "Shells",
+  "group.Legal": "Legal",
+  "group.Operations": "Operations",
+  "group.Media": "Media",
+  "group.Player": "Player",
+  "group.Icons": "Icons"
+}

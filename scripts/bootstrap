@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Install everything needed to work on this repository. Idempotent; safe to rerun.
+source "$(dirname "$0")/_lib.sh"
+say "checking tools"
+need node "https://nodejs.org; 22 or newer"
+need git  "version control"
+if ! command -v pnpm >/dev/null 2>&1; then say "activating pnpm via corepack"; corepack enable; corepack prepare --activate; fi
+say "installing dependencies"
+if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile; else pnpm install; fi
+say "bootstrap ok"

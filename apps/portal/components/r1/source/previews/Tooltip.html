@@ -1,0 +1,19 @@
+<!-- @dsCard group="Feedback" height=120 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>Tooltip - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv', style: { flexDirection: 'row', gap: 'var(--space-6)', paddingTop: 'var(--space-12)' } },
+  h(R.Tooltip, { label: 'Tải hồ sơ về', open: true }, h(R.Button, { iconOnly: true, icon: 'download', variant: 'quiet', 'aria-label': 'Tải hồ sơ về' })),
+  h(R.Tooltip, { label: 'Sao chép mã' }, h(R.Button, { iconOnly: true, icon: 'copy', variant: 'quiet', 'aria-label': 'Sao chép mã' })),
+  h(R.Tooltip, { label: 'Lọc danh sách' }, h(R.Button, { iconOnly: true, icon: 'filter', variant: 'quiet', 'aria-label': 'Lọc danh sách' })))
+  );
+</script>
+</body>
+</html>

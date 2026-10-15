@@ -1,0 +1,80 @@
+name: review-audit
+
+# The organisation is on GitHub's Free plan, and a private repository there cannot require a
+# review: the rule "nobody merges their own pull request" is kept by people. This workflow cannot
+# block a merge either. It looks at every commit that reaches main and fails, on that commit, when
+# no second person was involved:
+#   - the commit has no merged pull request (it was pushed straight to main), or
+#   - the person who merged the pull request is its author, and nobody else approved it.
+# A pull request merged by somebody other than its author passes: the person who merged is the
+# second person. That includes a dependency update merged by a maintainer.
+#
+# A red run here is a record, not a gate. It names the pull request and both people, so the
+# exception is visible on main instead of being found later in the history (R1-99).
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+# Jobs run on ephemeral self-hosted runners on node-21, not on ubuntu-latest (platform-infra
+# ADR-0024): GitHub-hosted minutes run out on the Free plan, self-hosted minutes are not counted.
+jobs:
+  audit:
+    name: second-person
+    runs-on: [self-hosted, linux, x64, plw-sandbox]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            // One pull request, its reviews: was a second person involved?
+            const decide = (pr, reviews) => {
+              const author = pr.user.login;
+              const merger = pr.merged_by ? pr.merged_by.login : null;
+              const approvers = [...new Set(reviews
+                .filter(r => r.state === 'APPROVED' && r.user && r.user.login !== author)
+                .map(r => r.user.login))];
+              const second = (merger && merger !== author) || approvers.length > 0;
+              const who = `written by ${author}, merged by ${merger || 'nobody on record'}, ` +
+                          `approved by ${approvers.join(', ') || 'nobody else'}`;
+              return { ok: second, line: `#${pr.number} "${pr.title}": ${who}` };
+            };
+
+            const { owner, repo } = context.repo;
+            const branch = context.ref.replace('refs/heads/', '');
+            const { before, after } = context.payload;
+            let shas = [after];
+            if (before && !/^0+$/.test(before)) {
+              const cmp = await github.request('GET /repos/{owner}/{repo}/compare/{basehead}',
+                { owner, repo, basehead: `${before}...${after}` });
+              if (cmp.data.commits.length) shas = cmp.data.commits.map(c => c.sha);
+            }
+
+            const seen = new Set();
+            const problems = [];
+            for (const sha of shas) {
+              const prs = (await github.request('GET /repos/{owner}/{repo}/commits/{commit_sha}/pulls',
+                { owner, repo, commit_sha: sha })).data.filter(p => p.merged_at && p.base.ref === branch);
+              if (!prs.length) {
+                problems.push(`${sha.slice(0, 7)}: reached ${branch} with no pull request`);
+                continue;
+              }
+              for (const p of prs) {
+                if (seen.has(p.number)) continue;
+                seen.add(p.number);
+                const pr = (await github.request('GET /repos/{owner}/{repo}/pulls/{pull_number}',
+                  { owner, repo, pull_number: p.number })).data;
+                const reviews = await github.paginate('GET /repos/{owner}/{repo}/pulls/{pull_number}/reviews',
+                  { owner, repo, pull_number: p.number });
+                const verdict = decide(pr, reviews);
+                if (verdict.ok) core.info(`second person: ${verdict.line}`);
+                else problems.push(verdict.line);
+              }
+            }
+            if (problems.length) {
+              core.setFailed(`No second person on ${problems.length} change(s) to ${branch}:\n` + problems.join('\n'));
+            }

@@ -1,0 +1,18 @@
+{
+  "name": "@rightone/tokens",
+  "version": "2.0.0",
+  "description": "Design tokens for RightOne, generated from the design system R1, with the measured contrast ratios asserted as tests. Consumed by this portal and published for rightone-mobile.",
+  "type": "module",
+  "license": "UNLICENSED",
+  "publishConfig": { "access": "restricted" },
+  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
+  "files": ["dist"],
+  "scripts": {
+    "generate": "node scripts/generate-from-r1.mjs",
+    "generate:check": "node scripts/generate-from-r1.mjs --check",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "devDependencies": { "typescript": "^5.9.3", "vitest": "^3.2.4" }
+}

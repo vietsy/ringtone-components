@@ -1,0 +1,20 @@
+<!-- @dsCard group="Operations" height=360 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>AudioRecorder - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv', style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', alignItems: 'start' } },
+  h(R.AudioRecorder, { state: 'idle', max: 30, note: 'Ghi tối đa 30 giây để đối chiếu bài đang phát. Bản ghi được giữ và xoá theo cùng quy định với dữ liệu đo.' }),
+  h(R.AudioRecorder, { state: 'recording', elapsed: 12, max: 30, levels: [0.2, 0.5, 0.7, 0.4, 0.8, 0.6, 0.3, 0.5, 0.9, 0.7, 0.4, 0.6, 0.8, 0.5, 0.3, 0.6, 0.7, 0.5, 0.4, 0.6] }),
+  h(R.AudioRecorder, { state: 'recorded', elapsed: 30, max: 30, levels: [0.3, 0.5, 0.6, 0.4, 0.7, 0.5, 0.3, 0.4, 0.8, 0.6, 0.4, 0.5, 0.7, 0.4, 0.3, 0.5, 0.6, 0.4, 0.3, 0.5] }),
+  h(R.AudioRecorder, { state: 'denied', max: 30 }))
+  );
+</script>
+</body>
+</html>

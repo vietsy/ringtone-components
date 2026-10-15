@@ -1,0 +1,18 @@
+title = "rightone-web"
+
+# Keep the default ruleset; only add allowlists. Defining [[rules]] here would REPLACE the defaults.
+[extend]
+useDefault = true
+
+# One [allowlist] table, not several [[allowlists]]. Two scanners read this file: the GitHub check
+# runs gitleaks 8.30.1, and the Jenkins secret scan runs the version plw-jenkins-library pins, 8.21.2.
+# [[allowlists]] arrived in 8.25; 8.21 ignores it without a word and reported the mock accounts as
+# three leaks, which stopped rightone-web main build 9 at its first stage (2026-10-14). Both
+# versions read [allowlist], and a finding is allowed when any one of its entries matches.
+[allowlist]
+description = "Not secrets: local-only defaults; the mock RightOne ID's sample accounts (demonstration passwords published in apps/portal/README.md, used only with RIGHTONE_DATA=mock); message catalogues, which are interface copy (a sentence about verification keys reads like a key assignment)"
+regexes = ['''rightone-local''', '''TODO\(owner\)''']
+paths = [
+  '''^apps/portal/lib/mock/backend/accounts\.ts$''',
+  '''^apps/portal/messages/.*\.json$''',
+]

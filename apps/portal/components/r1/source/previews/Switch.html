@@ -1,0 +1,22 @@
+<!-- @dsCard group="Forms" height=480 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>Switch - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv', style: { maxWidth: 'var(--container-md)' } },
+  h(R.Switch, { label: 'Thông báo qua email', helper: 'Khi đơn đăng ký cần bổ sung hoặc khoản thanh toán sắp đến hạn.', checked: true }),
+  h(R.Switch, { label: 'Tin nhắn SMS' }),
+  h(R.Switch, { label: 'Thông báo đẩy trên điện thoại', checked: true, loading: true }),
+  h(R.Switch, { label: 'Báo khi có bản cập nhật', error: 'Chưa lưu được thay đổi. Thử lại sau ít phút.' }),
+  h(R.Switch, { label: 'Thông báo về giấy xác nhận', checked: true, disabled: true, disabledReason: 'Thông báo này bắt buộc nên không tắt được.' }),
+  h(R.Switch, { label: 'Tự cập nhật phần mềm Player', checked: true, density: 'console' }))
+  );
+</script>
+</body>
+</html>

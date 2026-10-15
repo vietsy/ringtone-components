@@ -1,0 +1,20 @@
+{
+  "title": "Hệ thống thiết kế R1",
+  "meta": "{count} thành phần, mỗi thành phần ở các trạng thái mẫu của hệ thống thiết kế, do bản sao trong portal vẽ.",
+  "jump": "Nhóm thành phần",
+  "failed": "Mẫu {name} chưa vẽ được",
+  "group.Actions": "Hành động",
+  "group.Forms": "Biểu mẫu",
+  "group.Values": "Giá trị",
+  "group.Status": "Trạng thái",
+  "group.Feedback": "Phản hồi",
+  "group.Data": "Dữ liệu",
+  "group.Page": "Trang",
+  "group.Flows": "Luồng",
+  "group.Shells": "Khung trang",
+  "group.Legal": "Pháp lý",
+  "group.Operations": "Vận hành",
+  "group.Media": "Âm thanh",
+  "group.Player": "Player",
+  "group.Icons": "Biểu tượng"
+}

@@ -1,0 +1,25 @@
+<!-- @dsCard group="Page" height=520 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>Divider - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-6); background: var(--page); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv' },
+  h(R.Panel, { gap: 'xl', density: 'portal' },
+    h(R.Panel, { variant: 'plain', title: 'Tổ chức', density: 'portal' },
+      h(R.TextField, { label: 'Tên pháp lý', value: 'Dây Đàn Rights Agency', readOnly: true, provenance: 'registry-sourced', name: 'legal_name' })),
+    h(R.Divider, null),
+    h(R.Panel, { variant: 'plain', title: 'Chứng minh thẩm quyền', density: 'portal' },
+      h(R.TextField, { label: 'Số tham chiếu trong sổ thẩm quyền', value: 'CV-2026-0472', required: true, mono: true, name: 'authority_evidence_ref' })),
+    h(R.Divider, null),
+    h('div', { style: { display: 'flex', gap: 'var(--space-3)' } },
+      h(R.Button, { variant: 'primary' }, 'Nộp đơn'), h(R.Button, null, 'Lưu bản nháp'))))
+  );
+</script>
+</body>
+</html>

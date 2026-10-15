@@ -1,0 +1,22 @@
+<!-- @dsCard group="Feedback" height=900 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>EmptyState - preview</title>
+<style>.pv { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, var(--container-xs)), 1fr))', gap: 'var(--space-3)', alignItems: 'start' } },
+  h(R.EmptyState, { variant: 'not-started' }, 'Minh chứng hiện ở đây trong vòng 24 giờ sau khi phát.'),
+  h(R.EmptyState, { variant: 'governed', title: 'Không có minh chứng nào đủ điều kiện trong kỳ ' + R.format.period('2026-09-01', '2026-09-30') + '.' }, 'Đã nhận 12 lượt gửi, tất cả đều ngoài khung thời gian chấp nhận.'),
+  h(R.EmptyState, { variant: 'governed', title: 'Chưa có giấy xác nhận nào được cấp trong đợt này.', decision: 'Phê duyệt biểu phí khách sạn năm 2027', decider: 'Hội đồng biểu phí', due: '2026-10-15T17:00:00+07:00' }, 'Giấy xác nhận được cấp sau khi biểu phí áp dụng cho các cơ sở trong đợt được phê duyệt.'),
+  h(R.EmptyState, { variant: 'filtered', title: 'Không có quyền sử dụng nào ở trạng thái này.', onClearFilters: function () {} }),
+  h(R.EmptyState, { variant: 'no-obligation' }, 'Giấy xác nhận này in được và kiểm tra được như mọi giấy xác nhận khác.'),
+  h(R.EmptyState, { variant: 'error', traceId: '0af76519c2e8431b', retryable: true }, 'Dịch vụ minh chứng không trả lời.'))
+  );
+</script>
+</body>
+</html>

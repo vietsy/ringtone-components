@@ -1,0 +1,17 @@
+<!-- @dsCard group="Player" height=488 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>PlayerControls - preview</title>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { 'data-theme': 'player', style: { background: 'var(--page)', color: 'var(--on-surface)', padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-8)', maxWidth: 'var(--container-xl)' } },
+  h(R.PlayerControls, { transport: true, progress: false, elapsed: 84, duration: 276, volume: 60, locale: 'vi' }),
+  h(R.PlayerControls, { elapsed: 130, duration: 276, volume: 60, paused: true, title: 'Để anh nói nốt', locale: 'vi' }))
+  );
+</script>
+</body>
+</html>

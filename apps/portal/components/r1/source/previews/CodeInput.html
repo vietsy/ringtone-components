@@ -1,0 +1,20 @@
+<!-- @dsCard group="Forms" height=440 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>CodeInput - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv', style: { flexDirection: 'row', flexWrap: 'wrap', gap: 'var(--space-8)', alignItems: 'flex-start' } },
+  h(R.CodeInput, { label: 'Mã xác thực', digits: ['4', '8', '1'], focus: 3, locale: 'vi' }),
+  h(R.CodeInput, { label: 'Mã xác thực', value: '481905', error: 'Mã này đã hết hạn. Nhập mã mới đang hiện trong ứng dụng xác thực.', locale: 'vi' }),
+  h(R.CodeInput, { label: 'Mã xác thực', value: '481905', loading: true, locale: 'vi' }),
+  h(R.CodeInput, { label: 'Mã ghép', length: 12, group: 4, chars: 'alnum', value: '7QK48M2PRX51', locale: 'vi' }))
+  );
+</script>
+</body>
+</html>

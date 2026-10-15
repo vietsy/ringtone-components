@@ -1,0 +1,18 @@
+<!-- @dsCard group="Forms" height=190 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>FieldRow - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv', style: { maxWidth: 'var(--container-3xl)' } }, h(R.FieldRow, { title: 'Liên hệ 1', columns: 2 },
+  h(R.TextField, { label: 'Họ và tên', value: 'Đỗ Thu Trang' }),
+  h(R.TextField, { label: 'Email', value: 'trang.do@thencua.example', type: 'email' })))
+  );
+</script>
+</body>
+</html>

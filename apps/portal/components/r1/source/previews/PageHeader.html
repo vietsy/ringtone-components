@@ -1,0 +1,18 @@
+<!-- @dsCard group="Page" height=300 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>PageHeader - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv', style: { background: 'var(--page)' } },
+  h(R.PageHeader, { crumbs: [{ label: 'Vận hành' }, { label: 'Thiết bị Player', href: '#' }], title: 'PLY-0009', status: { family: 'danger', label: 'Đã báo mất' }, meta: 'Tại Ô Cửa Tre Lounge – Phú Mỹ Hưng. Nhà cung cấp Hạt Âm Devices, định danh dev-8f21-44, đăng ký ngày ' + R.format.date('2026-01-28') + '.' }, h(R.Button, { size: 'sm', variant: 'quiet', icon: 'download' }, 'Tải hồ sơ thiết bị về')),
+  h(R.PageHeader, { crumbs: [{ label: 'Vận hành' }, { label: 'Thiết bị Player', href: '#' }], title: 'PLY-0031 tại Khách sạn Mây Sông – Chi nhánh Tôn Đức Thắng', status: { family: 'info', label: 'Mất kết nối, vẫn phát' } }, h(R.Button, { size: 'sm', disabled: true, disabledReason: 'Hãy quyết định xử lý ' + R.format.count(614) + ' minh chứng chưa đồng bộ trước.' }, 'Chuyển thiết bị'), h(R.Button, { size: 'sm', variant: 'quiet' }, 'Nhắc cơ sở')))
+  );
+</script>
+</body>
+</html>

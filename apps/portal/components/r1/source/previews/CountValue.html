@@ -1,0 +1,16 @@
+<!-- @dsCard group="Values" height=80 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>CountValue - preview</title>
+<style>.pv { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv' }, h(R.CountValue, { value: 4120 }), h(R.CountValue, { value: 0 }), h(R.CountValue, { value: null }), h(R.CountValue, { value: 46, unit: 'thiết bị' }), h(R.CountValue, { value: 1, unit: { one: 'field', other: 'fields' }, locale: 'en' }), h(R.CountValue, { value: 1412908, unit: { one: 'field', other: 'fields' }, locale: 'en' }))
+  );
+</script>
+</body>
+</html>

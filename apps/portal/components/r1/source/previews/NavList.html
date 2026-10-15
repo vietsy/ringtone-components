@@ -1,0 +1,20 @@
+<!-- @dsCard group="Page" height=312 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>NavList - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv' }, h(R.NavList, { title: 'Phát nhạc', items: [
+  { label: 'Danh sách phát', href: '#', icon: 'list-music', detail: '4 danh sách, mặc định: Sáng mở cửa', current: true },
+  { label: 'Lịch phát', href: '#', icon: 'calendar', detail: '3 lịch đang áp dụng' },
+  { label: 'Thiết bị', href: '#', icon: 'tablet', detail: '3 thiết bị đã ghép' },
+  { label: 'Nội dung thay thế', icon: 'history', disabled: true, reason: 'Chưa có lần phát nào để đối chiếu.' } ] }))
+  );
+</script>
+</body>
+</html>

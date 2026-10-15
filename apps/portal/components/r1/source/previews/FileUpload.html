@@ -1,0 +1,21 @@
+<!-- @dsCard group="Flows" height=664 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>FileUpload - preview</title>
+<style>.pv { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv', style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', alignItems: 'start' } },
+  h(R.FileUpload, { label: 'Tệp âm thanh', helper: 'WAV hoặc FLAC, tối đa 200 MB.' }),
+  h(R.FileUpload, { label: 'Tệp âm thanh', helper: 'WAV hoặc FLAC, tối đa 200 MB.', state: 'dragover' }),
+  h(R.FileUpload, { label: 'Tệp âm thanh', helper: 'WAV hoặc FLAC, tối đa 200 MB.', error: 'Tệp này là MP3. Chọn tệp WAV hoặc FLAC, tối đa 200 MB.' }),
+  h(R.FileUpload, { label: 'Tệp âm thanh', helper: 'WAV hoặc FLAC, tối đa 200 MB.', disabled: true, disabledReason: 'Bản ghi này đang được rà soát nên chưa thay tệp được.' }),
+  h(R.FileUpload, { label: 'Tệp âm thanh', fileName: 'de-anh-noi-not_master.wav', fileSize: '48,2 MB', onFiles: function () {}, onRemove: function () {}, stages: [{ label: 'Tải lên', state: 'done' }, { label: 'Xử lý âm thanh', state: 'done' }, { label: 'Kiểm tra kỹ thuật', state: 'current', detail: 'Còn khoảng 4 phút' }, { label: 'Rà soát trùng khớp' }, { label: 'Kết quả rà soát' }] }))
+  );
+</script>
+</body>
+</html>

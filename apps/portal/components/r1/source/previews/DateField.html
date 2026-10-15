@@ -1,0 +1,22 @@
+<!-- @dsCard group="Forms" height=560 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>DateField - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv', style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', alignItems: 'start', minHeight: 'var(--space-96)' } },
+  h(R.DateField, { label: 'Có hiệu lực từ', helper: 'Gõ theo dạng ngày/tháng/năm hoặc chọn trên lịch.', required: true, value: '2026-10-03', open: true, today: '2026-09-29', min: '2026-09-29' }),
+  h('div', { style: { display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' } },
+    h(R.DateField, { label: 'Kỳ báo cáo', range: true, value: '2026-09-01', to: '2026-09-30', required: true }),
+    h(R.DateField, { label: 'Kỳ đã khoá sổ', range: true, readOnly: true, value: '2026-08-01', to: '2026-08-31' }),
+    h(R.DateField, { label: 'Thời hạn uỷ quyền', range: true, value: '2026-11-01', toPlaceholder: 'Không thời hạn', helper: 'Để trống ngày kết thúc nếu uỷ quyền không thời hạn.' }),
+    h(R.DateField, { label: 'Hiệu lực lúc', withTime: true, required: true, value: '2026-10-03', time: '18:30', step: 15 })))
+  );
+</script>
+</body>
+</html>

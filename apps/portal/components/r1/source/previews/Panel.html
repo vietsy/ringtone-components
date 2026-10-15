@@ -1,0 +1,19 @@
+<!-- @dsCard group="Page" height=330 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>Panel - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv', style: { background: 'var(--page)' } },
+  h(R.Panel, { title: 'Thiết bị của cơ sở', description: 'Ba thiết bị đã ghép với Then Cửa Coffee & Tea – Pasteur.', actions: [{ label: 'Đăng ký thiết bị', icon: 'plus' }], density: 'portal' },
+    h(R.FactList, { items: [{ label: 'Đang phát', value: 2, kind: 'count' }, { label: 'Mất kết nối', value: 1, kind: 'count' }] })),
+  h(R.Panel, { layout: 'strip' }, h('span', null, 'Danh sách mặc định'), h(R.StatusBadge, { family: 'neutral', label: 'Dùng được', size: 'sm' }), h(R.Link, { href: '#', variant: 'standalone' }, 'Đổi danh sách mặc định')))
+  );
+</script>
+</body>
+</html>

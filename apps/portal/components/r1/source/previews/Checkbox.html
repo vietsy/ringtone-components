@@ -1,0 +1,22 @@
+<!-- @dsCard group="Forms" height=336 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>Checkbox - preview</title>
+<style>.pv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv', style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', alignItems: 'start' } },
+  h(R.Checkbox, { label: 'Gửi báo cáo tuần qua email', helper: 'Mỗi thứ Hai, 08:00 (GMT+7).', checked: true }),
+  h(R.Checkbox, { label: 'Tôi đã đọc hết điều khoản phiên bản 3', required: true, error: 'Cần xác nhận đã đọc điều khoản trước khi gửi.', density: 'portal' }),
+  h(R.Checkbox, { label: 'Tự gia hạn quyền sử dụng', disabled: true, disabledReason: 'Cơ sở đang tạm ngừng nên chưa gia hạn được.' }),
+  h(R.Checkbox, { label: 'Phát cả bảy ngày trong tuần', indeterminate: true, disabled: true, disabledReason: 'Lịch này do chuỗi cơ sở đặt nên chi nhánh không đổi được.' }),
+  h(R.Checkbox, { label: 'Mã số thuế đã được xác minh', helper: 'Theo sổ đăng ký doanh nghiệp.', checked: true, readOnly: true }),
+  h(R.Checkbox, { layout: 'card', density: 'portal', label: 'Tôi chấp nhận điều khoản dịch vụ Player phiên bản 3', helper: 'Có hiệu lực từ ' + R.format.date('2026-10-01') + '.', checked: true }))
+  );
+</script>
+</body>
+</html>

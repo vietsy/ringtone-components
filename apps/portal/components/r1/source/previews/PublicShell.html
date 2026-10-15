@@ -1,0 +1,23 @@
+<!-- @dsCard group="Shells" height=1060 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>PublicShell - preview</title>
+<style>.pv { display: flex; flex-wrap: wrap; gap: var(--space-6); align-items: flex-start; } .pv__phone { width: var(--player-width-phone); max-width: 100%; height: var(--space-96); border: var(--hairline) solid var(--border); overflow: auto; }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv' },
+  h('div', { style: { height: 'var(--space-80)', flex: '1 1 100%' } }, h(R.PublicShell, null, h('h1', { className: 'r1-page-title' }, 'Chính sách đảm bảo thiết bị'), h('p', null, 'Mọi nhà cung cấp đều có thể xin chứng nhận theo cùng một bộ tiêu chí công khai.'))),
+  h('div', { className: 'pv__phone' }, h(R.PublicShell, { variant: 'field', network: 'online', verificationKey: { state: 'valid', until: '2026-10-31' } },
+    h(R.ScanView, { state: 'scanning', recordNoun: 'giấy xác nhận' }))),
+  h('div', { className: 'pv__phone' }, h(R.PublicShell, { variant: 'field', network: 'offline', verificationKey: { state: 'expiring', until: '2026-10-07T18:00:00+07:00' } },
+    h(R.VerificationResult, { result: 'valid', recordNoun: 'giấy xác nhận', recordId: 'R1-CER-2026-T7QM4BWJ', checkedAt: '2026-10-07T10:40:00+07:00', checkedLabel: 'Kiểm tra trên máy lúc' }))),
+  h('div', { className: 'pv__phone' }, h(R.PublicShell, { variant: 'field', network: 'offline', verificationKey: { state: 'missing' } },
+    h(R.ScanView, { state: 'unavailable', recordNoun: 'giấy xác nhận', reason: 'Máy chưa có khoá xác minh nên chưa kiểm tra được mã. Kết nối mạng để tải khoá.' }))))
+  );
+</script>
+</body>
+</html>

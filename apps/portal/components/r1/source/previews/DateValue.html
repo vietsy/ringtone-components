@@ -1,0 +1,16 @@
+<!-- @dsCard group="Values" height=100 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>DateValue - preview</title>
+<style>.pv { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv' }, h(R.DateValue, { value: '2026-09-17' }), h(R.DateValue, { value: '2026-09-17', form: 'legal' }), h(R.DateValue, { value: '2026-09-17T08:15:00+07:00', mode: 'timestamp' }), h(R.DateValue, { value: '2026-09-01', to: '2026-09-30', mode: 'period' }), h(R.DateValue, { value: '2026-09-17T18:30:00+07:00', mode: 'time' }), h(R.DateValue, { value: null }), h(R.DateValue, { value: '2026-09-10T14:00:00+07:00', mode: 'timestamp', locale: 'en' }))
+  );
+</script>
+</body>
+</html>

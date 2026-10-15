@@ -1,0 +1,14 @@
+{
+  "error.title": "This page did not load.",
+  "error.text": "Try again; if it still does not load, give RightOne support the reference below.",
+  "notFound.title": "Page not found",
+  "notFound.text": "There is no page at this address.",
+  "notFound.hint": "Check the link, or go to the home page.",
+  "notFound.home": "Go to the home page",
+  "reserved.empty": "No screens yet",
+  "reserved.text": "This section's screens open once its screen specification is approved.",
+  "artist.title": "Artist portal",
+  "ops.title": "Operations desk",
+  "player.title": "Player",
+  "player.text": "Managing Player devices opens once its screen specification is approved."
+}

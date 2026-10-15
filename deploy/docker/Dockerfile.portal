@@ -1,0 +1,42 @@
+# RightOne portal. Built once per merge by Jenkins (Jenkinsfile.harbor); the same digest runs in
+# every environment.
+#
+#   docker build -f deploy/docker/Dockerfile.portal -t rightone-portal .
+#
+# Base image pinned by digest; the tag at the time the digest was taken: node:22-bookworm-slim.
+FROM node@sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c AS build
+WORKDIR /src
+ENV NEXT_TELEMETRY_DISABLED=1 CI=true
+RUN npm install -g pnpm@10.33.0 >/dev/null
+
+# Manifests first, so a change to source alone does not repeat the install.
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json tsconfig.base.json ./
+COPY packages/formatting/package.json packages/formatting/
+COPY packages/tokens/package.json packages/tokens/
+COPY packages/ui/package.json packages/ui/
+COPY apps/portal/package.json apps/portal/
+# A transfer on the build host sometimes stalls for good (scripts/install has the measurement).
+# Each attempt gets five minutes; what it fetched stays in the store for the next one.
+RUN n=0; until timeout 300 pnpm install --frozen-lockfile; do \
+      n=$((n+1)); if [ "$n" -ge 5 ]; then echo "pnpm install could not finish" >&2; exit 1; fi; \
+    done
+
+COPY packages/ packages/
+COPY apps/portal/ apps/portal/
+# The workspace packages export from dist/, which is not committed: they are built before the
+# portal that imports them.
+RUN pnpm -r --filter "./packages/*" build \
+ && pnpm --filter @rightone/portal build
+
+FROM node@sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c AS runtime
+WORKDIR /app
+ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0
+# The standalone output mirrors the workspace layout: the server is at apps/portal/server.js and
+# expects its static files beside it.
+COPY --from=build /src/apps/portal/.next/standalone ./
+COPY --from=build /src/apps/portal/.next/static ./apps/portal/.next/static
+USER node
+EXPOSE 3000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD ["node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+CMD ["node", "apps/portal/server.js"]

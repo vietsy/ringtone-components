@@ -1,0 +1,25 @@
+<!-- @dsCard group="Forms" height=340 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>Select - preview</title>
+<style>.pv { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  // The four suppliers in the device supplier register, and the premises classes of the tariff.
+  var suppliers = [{ value: 'ha', label: 'Hạt Âm Devices' }, { value: 'sc', label: 'Sóng Chín Audio' }, { value: 'pg', label: 'Phím Gỗ Audio' }, { value: 'hm', label: 'Hạt Mưa Audio' }];
+  var classes = [{ value: 'cafe', label: 'Quán cà phê' }, { value: 'rest', label: 'Nhà hàng' }, { value: 'hotel', label: 'Khách sạn' }, { value: 'shop', label: 'Cửa hàng' }, { value: 'bake', label: 'Tiệm bánh' }, { value: 'tea', label: 'Quán trà' }];
+  var premises = [{ value: 'a', label: 'Then Cửa Coffee & Tea – Pasteur' }, { value: 'b', label: 'Then Cửa Coffee & Tea – Nguyễn Huệ' }, { value: 'c', label: 'Then Cửa Bakery – Hai Bà Trưng' }, { value: 'd', label: 'Then Cửa Coffee & Tea – Lê Thánh Tôn' }, { value: 'e', label: 'Then Cửa Bakery – Đa Kao' }, { value: 'f', label: 'Then Cửa Lounge & Karaoke – Bùi Viện' }];
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv', style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', alignItems: 'start' } },
+  h(R.Select, { label: 'Loại cơ sở', value: 'cafe', options: classes, policy: { name: 'Biểu phí 2027', version: '1', effective: '2027-01-01' }, density: 'console' }),
+  h(R.Select, { label: 'Cơ sở', value: '', placeholder: 'Chọn cơ sở', options: premises, required: true, error: 'Chọn cơ sở mà thiết bị sẽ phát nhạc cho.' }),
+  h(R.Select, { label: 'Nhà cung cấp', value: 'ha', options: suppliers, disabled: true, disabledReason: 'Nhà cung cấp cố định sau khi thiết bị đã ghép.' }),
+  h(R.Select, { label: 'Nhà cung cấp', value: 'ha', options: suppliers, readOnly: true, provenance: 'registry-sourced', provenanceDetail: 'Sổ thiết bị, ' + R.format.date('2026-01-28') }),
+  h(R.Select, { label: 'Danh sách phát', options: [], loading: true }))
+  );
+</script>
+</body>
+</html>

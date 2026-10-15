@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# What CI runs, runnable locally: lint, build, test.
+source "$(dirname "$0")/_lib.sh"
+scripts/lint
+say "build"
+pnpm build
+scripts/test
+say "ci ok"

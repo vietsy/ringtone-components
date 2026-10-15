@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Static checks. Exit non-zero on any finding; CI runs exactly this.
+source "$(dirname "$0")/_lib.sh"
+status=0
+
+# Types of the workspace packages come from dist/, which a clean checkout does not have.
+say "build workspace packages"; pnpm -r --filter "./packages/*" build || status=1
+
+say "generated from the design system"
+pnpm --filter @rightone/tokens generate:check || status=1
+pnpm --filter @rightone/portal generate:r1:check || status=1
+
+# Typed routes: Next generates `Route` into apps/portal/.next/types, which a laptop that has run
+# `next dev` has and a clean checkout does not. Without it `Route` is a plain string and the cast in
+# apps/portal/lib/routes.ts reads as unnecessary to the type-aware lint: green on a laptop, red in CI
+# (measured on 2026-10-14). Generating the types first makes the two the same.
+say "route types"; (cd apps/portal && pnpm exec next typegen >/dev/null) || status=1
+
+say "eslint"; pnpm lint || status=1
+say "tsc"; pnpm typecheck || status=1
+
+# rightone-api ADR-0016: a test binds a criterion by carrying @AC-FR-... in its it/test title.
+say "acceptance criteria are bound by title"
+node scripts/check-ac-titles.mjs || status=1
+
+if command -v gitleaks >/dev/null 2>&1 && [ -d .git ]; then
+  say "gitleaks"; gitleaks git --no-banner --redact . || status=1
+fi
+
+say "readme in every directory"
+missing=$(find . -type d \
+  -not -path './.git*' -not -path '*/node_modules*' -not -path '*/.next*' \
+  -not -path '*/dist' -not -path '*/dist/*' \
+  -not -path './.github/*' -not -name '.github' \
+  | while read -r d; do [ -f "$d/README.md" ] || echo "$d"; done)
+if [ -n "$missing" ]; then echo "directories without README.md:"; echo "$missing"; status=1; fi
+
+[ $status -eq 0 ] && say "lint ok"
+exit $status

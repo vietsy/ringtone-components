@@ -1,0 +1,27 @@
+<!-- @dsCard group="Status" height=240 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>StatusBadge - preview</title>
+<style>.pv { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv' },
+  h(R.StatusBadge, { family: 'positive', label: 'Đang hoạt động' }),
+  h(R.StatusBadge, { family: 'attention', label: 'Tạm giữ' }),
+  h(R.StatusBadge, { family: 'danger', label: 'Đã báo mất' }),
+  h(R.StatusBadge, { family: 'neutral', label: 'Đã ngừng dùng' }),
+  h(R.StatusBadge, { family: 'info', label: 'Mất kết nối, vẫn phát' }),
+  h(R.StatusBadge, { variant: 'seal', label: 'Giấy xác nhận: đã hoàn thành nghĩa vụ', size: 'lg' }),
+  h(R.StatusBadge, { family: 'info', label: 'Quyền sử dụng dịch vụ còn hiệu lực', size: 'sm' }),
+  h('div', { style: { width: 'var(--space-40)' } }, h(R.StatusBadge, { family: 'attention', label: 'Chờ cơ sở bổ sung giấy phép kinh doanh', size: 'sm' })),
+  h(R.StatusBadge, { family: 'danger', label: 'Tạm đình chỉ', icon: 'clock' }),
+  h(R.StatusBadge, { family: 'danger', label: 'Đã thu hồi', icon: 'ban' }),
+  h(R.StatusBadge, { family: 'danger', label: 'Đã thu hồi', icon: 'ban', size: 'sm' }))
+  );
+</script>
+</body>
+</html>

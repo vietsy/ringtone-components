@@ -1,0 +1,16 @@
+<!-- @dsCard group="Values" height=90 -->
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><title>MoneyValue - preview</title>
+<style>.pv { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; padding: var(--space-4); }</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var R = window.R1, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+h('div', { className: 'pv' }, h(R.MoneyValue, { amountMinor: 1250000 }), h(R.MoneyValue, { amountMinor: 1847500000 }), h(R.MoneyValue, { amountMinor: 0 }), h(R.MoneyValue, { amountMinor: -160380 }), h(R.MoneyValue, { amountMinor: null }), h(R.MoneyValue, { amountMinor: null, missing: 'Chưa tính phí' }), h(R.MoneyValue, { amountMinor: 1250000, locale: 'en' }))
+  );
+</script>
+</body>
+</html>
