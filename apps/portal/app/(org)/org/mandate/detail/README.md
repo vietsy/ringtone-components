@@ -1,3 +1,5 @@
+//The working hours are: 4h
+
 # Mandate Detail
 
     [mandateId]/page.tsx   /org/mandate/detail/[mandateId]
