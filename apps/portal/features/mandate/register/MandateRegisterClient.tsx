@@ -12,6 +12,7 @@ import en from "@/messages/screens/mandate-register.en.json";
 import vi from "@/messages/screens/mandate-register.vi.json";
 import { isDateFieldText, isIsoDay, isRegisterSortKey, readRegisterQuery, REGISTER_SORT_OPTIONS, REGISTER_STATUSES, selectRegisterEntries, updateRegisterUrl, type RegisterQueryKey } from "./state";
 import type { MandateRegisterClientProps, MandateRegisterRow } from "./types";
+import styles from "./MandateRegister.module.css";
 
 const STATUS_FAMILY = {
   SUBMITTED: "attention", SUSPENDED: "danger", EFFECTIVE: "positive", EXPIRED: "neutral",
@@ -31,7 +32,7 @@ export function MandateRegisterClient({ outcome, locale, frame }: MandateRegiste
   const snapshot = outcome?.data ?? null;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: phone ? "var(--space-4)" : "var(--space-6)", minWidth: 0 }}>
+    <div className={styles.register} data-frame={frame}>
       <PageHeader
         title={t("register.title")}
         meta={t("register.description")}
@@ -108,13 +109,13 @@ function RegisterBody({ snapshot, locale, frame }: { snapshot: MandateRegisterSn
   }
   const granteeOptions = [...grantees].map(([value, label]) => ({ value, label }));
   const columns: ComponentProps<typeof Table>["columns"] = [
-    { key: "grantee", label: t("register.column.grantee"), kind: "link", sortable: true, minWidth: "var(--space-48)" },
-    { key: "kind", label: t("register.column.kind"), width: "var(--space-20)", minWidth: "var(--space-20)" },
-    { key: "status", label: t("register.column.status"), kind: "status", sortable: true, width: "var(--space-36)", minWidth: "var(--space-36)" },
-    { key: "scopeCount", label: t("register.column.scope"), unit: t("register.column.scopeUnit"), kind: "count", align: "end", width: "var(--space-20)", missing: t("register.scope.notRecorded") },
-    { key: "effectiveFrom", label: t("register.column.from"), kind: "date", sortable: true, width: "var(--space-36)", minWidth: "var(--space-36)" },
-    { key: "effectiveTo", label: t("register.column.to"), width: "var(--space-36)", minWidth: "var(--space-36)" },
-    { key: "authority", label: t("register.column.authority"), width: "var(--space-48)", minWidth: "var(--space-48)" },
+    { key: "grantee", label: t("register.column.grantee"), kind: "link", sortable: true },
+    { key: "kind", label: t("register.column.kind") },
+    { key: "status", label: t("register.column.status"), kind: "status", sortable: true },
+    { key: "scopeCount", label: t("register.column.scope"), unit: t("register.column.scopeUnit"), kind: "count", align: "end", missing: t("register.scope.notRecorded") },
+    { key: "effectiveFrom", label: t("register.column.from"), kind: "date", sortable: true },
+    { key: "effectiveTo", label: t("register.column.to") },
+    { key: "authority", label: t("register.column.authority") },
   ];
   const rows: MandateRegisterRow[] = entries.map((entry) => ({
     _key: entry.id,
@@ -129,19 +130,20 @@ function RegisterBody({ snapshot, locale, frame }: { snapshot: MandateRegisterSn
 
   return (
     <>
-      <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)", minWidth: 0 }}>
-        <div style={{ display: "flex", flexDirection: phone ? "column" : "row", flexWrap: "wrap", alignItems: phone ? "stretch" : "flex-end", gap: "var(--space-3)", minWidth: 0 }}>
-          <Combobox
-            label={t("register.filter.grantee")}
-            options={[{ value: "", label: t("register.filter.allGrantees") }, ...granteeOptions]}
-            value={filters.grantee ?? ""}
-            placeholder={t("register.filter.allGrantees")}
-            noResults={t("register.filter.noOptions")}
-            onChange={(value) => update({ grantee: typeof value === "string" && value !== "" ? value : null })}
-            width={phone ? "100%" : "var(--space-52)"}
-            density={density}
-            locale={locale}
-          />
+      <div className={styles.filters}>
+        <div className={styles.fields}>
+          <div className={styles.granteeField}>
+            <Combobox
+              label={t("register.filter.grantee")}
+              options={[{ value: "", label: t("register.filter.allGrantees") }, ...granteeOptions]}
+              value={filters.grantee ?? ""}
+              placeholder={t("register.filter.allGrantees")}
+              noResults={t("register.filter.noOptions")}
+              onChange={(value) => update({ grantee: typeof value === "string" && value !== "" ? value : null })}
+              density={density}
+              locale={locale}
+            />
+          </div>
           <SegmentedControl
             label={t("register.filter.kind")}
             options={[
@@ -154,51 +156,54 @@ function RegisterBody({ snapshot, locale, frame }: { snapshot: MandateRegisterSn
             density={density}
             locale={locale}
           />
-          <Combobox
-            label={t("register.filter.status")}
-            options={[{ value: "", label: t("register.filter.allStatuses") }, ...REGISTER_STATUSES.map((status) => ({ value: status, label: t(`register.status.${status}`) }))]}
-            value={filters.status ?? ""}
-            placeholder={t("register.filter.allStatuses")}
-            onChange={(value) => update({ status: typeof value === "string" && value !== "" ? value : null })}
-            width={phone ? "100%" : "var(--space-48)"}
-            density={density}
-            locale={locale}
-          />
-          <DateField
-            label={t("register.filter.asOf")}
-            required
-            helper={false}
-            value={filters.asOf}
-            today={snapshot.asOf}
-            onChange={(value) => {
-              const valid = typeof value === "string" && isIsoDay(value);
-              setDateInvalid(!valid);
-              if (valid) update({ asOf: value === snapshot.asOf ? null : value });
-            }}
-            onBlur={(event) => {
-              if (typeof event === "object" && event !== null && "currentTarget" in event && event.currentTarget instanceof HTMLInputElement) {
-                setDateInvalid(!isDateFieldText(event.currentTarget.value));
-              }
-            }}
-            {...(dateInvalid ? { error: t("register.filter.invalidDate") } : {})}
-            width={phone ? "100%" : "var(--space-44)"}
-            density={density}
-            locale={locale}
-          />
-          {phone ? (
+          <div className={styles.statusField}>
             <Combobox
-              label={t("register.sort.label")}
-              options={REGISTER_SORT_OPTIONS.map(({ key, direction }) => ({ value: `${key}:${direction}`, label: t(`register.sort.${key}.${direction}`) }))}
-              value={`${sorting.key}:${sorting.direction}`}
-              onChange={(value) => {
-                const selected = REGISTER_SORT_OPTIONS.find(({ key, direction }) => value === `${key}:${direction}`);
-                if (selected) update({ sort: selected.key, dir: selected.direction });
-              }}
-              wrap
-              width="100%"
-              density="portal"
+              label={t("register.filter.status")}
+              options={[{ value: "", label: t("register.filter.allStatuses") }, ...REGISTER_STATUSES.map((status) => ({ value: status, label: t(`register.status.${status}`) }))]}
+              value={filters.status ?? ""}
+              placeholder={t("register.filter.allStatuses")}
+              onChange={(value) => update({ status: typeof value === "string" && value !== "" ? value : null })}
+              density={density}
               locale={locale}
             />
+          </div>
+          <div className={styles.dateField}>
+            <DateField
+              label={t("register.filter.asOf")}
+              required
+              helper={false}
+              value={filters.asOf}
+              today={snapshot.asOf}
+              onChange={(value) => {
+                const valid = typeof value === "string" && isIsoDay(value);
+                setDateInvalid(!valid);
+                if (valid) update({ asOf: value === snapshot.asOf ? null : value });
+              }}
+              onBlur={(event) => {
+                if (typeof event === "object" && event !== null && "currentTarget" in event && event.currentTarget instanceof HTMLInputElement) {
+                  setDateInvalid(!isDateFieldText(event.currentTarget.value));
+                }
+              }}
+              {...(dateInvalid ? { error: t("register.filter.invalidDate") } : {})}
+              density={density}
+              locale={locale}
+            />
+          </div>
+          {phone ? (
+            <div className={styles.sortField}>
+              <Combobox
+                label={t("register.sort.label")}
+                options={REGISTER_SORT_OPTIONS.map(({ key, direction }) => ({ value: `${key}:${direction}`, label: t(`register.sort.${key}.${direction}`) }))}
+                value={`${sorting.key}:${sorting.direction}`}
+                onChange={(value) => {
+                  const selected = REGISTER_SORT_OPTIONS.find(({ key, direction }) => value === `${key}:${direction}`);
+                  if (selected) update({ sort: selected.key, dir: selected.direction });
+                }}
+                wrap
+                density="portal"
+                locale={locale}
+              />
+            </div>
           ) : null}
           {hasFilters ? <Button variant="quiet" size={phone ? "md" : "sm"} onClick={clearFilters} locale={locale}>{t("register.filter.clear")}</Button> : null}
         </div>
@@ -229,18 +234,20 @@ function RegisterBody({ snapshot, locale, frame }: { snapshot: MandateRegisterSn
           locale={locale}
         />
       ) : (
-        <Table
-          columns={columns}
-          rows={rows}
-          layout={phone ? "cards" : "table"}
-          caption={t("register.table.caption")}
-          density={density}
-          sort={{ key: sorting.key, dir: sorting.direction }}
-          onSort={changeSort}
-          sortNote={t(`register.sort.${sorting.key}.${sorting.direction}`)}
-          rowHeaders
-          locale={locale}
-        />
+        <div className={styles.table}>
+          <Table
+            columns={columns}
+            rows={rows}
+            layout={phone ? "cards" : "table"}
+            caption={t("register.table.caption")}
+            density={density}
+            sort={{ key: sorting.key, dir: sorting.direction }}
+            onSort={changeSort}
+            sortNote={t(`register.sort.${sorting.key}.${sorting.direction}`)}
+            rowHeaders
+            locale={locale}
+          />
+        </div>
       )}
 
       {snapshotAvailable && rows.length > 0 ? (

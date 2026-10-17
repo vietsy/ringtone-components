@@ -3,8 +3,10 @@
 Figma file `m5jgAuVYNjDLvzBIrz6n1L`, content node `140:461`.
 
 `MandateRegisterPage.tsx` is the server entry: it requires the CMO session, reads locale and frame,
-loads the API seam and supplies the existing organisation shell. `MandateRegisterClient.tsx` composes
+loads the API seam. `MandateRegisterClient.tsx` composes
 R1 controls and the table; `state.ts` normalises queries and selects the displayed rows.
+`MandateRegister.module.css` lives beside these components and owns their token-based layout,
+filter control limits and table column sizes through scoped classes, without inline styles.
 
 Data comes only through `lib/api/mandate-register.ts`; messages come from the `mandate-register`
 catalogue pair. The loader exposes sample records only with `RIGHTONE_DATA=mock`. Connecting a real
@@ -48,7 +50,6 @@ browser checks for both locales, sorting and filtering by keyboard, date validat
 invalid review queries, phone widths 320/390 and tablet width 768. Phone has no page-level horizontal
 overflow; the tablet table scrolls inside its named, keyboard-focusable region.
 
-The existing `test/design-system-use.test.ts` has a Windows path-separator false positive for the
-unchanged `components/Text.tsx` and `components/ThemeSurface.tsx`. This is reported separately from
-the register checks. Browser keyboard/semantic checks and token tests do not constitute a full
+The design-system checks allow this feature's CSS Module and its two consumers while continuing
+to check token usage. Browser keyboard/semantic checks and token tests do not constitute a full
 WCAG audit; no axe suite is configured in the repository yet.

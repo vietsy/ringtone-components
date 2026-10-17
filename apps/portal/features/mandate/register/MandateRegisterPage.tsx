@@ -10,6 +10,7 @@ import { getLocale } from "@/lib/i18n/locale";
 import { reviewView } from "@/lib/view/demo-view";
 import { getFrame } from "@/lib/view/frame";
 import { MandateRegisterClient } from "./MandateRegisterClient";
+import styles from "./MandateRegister.module.css";
 import type { MandateRegisterPageProps } from "./types";
 
 export async function MandateRegisterPage({
@@ -29,19 +30,7 @@ export async function MandateRegisterPage({
   ]);
 
   return (
-    <div
-      style={{
-        minWidth: 0,
-        maxWidth:
-          frame === "phone"
-            ? "var(--container-sm)"
-            : frame === "tablet"
-              ? "var(--container-3xl)"
-              : "100%",
-        alignSelf: "center",
-        padding: "24px",
-      }}
-    >
+    <div className={styles.page} data-frame={frame}>
       <Suspense
         fallback={
           <ViewState
