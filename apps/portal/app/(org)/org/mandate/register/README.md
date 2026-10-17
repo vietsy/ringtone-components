@@ -1,3 +1,5 @@
+//The working hours are: 5h
+
 # Mandate Register
 
     page.tsx   /org/mandate/register
