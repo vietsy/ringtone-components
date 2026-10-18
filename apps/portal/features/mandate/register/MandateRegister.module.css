@@ -1,0 +1,105 @@
+.page {
+  min-width: 0;
+  max-width: 100%;
+  align-self: center;
+  padding: var(--space-6);
+}
+
+.page[data-frame="phone"] {
+  max-width: var(--container-sm);
+}
+
+.page[data-frame="tablet"] {
+  max-width: var(--container-3xl);
+}
+
+.register {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.register[data-frame="phone"] {
+  gap: var(--space-4);
+}
+
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.fields {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.granteeField {
+  --mandate-register-field-width: var(--space-52);
+}
+
+.statusField {
+  --mandate-register-field-width: var(--space-48);
+}
+
+.dateField {
+  --mandate-register-field-width: var(--space-44);
+}
+
+.sortField {
+  --mandate-register-field-width: 100%;
+}
+
+.granteeField,
+.statusField,
+.dateField,
+.sortField,
+.table {
+  min-width: 0;
+}
+
+.granteeField > :global(.r1-field) > :global(.r1-field__control),
+.statusField > :global(.r1-field) > :global(.r1-field__control),
+.dateField > :global(.r1-field) > :global(.r1-field__control),
+.sortField > :global(.r1-field) > :global(.r1-field__control) {
+  max-width: var(--mandate-register-field-width);
+}
+
+.register[data-frame="phone"] .fields {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.register[data-frame="phone"] .fields > div {
+  --mandate-register-field-width: 100%;
+}
+
+/* Match the register's seven columns for headers and body cells, including row headers. */
+.table :global(.r1-table) > :is(thead, tbody) > tr > :nth-child(1) {
+  min-width: var(--space-48);
+}
+
+.table :global(.r1-table) > :is(thead, tbody) > tr > :nth-child(2) {
+  width: var(--space-20);
+  min-width: var(--space-20);
+}
+
+.table :global(.r1-table) > :is(thead, tbody) > tr > :is(:nth-child(3), :nth-child(5), :nth-child(6)) {
+  width: var(--space-36);
+  min-width: var(--space-36);
+}
+
+.table :global(.r1-table) > :is(thead, tbody) > tr > :nth-child(4) {
+  width: var(--space-20);
+}
+
+.table :global(.r1-table) > :is(thead, tbody) > tr > :nth-child(7) {
+  width: var(--space-48);
+  min-width: var(--space-48);
+}
