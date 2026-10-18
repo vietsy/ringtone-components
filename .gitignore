@@ -6,7 +6,8 @@ out/
 coverage/
 *.tsbuildinfo
 next-env.d.ts
-
+!apps/portal/features/coverage/
+!apps/portal/app/(org)/org/coverage/
 .env
 .env.*
 !.env.example
