@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { loadCoverage } from "@/lib/api/coverage";
 import { usesMockData } from "@/lib/api/source";
+import { requireCmo } from "@/lib/api/session";
 import { getLocale } from "@/lib/i18n/locale";
 import { reviewView } from "@/lib/view/demo-view";
 import { getFrame } from "@/lib/view/frame";
@@ -14,6 +15,7 @@ export async function CoveragePage({
   searchParams: Promise<CoverageSearchParams>;
 }) {
   if (!usesMockData()) notFound();
+  const reader = await requireCmo();
   const params = await searchParams;
   const view = reviewView(params, COVERAGE_VIEWS);
   const [locale, frame, outcome] = await Promise.all([
@@ -26,6 +28,7 @@ export async function CoveragePage({
   return (
     <CoveragePageClient
       key={`${locale}:${search}`}
+      account={reader.account}
       locale={locale}
       frame={frame}
       view={view}

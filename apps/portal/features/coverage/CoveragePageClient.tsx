@@ -44,6 +44,7 @@ import type {
 import styles from "./CoveragePageClient.module.css";
 
 interface CoveragePageClientProps {
+  account: string;
   locale: Locale;
   frame: Frame;
   view: CoverageView | null;
@@ -59,6 +60,7 @@ const EMPTY_QUERY: CoverageQuery = {
 };
 
 export function CoveragePageClient({
+  account,
   locale,
   frame,
   view,
@@ -152,6 +154,7 @@ export function CoveragePageClient({
 
   return (
     <ConsoleShell
+      account={account}
       locale={locale}
       area={t("coverage.crumb.governance")}
       rail={[
