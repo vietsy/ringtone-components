@@ -1,0 +1,88 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  box-sizing: border-box;
+  min-width: 0;
+  padding: var(--space-6);
+}
+
+.root[data-frame="phone"] {
+  max-width: var(--container-sm);
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+.root[data-frame="tablet"] {
+  max-width: var(--container-3xl);
+}
+
+.formContent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-8);
+}
+
+.form :global(.r1-panel__title) {
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+}
+
+.fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+  align-self: stretch;
+}
+
+.field {
+  flex: 1 1 var(--space-48);
+  min-width: 0;
+}
+
+.field[data-field="rightType"] {
+  flex: 0 1 var(--container-2xs);
+}
+
+.root[data-frame="tablet"] .fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--container-2xs)), 1fr));
+}
+
+.root[data-frame="phone"] .field {
+  flex-basis: 100%;
+}
+
+.root[data-frame="phone"] .formContent {
+  align-items: stretch;
+}
+
+.result {
+  min-width: 0;
+  border-radius: var(--radius-xl);
+}
+
+.result:empty {
+  display: none;
+}
+
+.result:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus);
+  outline-offset: var(--space-1);
+}
+
+.outcome {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.code {
+  color: var(--on-surface-secondary);
+}
+
+.facts :global(.r1-facts) dt {
+  flex-basis: calc(var(--space-48) - var(--hairline) * 2);
+}
