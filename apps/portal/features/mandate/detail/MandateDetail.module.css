@@ -1,0 +1,89 @@
+.page {
+  min-width: 0;
+  max-width: 100%;
+  align-self: center;
+  padding: var(--space-6);
+}
+
+.page[data-frame="phone"] {
+  max-width: var(--container-sm);
+}
+
+.page[data-frame="tablet"] {
+  max-width: var(--container-3xl);
+}
+
+.detail {
+  --mandate-detail-gap: var(--space-6);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--mandate-detail-gap);
+  min-width: 0;
+}
+
+.detail[data-frame="phone"] {
+  --mandate-detail-gap: var(--space-4);
+}
+
+.columns {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--mandate-detail-gap);
+  min-width: 0;
+}
+
+.mainColumn,
+.sideColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mandate-detail-gap);
+  flex: 1 1 var(--container-md);
+  min-width: 0;
+}
+
+.sideColumn {
+  max-width: var(--container-md);
+}
+
+.detail:not([data-frame="desktop"]) .mainColumn,
+.detail:not([data-frame="desktop"]) .sideColumn {
+  flex-basis: 100%;
+}
+
+.detail:not([data-frame="desktop"]) .sideColumn {
+  max-width: 100%;
+}
+
+.scopeTable {
+  min-width: 0;
+}
+
+.scopeTable :global(.r1-table) th:nth-child(2) {
+  width: var(--space-28);
+}
+
+.scopeTable :global(.r1-table) th:nth-child(3) {
+  width: var(--space-44);
+}
+
+.evidenceFiles {
+  --text-base: var(--text-sm);
+}
+
+.coverageAction {
+  align-self: flex-start;
+  max-width: 100%;
+}
+
+.approvalActions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.detail[data-frame="phone"] .approvalActions {
+  align-items: stretch;
+}
