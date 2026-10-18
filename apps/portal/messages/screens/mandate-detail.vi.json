@@ -1,5 +1,8 @@
 {
   "detail.header.governance": "Quản trị",
+  "detail.nav.mandates": "Uỷ quyền",
+  "detail.nav.coverage": "Tra phạm vi",
+  "detail.nav.rules": "Quy tắc",
   "detail.header.register": "Sổ uỷ quyền",
   "detail.header.title": "Uỷ quyền của {organisation}",
   "detail.header.fallbackTitle": "Chi tiết uỷ quyền",

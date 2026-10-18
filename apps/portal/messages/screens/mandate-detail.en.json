@@ -1,5 +1,8 @@
 {
   "detail.header.governance": "Governance",
+  "detail.nav.mandates": "Mandates",
+  "detail.nav.coverage": "Coverage lookup",
+  "detail.nav.rules": "Rules",
   "detail.header.register": "Mandate register",
   "detail.header.title": "{organisation} mandate",
   "detail.header.fallbackTitle": "Mandate details",

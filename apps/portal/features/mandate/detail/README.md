@@ -1,10 +1,12 @@
 # Mandate Detail
 
 - `MandateDetailPage.tsx`: server entry; session, route/query, locale/frame, API read, missing-record
-  handling and organisation shell. The existing session gate stays in place; reviewer permissions are
+  handling and the signed-in account passed to the client. The existing session gate stays in place; reviewer permissions are
   deferred. Even the loading review validates the requested record before showing a specimen.
 - `MandateDetailClient.tsx`: all detail UI in one component as requested: scope, timeline, evidence,
-  period and approval. It composes R1 components, including copy, provenance, file metadata and dates.
+  period and approval. It owns the shared `ConsoleShell`, its three rail entries and client-side click
+  handlers, with the existing VI/EN locale switch. It composes R1 components, including copy, provenance,
+  file metadata and dates. The coverage and rules rail handlers remain placeholders pending their actions.
 - `types.ts`: the framework and client prop contracts. Data contracts stay in `lib/api/mandate-detail`.
 - `MandateDetail.module.css`: local classes for page layout, frame variants, table column widths and
   evidence typography. Page and Client contain no inline styles; all design lengths use R1 tokens.

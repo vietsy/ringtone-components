@@ -16,6 +16,7 @@ import {
   type Family,
 } from "@/components/r1";
 import { Text } from "@/components/Text";
+import { ConsoleShell } from "@/components/shells/ConsoleShell";
 import type { MandateState } from "@/lib/api/governance";
 import { translator } from "@/lib/i18n/translate";
 import en from "@/messages/screens/mandate-detail.en.json";
@@ -38,6 +39,7 @@ const ERROR_MESSAGES: Readonly<Record<string, string>> = {
 };
 
 export function MandateDetailClient({
+  account,
   outcome,
   loading,
   selfHref,
@@ -113,7 +115,7 @@ export function MandateDetailClient({
       },
     })) ?? [];
 
-  return (
+  const content = (
     <div className={styles.detail} data-frame={frame}>
       <PageHeader
         title={
@@ -363,5 +365,23 @@ export function MandateDetailClient({
         </div>
       )}
     </div>
+  );
+
+  return (
+    <ConsoleShell
+      fill
+      locale={locale}
+      area={t("detail.header.governance")}
+      account={account}
+      rail={[
+        { label: t("detail.nav.mandates"), icon: "key", href: "/authorities", current: true },
+        { label: t("detail.nav.coverage"), icon: "search", onClick: () => {} },
+        { label: t("detail.nav.rules"), icon: "scale", onClick: () => {} },
+      ]}
+    >
+      <div className={styles.page} data-frame={frame}>
+        {content}
+      </div>
+    </ConsoleShell>
   );
 }

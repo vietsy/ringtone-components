@@ -11,6 +11,7 @@ export interface MandateDetailPageProps {
 }
 
 export interface MandateDetailClientProps {
+  account: string;
   outcome: LoadOutcome<MandateDetailRecord>;
   loading: boolean;
   selfHref: string;

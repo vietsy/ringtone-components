@@ -10,7 +10,6 @@ import { reviewView } from "@/lib/view/demo-view";
 import { getFrame } from "@/lib/view/frame";
 import { MandateDetailClient } from "./MandateDetailClient";
 import type { MandateDetailPageProps } from "./types";
-import styles from "./MandateDetail.module.css";
 
 export async function MandateDetailPage({
   params,
@@ -37,14 +36,13 @@ export async function MandateDetailPage({
   const selfHref = `/org/mandate/detail/${encodeURIComponent(mandateId)}${search.size ? `?${search.toString()}` : ""}`;
 
   return (
-    <div className={styles.page} data-frame={frame}>
-      <MandateDetailClient
-        outcome={outcome}
-        loading={view === "loading"}
-        selfHref={selfHref}
-        locale={locale}
-        frame={frame}
-      />
-    </div>
+    <MandateDetailClient
+      account={reader.account}
+      outcome={outcome}
+      loading={view === "loading"}
+      selfHref={selfHref}
+      locale={locale}
+      frame={frame}
+    />
   );
 }
