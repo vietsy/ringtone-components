@@ -1,6 +1,9 @@
 {
   "register.crumb.governance": "Governance",
   "register.crumb.authority": "Authority",
+  "register.nav.mandates": "Mandates",
+  "register.nav.coverage": "Coverage lookup",
+  "register.nav.rules": "Rules",
   "register.title": "Mandate register",
   "register.description": "Mandates of the portal and each participating organisation.",
   "register.action.coverage": "Check coverage",

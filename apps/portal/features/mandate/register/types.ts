@@ -4,13 +4,16 @@ import type { Locale } from "@/lib/i18n/translate";
 import type { Frame } from "@/lib/view/frame";
 import type { StatusValue } from "@/components/r1";
 
-export type RegisterSearchParams = Readonly<Record<string, string | string[] | undefined>>;
+export type RegisterSearchParams = Readonly<
+  Record<string, string | string[] | undefined>
+>;
 
 export interface MandateRegisterPageProps {
   searchParams: Promise<RegisterSearchParams>;
 }
 
 export interface MandateRegisterClientProps {
+  account: string;
   outcome: LoadOutcome<MandateRegisterSnapshot> | null;
   locale: Locale;
   frame: Frame;

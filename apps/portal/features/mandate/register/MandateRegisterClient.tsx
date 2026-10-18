@@ -4,6 +4,7 @@ import { useState, type ComponentProps } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { R1_FORMAT } from "@rightone/formatting";
 import { Banner, Button, Combobox, DateField, PageHeader, Pagination, SegmentedControl, Table, ViewState } from "@/components/r1";
+import { ConsoleShell } from "@/components/shells/ConsoleShell";
 import { Text } from "@/components/Text";
 import type { MandateRegisterSnapshot, MandateRegisterSort, MandateRegisterStatus } from "@/lib/api/mandate-register";
 import { translator, type Locale } from "@/lib/i18n/translate";
@@ -24,7 +25,7 @@ const ERROR_MESSAGES: Readonly<Record<string, string>> = {
   SERVICE_NOT_CONFIGURED: "register.error.SERVICE_NOT_CONFIGURED",
 };
 
-export function MandateRegisterClient({ outcome, locale, frame }: MandateRegisterClientProps) {
+export function MandateRegisterClient({ account, outcome, locale, frame }: MandateRegisterClientProps) {
   const t = translator({ vi, en }, locale);
   const router = useRouter();
   const phone = frame === "phone";
@@ -32,41 +33,55 @@ export function MandateRegisterClient({ outcome, locale, frame }: MandateRegiste
   const snapshot = outcome?.data ?? null;
 
   return (
-    <div className={styles.register} data-frame={frame}>
-      <PageHeader
-        title={t("register.title")}
-        meta={t("register.description")}
-        crumbs={[{ label: t("register.crumb.governance") }, { label: t("register.crumb.authority") }]}
-        locale={locale}
-      >
-        <Button href="#" variant="secondary" size={phone ? "md" : "sm"} fullWidth={phone} locale={locale}>
-          {t("register.action.coverage")}
-        </Button>
-        <Button href="#" variant="primary" size={phone ? "md" : "sm"} fullWidth={phone} locale={locale}>
-          {t("register.action.record")}
-        </Button>
-      </PageHeader>
+    <ConsoleShell
+      fill
+      locale={locale}
+      area={t("register.crumb.governance")}
+      account={account}
+      rail={[
+        { label: t("register.nav.mandates"), icon: "key", href: "/authorities", current: true },
+        { label: t("register.nav.coverage"), icon: "search", onClick: () => {} },
+        { label: t("register.nav.rules"), icon: "scale", onClick: () => {} },
+      ]}
+    >
+      <div className={styles.page} data-frame={frame}>
+        <div className={styles.register} data-frame={frame}>
+          <PageHeader
+            title={t("register.title")}
+            meta={t("register.description")}
+            crumbs={[{ label: t("register.crumb.governance") }, { label: t("register.crumb.authority") }]}
+            locale={locale}
+          >
+            <Button href="#" variant="secondary" size={phone ? "md" : "sm"} fullWidth={phone} locale={locale}>
+              {t("register.action.coverage")}
+            </Button>
+            <Button href="#" variant="primary" size={phone ? "md" : "sm"} fullWidth={phone} locale={locale}>
+              {t("register.action.record")}
+            </Button>
+          </PageHeader>
 
-      {outcome === null ? (
-        <div role="status" aria-label={t("register.loading")} aria-busy="true">
-          <ViewState view="loading" skeleton="table" columns={7} rows={5} density="console" locale={locale} />
+          {outcome === null ? (
+            <div role="status" aria-label={t("register.loading")} aria-busy="true">
+              <ViewState view="loading" skeleton="table" columns={7} rows={5} density="console" locale={locale} />
+            </div>
+          ) : failure !== null || snapshot === null ? (
+            <ViewState
+              view="error"
+              errorTitle={t("register.error.title")}
+              errorText={t(ERROR_MESSAGES[failure?.code ?? ""] ?? "register.error.UNKNOWN")}
+              retryable={failure?.retryable ?? true}
+              {...(failure?.traceId ? { traceId: failure.traceId } : {})}
+              onRetry={() => router.refresh()}
+              level={2}
+              density="console"
+              locale={locale}
+            />
+          ) : (
+            <RegisterBody key={locale} snapshot={snapshot} locale={locale} frame={frame} />
+          )}
         </div>
-      ) : failure !== null || snapshot === null ? (
-        <ViewState
-          view="error"
-          errorTitle={t("register.error.title")}
-          errorText={t(ERROR_MESSAGES[failure?.code ?? ""] ?? "register.error.UNKNOWN")}
-          retryable={failure?.retryable ?? true}
-          {...(failure?.traceId ? { traceId: failure.traceId } : {})}
-          onRetry={() => router.refresh()}
-          level={2}
-          density="console"
-          locale={locale}
-        />
-      ) : (
-        <RegisterBody key={locale} snapshot={snapshot} locale={locale} frame={frame} />
-      )}
-    </div>
+      </div>
+    </ConsoleShell>
   );
 }
 

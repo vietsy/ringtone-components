@@ -10,7 +10,6 @@ import { getLocale } from "@/lib/i18n/locale";
 import { reviewView } from "@/lib/view/demo-view";
 import { getFrame } from "@/lib/view/frame";
 import { MandateRegisterClient } from "./MandateRegisterClient";
-import styles from "./MandateRegister.module.css";
 import type { MandateRegisterPageProps } from "./types";
 
 export async function MandateRegisterPage({
@@ -30,25 +29,24 @@ export async function MandateRegisterPage({
   ]);
 
   return (
-    <div className={styles.page} data-frame={frame}>
-      <Suspense
-        fallback={
-          <ViewState
-            view="loading"
-            skeleton="table"
-            columns={7}
-            rows={5}
-            density="console"
-            locale={locale}
-          />
-        }
-      >
-        <MandateRegisterClient
-          outcome={outcome}
+    <Suspense
+      fallback={
+        <ViewState
+          view="loading"
+          skeleton="table"
+          columns={7}
+          rows={5}
+          density="console"
           locale={locale}
-          frame={frame}
         />
-      </Suspense>
-    </div>
+      }
+    >
+      <MandateRegisterClient
+        account={reader.account}
+        outcome={outcome}
+        locale={locale}
+        frame={frame}
+      />
+    </Suspense>
   );
 }

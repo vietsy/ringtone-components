@@ -3,7 +3,8 @@
 Figma file `m5jgAuVYNjDLvzBIrz6n1L`, content node `140:461`.
 
 `MandateRegisterPage.tsx` is the server entry: it requires the CMO session, reads locale and frame,
-loads the API seam. `MandateRegisterClient.tsx` composes
+loads the API seam and passes the signed-in account to `MandateRegisterClient.tsx`. The client owns
+the shared `ConsoleShell`, its rail click handlers and the existing cookie-based language switch, and composes
 R1 controls and the table; `state.ts` normalises queries and selects the displayed rows.
 `MandateRegister.module.css` lives beside these components and owns their token-based layout,
 filter control limits and table column sizes through scoped classes, without inline styles.

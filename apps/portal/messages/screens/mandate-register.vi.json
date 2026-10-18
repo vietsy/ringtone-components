@@ -1,6 +1,9 @@
 {
   "register.crumb.governance": "Quản trị",
   "register.crumb.authority": "Thẩm quyền",
+  "register.nav.mandates": "Uỷ quyền",
+  "register.nav.coverage": "Tra phạm vi",
+  "register.nav.rules": "Quy tắc",
   "register.title": "Sổ uỷ quyền",
   "register.description": "Uỷ quyền của cổng và của từng tổ chức tham gia.",
   "register.action.coverage": "Tra phạm vi bao phủ",
