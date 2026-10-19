@@ -15,15 +15,22 @@ import { describe, expect, it } from "vitest";
 const portal = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 /** Where a visual property may be written: the two components that own them. */
-const VISUAL_OWNERS = new Set(["components/Text.tsx", "components/ThemeSurface.tsx"]);
+const VISUAL_OWNERS = new Set([
+  "components/Text.tsx",
+  "components/ThemeSurface.tsx",
+]);
 
 const LOCAL_CSS_USERS = new Set([
+  "features/role-assignments/RoleAssignmentsPageClient.tsx",
+  "features/role-assignments/RoleAssignmentsFilters.tsx",
   "features/coverage/CoveragePageClient.tsx",
   "features/mandate/detail/MandateDetailClient.tsx",
   "features/mandate/register/MandateRegisterPage.tsx",
   "features/mandate/register/MandateRegisterClient.tsx",
 ]);
 const LOCAL_CSS_MODULES = new Set([
+  "features/role-assignments/RoleAssignmentsPageClient.module.css",
+  "features/role-assignments/RoleAssignmentsFilters.module.css",
   "features/coverage/CoveragePageClient.module.css",
   "features/mandate/register/MandateRegister.module.css",
   "features/mandate/detail/MandateDetail.module.css",
@@ -46,17 +53,23 @@ const VISUAL_KEY =
 function sources(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
     const path = join(dir, name);
-    if (statSync(path).isDirectory()) return path.includes(join("components", "r1")) ? [] : sources(path);
+    if (statSync(path).isDirectory())
+      return path.includes(join("components", "r1")) ? [] : sources(path);
     return /\.(tsx|ts|css)$/.test(name) ? [path] : [];
   });
 }
 
-const files = ["app", "features", "components"].flatMap((dir) => sources(join(portal, dir)));
-const read = (path: string) => readFileSync(path, "utf8").replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, "");
+const files = ["app", "features", "components"].flatMap((dir) =>
+  sources(join(portal, dir)),
+);
+const read = (path: string) =>
+  readFileSync(path, "utf8").replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, "");
 const name = (path: string) => relative(portal, path).replaceAll("\\", "/");
 
 function findings(test: (text: string, file: string) => string[]): string[] {
-  return files.flatMap((path) => test(read(path), name(path)).map((hit) => `${name(path)}: ${hit}`));
+  return files.flatMap((path) =>
+    test(read(path), name(path)).map((hit) => `${name(path)}: ${hit}`),
+  );
 }
 
 describe("every screen is built from the design system", () => {
@@ -64,7 +77,13 @@ describe("every screen is built from the design system", () => {
     const hits = findings((text, file) =>
       file.endsWith(".tsx") && !DOCUMENT.has(file)
         ? [...text.matchAll(RAW_ELEMENT)]
-            .filter((m) => !(m[1] === "input" && text.slice(m.index, m.index + 40).includes('type="hidden"')))
+            .filter(
+              (m) =>
+                !(
+                  m[1] === "input" &&
+                  text.slice(m.index, m.index + 40).includes('type="hidden"')
+                ),
+            )
             .map((m) => `<${m[1] ?? ""}>`)
         : [],
     );
@@ -73,26 +92,65 @@ describe("every screen is built from the design system", () => {
 
   it("writes no visual property outside the components that own them", () => {
     const hits = findings((text, file) =>
-      VISUAL_OWNERS.has(file) || !/\.tsx?$/.test(file) ? [] : [...text.matchAll(VISUAL_KEY)].map((m) => m[1] ?? ""),
+      VISUAL_OWNERS.has(file) || !/\.tsx?$/.test(file)
+        ? []
+        : [...text.matchAll(VISUAL_KEY)].map((m) => m[1] ?? ""),
     );
     expect(hits).toEqual([]);
   });
 
   it("uses class names only in visual owners and the register CSS Module consumers", () => {
     const hits = findings((text, file) =>
-      file.endsWith(".tsx") && !VISUAL_OWNERS.has(file) && !LOCAL_CSS_USERS.has(file) ? [...text.matchAll(/className=/g)].map(() => "className") : [],
+      file.endsWith(".tsx") &&
+      !VISUAL_OWNERS.has(file) &&
+      !LOCAL_CSS_USERS.has(file)
+        ? [...text.matchAll(/className=/g)].map(() => "className")
+        : [],
     );
     expect(hits).toEqual([]);
   });
 
   it("writes no length, colour or stylesheet of its own: every value is a token", () => {
     const hits = findings((text, file) => {
-      if (file.endsWith(".css") && !LOCAL_CSS_MODULES.has(file)) return ["a stylesheet outside the design system"];
+      if (file.endsWith(".css") && !LOCAL_CSS_MODULES.has(file))
+        return ["a stylesheet outside the design system"];
       return [
-        ...[...text.matchAll(/["'`(\s:]-?\d*\.?\d+(px|rem|em)\b/g)].map((m) => m[0].trim()),
+        ...[...text.matchAll(/["'`(\s:]-?\d*\.?\d+(px|rem|em)\b/g)].map((m) =>
+          m[0].trim(),
+        ),
         ...[...text.matchAll(/#[0-9a-fA-F]{3,8}\b/g)].map((m) => m[0]),
-        ...[...text.matchAll(/\b(margin|padding|gap|width|height|top|left|right|bottom|inset)\w*\s*:\s*[1-9]\d*\b(?![\d.%])/g)].map((m) => m[0]),
+        ...[
+          ...text.matchAll(
+            /\b(margin|padding|gap|width|height|top|left|right|bottom|inset)\w*\s*:\s*[1-9]\d*\b(?![\d.%])/g,
+          ),
+        ].map((m) => m[0]),
       ];
+    });
+    expect(hits).toEqual([]);
+  });
+
+  it("keeps role assignments styles in adjacent token-based CSS Modules", () => {
+    const hits = findings((text, file) => {
+      if (!file.startsWith("features/role-assignments/") || !file.endsWith(".tsx")) return [];
+      const issues = [
+        ...text.matchAll(/\bstyle\s*=|\bdangerouslySetInnerHTML\s*=/g),
+      ].map(() => "inline style or HTML");
+      for (const match of text.matchAll(
+        /import\s+styles\s+from\s+["'](\.\/[^"']+\.module\.css)["']/g,
+      )) {
+        const path = match[1];
+        if (
+          path !== undefined &&
+          !files.includes(resolve(portal, dirname(file), path))
+        )
+          issues.push("missing adjacent CSS Module");
+      }
+      if (
+        /className=/.test(text) &&
+        !/import\s+styles\s+from\s+["']\.\/[^"']+\.module\.css["']/.test(text)
+      )
+        issues.push("className without an adjacent CSS Module");
+      return issues;
     });
     expect(hits).toEqual([]);
   });
