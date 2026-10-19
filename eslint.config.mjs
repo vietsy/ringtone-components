@@ -8,9 +8,6 @@ export default tseslint.config(
       "**/dist/**",
       "**/.next/**",
       "**/*.d.ts",
-      // Generated from the design system R1 and its copy; a finding there is fixed in the design system.
-      "apps/portal/components/r1/source/**",
-      "apps/portal/components/r1/generated/**",
     ],
   },
   js.configs.recommended,

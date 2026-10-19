@@ -13,7 +13,12 @@ ID's sign-in (`/id/sign-in`, account `ngocdiep.au@kiemtra.example`).
 Flow (field): home `field/` -> scan and verify `field/scan/` -> the answer `field/answers/[answer]/` -> start
 `field/inspections/new/` -> in progress `field/inspections/[inspection]/` -> conclude
 `.../[inspection]/conclude/` -> the record `field/records/[record]/`. Console: lists `inspection/lists/` ->
-one supply `inspection/lists/[list]/`. A person moves only through the screens' own controls.
+one supply `inspection/lists/[list]/`; the authority's inspections and records `inspection/records/` -> a
+correction `inspection/records/[record]/correct/`. A person moves only through the screens' own controls.
+
+The inspector acts under appointments the operations console records and decides (SCR-VER-09 to 12): a suspended
+appointment refuses the acts made under it (APPOINTMENT_SUSPENDED) in the field client and on the console until an
+approver reinstates it, and an ended one leaves the inspector's open inspections to the authority to close.
 
 Every page reads through `lib/api/inspection.ts`. With `RIGHTONE_DATA=mock` a page reads the signed-in
 session's own state from the mock backend (`lib/mock/backend/inspection.ts`): every act is a server action in

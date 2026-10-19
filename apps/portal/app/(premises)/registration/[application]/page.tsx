@@ -2,6 +2,7 @@ import {
   Banner,
   Button,
   ButtonRow,
+  Columns,
   Disclosure,
   FactList,
   ItemList,
@@ -121,30 +122,21 @@ function withAttempt(record: ApplicationRecord, attempt: StatusAttempt): Applica
   };
 }
 
-/** The two columns of the page: the application's facts beside the panels, one column at 768 px and below. */
-function Columns({ frame, side, children }: { frame: Frame; side: ReactNode; children: ReactNode }) {
-  const narrow = frame !== "desktop";
-  const gap = frame === "phone" ? "var(--space-4)" : "var(--space-6)";
+/** The two columns of the page: the application's facts beside the panels; folded, the facts come first. */
+function PageColumns({ frame, side, children }: { frame: Frame; side: ReactNode; children: ReactNode }) {
+  const gap = frame === "phone" ? 4 : 6;
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: narrow ? "minmax(0, 1fr)" : "minmax(0, 1fr) var(--container-sm)",
-        gridTemplateAreas: narrow ? "'side' 'main'" : "'main side'",
-        gap,
-        alignItems: "start",
-      }}
-    >
-      <div style={{ gridArea: "side", minWidth: 0 }}>{side}</div>
-      <div style={{ gridArea: "main", display: "flex", flexDirection: "column", gap, minWidth: 0 }}>{children}</div>
-    </div>
+    <Columns single={frame !== "desktop"} sideFirst={true} gap={gap}>
+      <div style={{ minWidth: 0 }}>{side}</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: `var(--space-${gap})`, minWidth: 0 }}>{children}</div>
+    </Columns>
   );
 }
 
 function Loading({ frame, t, locale }: { frame: Frame; t: Translate; locale: Locale }) {
   const inset = frame === "phone" ? "sm" : "md";
   return (
-    <Columns
+    <PageColumns
       frame={frame}
       side={
         <Panel inset={inset} density="portal" locale={locale}>
@@ -158,7 +150,7 @@ function Loading({ frame, t, locale }: { frame: Frame; t: Translate; locale: Loc
       <Panel title={t("reg07.historyTitle")} level={2} inset={inset} density="portal" locale={locale}>
         <Table columns={historyColumns(frame, t)} rows={[]} loading={5} density="portal" layout={frame === "phone" ? "cards" : "table"} caption={t("reg07.historyTitle")} locale={locale} />
       </Panel>
-    </Columns>
+    </PageColumns>
   );
 }
 
@@ -219,7 +211,7 @@ function Status({
           {t("reg07.afText")}
         </Banner>
       ) : null}
-      <Columns
+      <PageColumns
         frame={frame}
         side={
           <Panel as="aside" title={t("reg07.thisApp")} level={2} inset={inset} density="portal" locale={locale}>
@@ -326,7 +318,7 @@ function Status({
             {t("reg.notFound.back")}
           </Button>
         </ButtonRow>
-      </Columns>
+      </PageColumns>
     </>
   );
 }
@@ -379,7 +371,7 @@ function Documents({ reference, request, phone, t, locale }: { reference: string
     const detail = entry.receivedOn !== null ? t("reg07.receivedOn", { d: day(entry.receivedOn, locale) }) : t("reg07.notYet");
     return {
       key: entry.item,
-      title: t(`reg.doc.${entry.item}`),
+      title: itemTitle(entry, t),
       family: entry.receivedOn !== null ? ("positive" as const) : ("attention" as const),
       detail,
       message: refusal !== null ? { severity: refusal.severity, text: t(refusal.text) } : null,
@@ -512,7 +504,8 @@ function Ended({
           <FactList
             items={[
               { label: t("reg07.fEnded"), value: ended.at, kind: "datetime" },
-              { label: t("reg07.fWithdrawnBy"), value: t("reg07.byYou") },
+              // An officer withdraws only on the applicant's recorded instruction, which is named (convention 9).
+              { label: t("reg07.fWithdrawnBy"), value: ended.instruction === null ? t("reg07.byYou") : t("reg07.byInstruction", { ref: ended.instruction }) },
             ]}
             density="portal"
             locale={locale}
@@ -533,7 +526,7 @@ function Ended({
             </Text>
           ) : null}
           <ItemList
-            items={missing.map((entry) => ({ key: entry.item, title: t(`reg.doc.${entry.item}`), family: "attention" as const, detail: t("reg07.notReceived") }))}
+            items={missing.map((entry) => ({ key: entry.item, title: itemTitle(entry, t), family: "attention" as const, detail: t("reg07.notReceived") }))}
             numbered
             readOnly
             label={t("reg07.notReceivedLabel")}
@@ -555,10 +548,19 @@ function endedMeta(ended: NonNullable<ApplicationRecord["ended"]>, t: Translate,
     case "REFUSED":
       return t("reg07.refusedMeta", { d: on });
     case "WITHDRAWN":
-      return t("reg07.withdrawnMeta", { d: on });
+      return ended.instruction === null ? t("reg07.withdrawnMeta", { d: on }) : t("reg07.instructionMeta", { d: on });
     case "CLOSED_INCOMPLETE":
       return t("reg07.closedMeta", { d: on });
   }
+}
+
+/**
+ * A requested item by its name: the sentence a reviewer wrote for it, read as written, or the catalogue's words for
+ * a document the rules name.
+ */
+function itemTitle(entry: Request["items"][number], t: Translate): string {
+  if (entry.description !== null) return entry.description;
+  return entry.document !== null ? t(`reg.doc.${entry.document}`) : entry.item;
 }
 
 /** When, then what happened; a phone card leads with what happened. */

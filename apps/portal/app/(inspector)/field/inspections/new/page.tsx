@@ -128,6 +128,8 @@ function Start({ data, t, locale }: { data: InspectionStart | null; t: Translate
         {/* What Continue needs: the inspection already open and the answer to attach to it. */}
         {data !== null && <input type="hidden" name="answer" value={data.answer} />}
         {openInspection !== null && <input type="hidden" name="open_inspection" value={openInspection} />}
+        {/* A record carries the register address, never where a code was scanned (CFG-772, FR-VER-005). */}
+        <input type="hidden" name="location_context" value="REGISTER_ADDRESS" />
         <Panel inset="sm" gap="lg" density="portal" locale={locale}>
           <ChoiceList
             legend={t("ver03.purpose")}

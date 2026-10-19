@@ -1,6 +1,6 @@
 import type { ComponentProps } from "react";
 import { R1_FORMAT } from "@rightone/formatting";
-import { Banner, Button, ButtonRow, FactList, PageHeader, Panel, Skeleton, Table } from "@/components/r1";
+import { Banner, Button, ButtonRow, Columns, FactList, PageHeader, Panel, Skeleton, Table } from "@/components/r1";
 import { ConsoleFailure, ConsoleFrame } from "@/features/inspection/ConsoleFrame";
 import { CopySelected, EntryList, EntrySelection } from "@/features/inspection/EntryList";
 import { date, joined, refusalOf, timestamp } from "@/features/inspection/words";
@@ -184,7 +184,7 @@ function registerLine(register: RegisterRead, t: Translate, locale: Locale): str
 /** Every area, zero included, and how the premises in them were counted. */
 function Counts({ counts, t, locale }: { counts: NonNullable<ListSupply["counts"]>; t: Translate; locale: Locale }) {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: "var(--space-6)", alignItems: "start" }}>
+    <Columns layout="halves">
       <Panel title={t("ver08.byArea")} level={2} density="console" locale={locale}>
         <Table
           columns={[
@@ -211,7 +211,7 @@ function Counts({ counts, t, locale }: { counts: NonNullable<ListSupply["counts"
           locale={locale}
         />
       </Panel>
-    </div>
+    </Columns>
   );
 }
 

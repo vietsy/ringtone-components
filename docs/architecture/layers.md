@@ -14,7 +14,7 @@ flowchart TB
   end
 
   subgraph Client["Client — runs in the browser"]
-    R1["components/r1<br/>design system R1, generated"]
+    R1["components/r1<br/>design system R1"]
     SHELL["components/shells<br/>R1 shells + locale switch"]
     INTER["features/*<br/>client components, only where interaction needs it"]
   end
@@ -81,11 +81,10 @@ that comes after.
 
 ## The design system's components, and the one boundary they add
 
-`components/r1` is the design system R1 as one client module, generated from the design system's own
-bundle by `apps/portal/scripts/generate-r1-components.mjs` and never edited by hand. The generator
-swaps the bundle's copy of the format rules for `R1_FORMAT` from `@rightone/formatting`, so a value
-reads the same in a component and on a server page, and it refuses to run when the design system's
-copy has changed until the change is ported. CI runs it with `--check`.
+`components/r1` is the design system R1 as TypeScript source, one component per file, converted once
+from the design system's bundle on 15 October 2026 with its rendered output unchanged. Its format rules
+are `R1_FORMAT` from `@rightone/formatting`, so a value reads the same in a component and on a server
+page; a change of a format rule in the design system is ported there.
 
 The module is a client module, which draws one line through every page: **a server component imports
 R1's components, never its values.** A function or object exported from `components/r1` is a client

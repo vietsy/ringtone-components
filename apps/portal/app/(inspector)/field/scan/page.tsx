@@ -1,5 +1,5 @@
-import { Banner, Button, Disclosure, PageHeader, Panel, ScanView, Select, StatusLine, Table } from "@/components/r1";
-import { refreshVerificationKeys, uploadResult, verifyReference } from "@/features/inspection/actions";
+import { Banner, Button, Checkbox, Disclosure, PageHeader, Panel, ScanView, Select, StatusLine, Table } from "@/components/r1";
+import { refreshVerificationKeys, scanPrintout, uploadResult, verifyReference } from "@/features/inspection/actions";
 import { DiscardableResults } from "@/features/inspection/DiscardableResults";
 import { FieldFailure, FieldFrame } from "@/features/inspection/FieldFrame";
 import { ReferenceForm } from "@/features/inspection/ReferenceForm";
@@ -12,6 +12,8 @@ import {
   resultKey,
   type ScanAndVerify,
   type ScanAttempt,
+  type UploadedResult,
+  type WaitingResult,
 } from "@/lib/api/inspection";
 import { readForPage } from "@/lib/api/flash";
 import { requireInspector } from "@/lib/api/session";
@@ -30,6 +32,21 @@ const REFERENCE_LENGTH = 128;
 
 /** The anchor the camera view's "type the code" leads to. */
 const REFERENCE_ANCHOR = "reference";
+
+/** The phone's own result, in the outcome words of section 5. */
+const DEVICE_WORDS: Readonly<Record<WaitingResult["outcome"], string>> = {
+  LIMITED_OFFLINE: "ver01.limited",
+  NOT_AUTHENTICATED: "ver01.notAuthResult",
+  UNABLE_TO_VERIFY: "ver01.noKeyResult",
+};
+
+/** RightOne's answer to an upload, other than a record in force, in the words of sections 5 and 5b. */
+const UPLOADED_WORDS: Readonly<Record<Exclude<UploadedResult["state"], "IN_FORCE">, string>> = {
+  REVOKED: "ver01.revoked",
+  LIMITED_OFFLINE: "ver01.limited",
+  NOT_AUTHENTICATED: "ver01.notAuthResult",
+  NO_RECORD: "ver01.noRecordResult",
+};
 
 /**
  * SCR-VER-01 Scan and verify. The inspector scans the code on a certificate or types its reference, with or
@@ -119,6 +136,31 @@ function Scan({ data, openDiscard, t, locale }: { data: ScanAndVerify | null; op
           locale={locale}
         />
       )}
+      {actsWhy === null && data !== null && (
+        // The web stand-in has no camera: it reads the code CER printed on the printout whose reference is typed.
+        <Panel inset="sm" gap="md" density="portal" locale={locale}>
+          {data.scan.noCode && <StatusLine family="attention" text={t("ver01.noCode", { r: data.scan.printout })} locale={locale} />}
+          <ReferenceForm
+            action={scanPrintout}
+            field={{
+              label: t("ver01.scanStandIn"),
+              name: "printout",
+              defaultValue: data.scan.printout,
+              helper: t("ver01.scanStandInHelp"),
+              maxLength: REFERENCE_LENGTH,
+            }}
+            button={{ label: t("ver01.scan"), variant: "secondary", size: "lg", icon: "qr-code" }}
+            emptyReason={t("ver01.scanWhy")}
+            blockedReason={null}
+            failure={{ title: t("ver.errTitle"), text: t("ver.errText") }}
+            locale={locale}
+          >
+            {data.inspection !== null && <input type="hidden" name="inspection" value={data.inspection} />}
+            {/* With no key held, nothing can be checked offline (design/03 SCR-VER-01, Empty). */}
+            {!noKeys && <Checkbox label={t("ver01.offlineCheck")} helper={t("ver01.offlineCheckHelp")} name="offline" value="on" density="portal" locale={locale} />}
+          </ReferenceForm>
+        </Panel>
+      )}
       {data?.checking === true && (
         <Panel inset="sm" gap="sm" density="portal" locale={locale}>
           <StatusLine family="info" text={t("ver01.checking")} locale={locale} />
@@ -178,7 +220,7 @@ function Scan({ data, openDiscard, t, locale }: { data: ScanAndVerify | null; op
               ...(row.refusal !== null ? { _message: { severity: "warning", text: refusalSentence(t, row.refusal), code: row.refusal } } : {}),
               rep: row.representation,
               // The phone's result in the outcome words of section 5, never a code.
-              res: { family: "attention", label: t(row.outcome === "LIMITED_OFFLINE" ? "ver01.limited" : "ver01.noKeyResult") },
+              res: { family: "attention", label: t(DEVICE_WORDS[row.outcome]) },
               at: row.checkedAt,
             },
             act: {
@@ -209,14 +251,16 @@ function Scan({ data, openDiscard, t, locale }: { data: ScanAndVerify | null; op
             // RightOne's own outcome; where it is not what the phone said, the row says so.
             ...(row.refusal !== null
               ? { _message: { severity: "warning", text: refusalSentence(t, row.refusal), code: row.refusal } }
-              : row.differsFromDevice
-                ? { _message: { severity: "neutral", text: t("ver01.differs") } }
-                : {}),
+              : row.notAttached !== null
+                ? { _message: { severity: "neutral", text: t("ver01.notAttached", { r: refusalOf(t, row.notAttached).title }), code: row.notAttached } }
+                : row.differsFromDevice
+                  ? { _message: { severity: "neutral", text: t("ver01.differs") } }
+                  : {}),
             ans: row.answer,
             res:
               row.state === "IN_FORCE"
                 ? { family: "info", label: t("ver.inForce"), variant: "seal" }
-                : { family: "attention", label: t("ver01.revoked") },
+                : { family: "attention", label: t(UPLOADED_WORDS[row.state]) },
             at: row.checkedAt,
             act: [
               {

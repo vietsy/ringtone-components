@@ -4,6 +4,7 @@ import {
   Banner,
   Breakdown,
   Button,
+  Columns,
   ButtonRow,
   Divider,
   FactList,
@@ -164,31 +165,25 @@ function Loading({ frame, t, locale }: { frame: Frame; t: Translate; locale: Loc
   const narrow = frame !== "desktop";
   const inset = frame === "phone" ? "sm" : "md";
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: narrow ? "minmax(0, 1fr)" : "minmax(0, 1fr) var(--container-sm)",
-        gridTemplateAreas: narrow ? "'pay' 'fee' 'facts'" : "'pay facts' 'fee facts'",
-        gap: frame === "phone" ? "var(--space-4)" : "var(--space-6)",
-        alignItems: "start",
-      }}
-    >
-      <div style={{ gridArea: "pay", minWidth: 0 }}>
-        <Panel title={t("fin01.payTitle")} inset={inset} density="portal" locale={locale}>
-          <Skeleton variant="card" rows={4} density="portal" locale={locale} />
-        </Panel>
+    <Columns single={narrow} gap={frame === "phone" ? 4 : 6}>
+      <div style={{ display: "flex", flexDirection: "column", gap: frame === "phone" ? "var(--space-4)" : "var(--space-6)", minWidth: 0 }}>
+        <div style={{ minWidth: 0 }}>
+          <Panel title={t("fin01.payTitle")} inset={inset} density="portal" locale={locale}>
+            <Skeleton variant="card" rows={4} density="portal" locale={locale} />
+          </Panel>
+        </div>
+        <div style={{ minWidth: 0 }}>
+          <Panel inset={inset} density="portal" locale={locale}>
+            <Skeleton variant="table" rows={4} columns={2} density="portal" locale={locale} />
+          </Panel>
+        </div>
       </div>
-      <div style={{ gridArea: "fee", minWidth: 0 }}>
-        <Panel inset={inset} density="portal" locale={locale}>
-          <Skeleton variant="table" rows={4} columns={2} density="portal" locale={locale} />
-        </Panel>
-      </div>
-      <div style={{ gridArea: "facts", minWidth: 0 }}>
+      <div style={{ minWidth: 0 }}>
         <Panel as="aside" title={t("fin01.instrTitle")} inset={inset} density="portal" locale={locale}>
           <Skeleton variant="facts" rows={5} density="portal" locale={locale} />
         </Panel>
       </div>
-    </div>
+    </Columns>
   );
 }
 
@@ -218,15 +213,6 @@ function Content({
   const showFee = !notCurrent;
   const total = decision.components.reduce((sum, component) => sum + component.amountMinor, 0);
   const gridMax = notCurrent ? "var(--container-3xl)" : "none";
-  const areas = notCurrent
-    ? "'facts'"
-    : showPay
-      ? narrow
-        ? "'pay' 'fee' 'facts'"
-        : "'pay facts' 'fee facts'"
-      : narrow
-        ? "'fee' 'facts'"
-        : "'fee facts'";
 
   return (
     <>
@@ -260,73 +246,68 @@ function Content({
           </Banner>
         </div>
       )}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: narrow || notCurrent ? "minmax(0, 1fr)" : "minmax(0, 1fr) var(--container-sm)",
-          gridTemplateAreas: areas,
-          gap,
-          alignItems: "start",
-          maxWidth: gridMax,
-        }}
-      >
-        {showPay && (
-          <div style={{ gridArea: "pay", minWidth: 0 }}>
-            <Panel title={t("fin01.payTitle")} gap="xl" inset={inset} density="portal" locale={locale}>
-              {!paying && (
-                <>
-                  <Panel variant="plain" title={t("fin01.transferTitle")} level={3} density="portal" locale={locale}>
-                    <Transfer data={data} total={total} phone={phone} t={t} locale={locale} />
+      <Columns single={narrow || notCurrent} gap={phone ? 4 : 6} style={{ maxWidth: gridMax }}>
+        {(showPay || showFee) && (
+          <div style={{ display: "flex", flexDirection: "column", gap, minWidth: 0 }}>
+            {showPay && (
+              <div style={{ minWidth: 0 }}>
+                <Panel title={t("fin01.payTitle")} gap="xl" inset={inset} density="portal" locale={locale}>
+                  {!paying && (
+                    <>
+                      <Panel variant="plain" title={t("fin01.transferTitle")} level={3} density="portal" locale={locale}>
+                        <Transfer data={data} total={total} phone={phone} t={t} locale={locale} />
+                      </Panel>
+                      <Divider />
+                    </>
+                  )}
+                  <Panel variant="plain" title={t("fin01.cardTitle")} level={3} density="portal" locale={locale}>
+                    <Text size="base" measure="xl">
+                      {t("fin01.cardText")}
+                    </Text>
+                    {paying && <StatusLine family="info" text={t("fin01.payingLine")} locale={locale} />}
+                    <form action={payByCard.bind(null, decision.reference)}>
+                      <Button
+                        variant="primary"
+                        size="md"
+                        icon="credit-card"
+                        type="submit"
+                        loading={paying}
+                        loadingLabel={t("fin01.cardOpening")}
+                        fullWidth={phone}
+                        locale={locale}
+                      >
+                        {t("fin01.cardPay")}
+                      </Button>
+                    </form>
                   </Panel>
-                  <Divider />
-                </>
-              )}
-              <Panel variant="plain" title={t("fin01.cardTitle")} level={3} density="portal" locale={locale}>
-                <Text size="base" measure="xl">
-                  {t("fin01.cardText")}
-                </Text>
-                {paying && <StatusLine family="info" text={t("fin01.payingLine")} locale={locale} />}
-                <form action={payByCard.bind(null, decision.reference)}>
-                  <Button
-                    variant="primary"
-                    size="md"
-                    icon="credit-card"
-                    type="submit"
-                    loading={paying}
-                    loadingLabel={t("fin01.cardOpening")}
-                    fullWidth={phone}
+                </Panel>
+              </div>
+            )}
+            {showFee && (
+              <div style={{ minWidth: 0 }}>
+                <Panel gap="xl" inset={inset} density="portal" locale={locale}>
+                  <Breakdown
+                    title={t("fin01.feeTitle")}
+                    description={t(decision.outsideObligation ? "fin01.basisOut" : "fin01.feeDesc")}
+                    lines={[
+                      ...decision.components.map((component) => ({
+                        label: t(LAYER_KEYS[component.layer]),
+                        detail: decision.outsideObligation ? t("fin01.exempt") : t("fin01.recipient", { recipient: component.recipient }),
+                        source: t("fin01.tariffSource", { version: decision.tariffVersion }),
+                        amountMinor: component.amountMinor,
+                      })),
+                      { label: t("fin01.total"), kind: "total" as const, amountMinor: total },
+                    ]}
+                    currency="VND"
                     locale={locale}
-                  >
-                    {t("fin01.cardPay")}
-                  </Button>
-                </form>
-              </Panel>
-            </Panel>
+                  />
+                  <Act data={data} total={total} confirming={confirming} phone={phone} t={t} locale={locale} />
+                </Panel>
+              </div>
+            )}
           </div>
         )}
-        {showFee && (
-          <div style={{ gridArea: "fee", minWidth: 0 }}>
-            <Panel gap="xl" inset={inset} density="portal" locale={locale}>
-              <Breakdown
-                title={t("fin01.feeTitle")}
-                description={t(decision.outsideObligation ? "fin01.basisOut" : "fin01.feeDesc")}
-                lines={[
-                  ...decision.components.map((component) => ({
-                    label: t(LAYER_KEYS[component.layer]),
-                    detail: decision.outsideObligation ? t("fin01.exempt") : t("fin01.recipient", { recipient: component.recipient }),
-                    source: t("fin01.tariffSource", { version: decision.tariffVersion }),
-                    amountMinor: component.amountMinor,
-                  })),
-                  { label: t("fin01.total"), kind: "total" as const, amountMinor: total },
-                ]}
-                currency="VND"
-                locale={locale}
-              />
-              <Act data={data} total={total} confirming={confirming} phone={phone} t={t} locale={locale} />
-            </Panel>
-          </div>
-        )}
-        <div style={{ gridArea: "facts", minWidth: 0 }}>
+        <div style={{ minWidth: 0 }}>
           <Panel
             as={notCurrent ? "section" : "aside"}
             title={t(instruction !== null ? "fin01.instrTitle" : "fin01.decisionTitle")}
@@ -344,7 +325,7 @@ function Content({
             </div>
           </Panel>
         </div>
-      </div>
+      </Columns>
       <div>
         <Button variant="quiet" size="md" href={routes.payments()} fullWidth={phone} locale={locale}>
           {t("fin01.back")}

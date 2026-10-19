@@ -1,0 +1,8 @@
+{
+  "ops.title": "Việc của tôi",
+  "ops.meta": "{name}, {position}. Các khu việc mà vai của bạn mở được.",
+  "ops.search": "Tìm mã hoặc cơ sở",
+  "ops.listLabel": "Khu việc",
+  "ops.emptyTitle": "Vai của bạn chưa mở khu việc nào",
+  "ops.emptyText": "Khi một khu việc mở cho vai của bạn, khu đó hiện ở đây và ở thanh bên."
+}

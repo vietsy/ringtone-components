@@ -1,5 +1,5 @@
 import { R1_FORMAT } from "@rightone/formatting";
-import { Banner, NumberedSteps, PageHeader, Panel, ViewState } from "@/components/r1";
+import { Banner, Columns, NumberedSteps, PageHeader, Panel, ViewState } from "@/components/r1";
 import { PortalShell } from "@/components/shells/PortalShell";
 import { orgContext, orgNav } from "@/components/shells/org-nav";
 import { channelName, participationLine, subTranslator } from "@/features/submissions/copy";
@@ -75,7 +75,7 @@ export default async function SubmitRecordsPage({ searchParams }: { searchParams
           locale={locale}
         >
           {data !== null ? (
-            <div style={{ display: "grid", gridTemplateColumns: phone ? "minmax(0, 1fr)" : "minmax(0, 1fr) var(--container-sm)", gap: "var(--space-6)", alignItems: "start" }}>
+            <Columns single={phone}>
               <SubmitRecordsForm
                 copy={submitCopy(t, data, locale)}
                 channels={data.channels.map((channel) => ({
@@ -102,7 +102,7 @@ export default async function SubmitRecordsPage({ searchParams }: { searchParams
                   <NumberedSteps title={t("cat04.nextTitle")} level={2} steps={[t("cat04.s1"), t("cat04.s2"), t("cat04.s3")]} locale={locale} />
                 </Panel>
               </div>
-            </div>
+            </Columns>
           ) : null}
         </ViewState>
       </div>

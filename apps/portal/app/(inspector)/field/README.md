@@ -9,6 +9,7 @@ The field client on the inspector's phone (R1 PublicShell, variant field).
     inspections/[inspection]/page.tsx          SCR-VER-04  Inspection in progress
     inspections/[inspection]/conclude/page.tsx SCR-VER-05  Conclude the inspection
     records/[record]/page.tsx                  SCR-VER-06  Inspection record
+    records/[record]/print/page.tsx            SCR-VER-06  Print a copy
 
 SCR-VER-17 (`page.tsx`) reads the session: the appointments in force, the authority acted for, the inspector's
 open inspections (the seed's three: Quán Nướng Hẻm 214 open past the recording interval, Pasteur, and Áp Mái

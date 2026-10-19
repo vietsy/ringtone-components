@@ -15,6 +15,7 @@ import {
   REPRESENTATIVE_ROLES,
   abandonInspection as abandonInspectionAct,
   attachAnswer,
+  checkCodeOffline,
   chooseAppointment,
   discardOfflineResult,
   inspectPremises,
@@ -26,6 +27,7 @@ import {
   refreshKeys,
   requestList as requestListAct,
   requestVerification,
+  scanCode,
   uploadOfflineResult,
   type ConclusionAttempt,
   type ConditionalField,
@@ -131,6 +133,7 @@ export async function verifyReference(_previous: ActState, form: FormData): Prom
     value: typed,
     identifierType: oneOf(IDENTIFIER_TYPES, text(form, "identifier_type")),
     inspection,
+    code: null,
   });
   forgetPages();
   if (outcome.data !== null) redirect(routes.fieldAnswer(outcome.data.answer));
@@ -139,11 +142,51 @@ export async function verifyReference(_previous: ActState, form: FormData): Prom
   redirect(withAttempt(routes.fieldScan(), keepForPage(attempt)));
 }
 
-/** SCR-VER-01 Refresh keys: the refresh line moves. */
+/**
+ * SCR-VER-01 Scan, as the web stand-in has it: the camera reads the code on the printout whose reference is typed.
+ * Online the code is verified (`POST /verifications` with its payload, signature and key) and the answer opens on
+ * SCR-VER-02; with Check offline ticked the phone checks it against the keys it holds (`ALG-711`), the result waits
+ * to upload, and its offline answer opens on SCR-VER-02. A printout carrying no code comes back saying so.
+ */
+export async function scanPrintout(_previous: ActState, form: FormData): Promise<ActState> {
+  const { sessionId } = await requireInspector();
+  const printout = text(form, "printout").toUpperCase();
+  const inspection = text(form, "inspection") || null;
+  if (printout === "") return { failure: null };
+  const read = await scanCode(sessionId, printout);
+  if (read.data === null) {
+    if (read.failure?.code !== "NO_CODE_READ") return { failure: read.failure };
+    const attempt: ScanAttempt = { inspection, typed: "", refusal: null, scan: { printout, noCode: true } };
+    redirect(withAttempt(routes.fieldScan(), keepForPage(attempt)));
+  }
+  if (form.get("offline") === "on") {
+    const checked = await checkCodeOffline(sessionId, { printout, code: read.data, inspection });
+    forgetPages();
+    if (checked.data !== null) redirect(routes.fieldAnswer(checked.data.result));
+    if (checked.failure?.code === "SERVICE_NOT_CONFIGURED") return { failure: checked.failure };
+    const attempt: ScanAttempt = { inspection, typed: "", refusal: refusalOf(checked.failure), scan: { printout, noCode: false } };
+    redirect(withAttempt(routes.fieldScan(), keepForPage(attempt)));
+  }
+  const outcome = await requestVerification(sessionId, { value: printout, identifierType: "REPRESENTATION_REFERENCE", inspection, code: read.data });
+  forgetPages();
+  if (outcome.data !== null) redirect(routes.fieldAnswer(outcome.data.answer));
+  if (outcome.failure?.code === "SERVICE_NOT_CONFIGURED") return { failure: outcome.failure };
+  const attempt: ScanAttempt = { inspection, typed: "", refusal: refusalOf(outcome.failure), scan: { printout, noCode: false } };
+  redirect(withAttempt(routes.fieldScan(), keepForPage(attempt)));
+}
+
+/**
+ * SCR-VER-01 Refresh keys: the strip's date moves to the new key set's; KEYS_UNAVAILABLE comes back beside the keys,
+ * which the phone keeps with their earlier instant.
+ */
 export async function refreshVerificationKeys(): Promise<void> {
   const { sessionId } = await requireInspector();
-  await refreshKeys(sessionId);
+  const outcome = await refreshKeys(sessionId);
   forgetPages();
+  if (outcome.failure?.code === "KEYS_UNAVAILABLE") {
+    const attempt: ScanAttempt = { inspection: null, typed: "", refusal: "KEYS_UNAVAILABLE" };
+    redirect(withAttempt(routes.fieldScan(), keepForPage(attempt)));
+  }
   redirect(routes.fieldScan());
 }
 
@@ -195,6 +238,8 @@ export async function startInspection(form: FormData): Promise<void> {
   };
   const outcome = await openInspection(sessionId, {
     withAnswer: intent !== "without",
+    // The field client says where it took place as the register address, the one context CFG-772 permits.
+    locationContext: text(form, "location_context"),
     purpose: text(form, "purpose"),
     basis: sent.basis,
     observedAt: observed.at,

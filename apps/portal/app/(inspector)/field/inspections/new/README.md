@@ -11,7 +11,10 @@ than 24 hours before the inspection, CFG-773) beside the answer, with Start with
 inspector already has this premises open under the same appointment, Start is unavailable and Continue the open
 inspection attaches the answer to it and opens it. The reason for late recording shows once the time given is more
 than 24 hours ago, and follows the time as it changes (`features/inspection/ObservedFields.tsx`). The buttons send
-one form, each naming its act (`features/inspection/IntentButtons.tsx`). Cancel opens SCR-VER-17.
+one form, each naming its act (`features/inspection/IntentButtons.tsx`). Cancel opens SCR-VER-17. The form sends the
+location context as the register address, the one CFG-772 permits (FR-VER-005); any other is refused
+LOCATION_CONTEXT_NOT_PERMITTED in the header and nothing opens. A time before the appointment or the authority's
+designation took effect is refused OBSERVED_OUTSIDE_AUTHORITY (DR-740 row 8) in the header.
 
 Review views: populated, open-exists, answer-refused, last-day, late, time-in-future, offline, no-appointment,
 suspended, outside, jurisdiction-not-recorded, observed-outside, premises-unavailable, policy-unavailable,

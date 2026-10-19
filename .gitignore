@@ -13,3 +13,5 @@ next-env.d.ts
 .DS_Store
 playwright-report/
 test-results/
+!apps/portal/features/coverage/
+!apps/portal/app/(org)/org/coverage/

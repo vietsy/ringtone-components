@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Button, PageHeader, Panel, Stepper, ViewState } from "@/components/r1";
+import { Button, Columns, PageHeader, Panel, Stepper, ViewState } from "@/components/r1";
 import { PortalShell } from "@/components/shells/PortalShell";
 import { premisesNav } from "@/components/shells/premises-nav";
 import type { ApplicationDraft, DraftStep } from "@/lib/api/registration";
@@ -66,35 +66,38 @@ export async function DraftFrame({
       {...(draft !== null ? { context: { premises: draft.premises, period: draft.reference } } : {})}
       locale={locale}
     >
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: narrow ? "minmax(0, 1fr)" : "var(--container-2xs) minmax(0, var(--container-2xl))",
-          gridTemplateAreas: narrow ? "'head' 'step' 'body'" : "'step head' 'step body'",
-          gap: "var(--space-6)",
-          alignItems: "start",
-        }}
-      >
-        <div style={{ gridArea: "head", minWidth: 0 }}>
-          <PageHeader
-            crumbs={[{ label: t("reg.crumb"), href: routes.applications() }]}
-            title={title}
-            {...(draft !== null
-              ? {
-                  status: applicationStatus("DRAFT", t),
-                  meta: t("reg.draftMeta", { step: t(`reg.stepLine.${step}`), kind: t(`reg.kind.${draft.kind}`), period: span(draft.period, locale) }),
-                }
-              : {})}
-            locale={locale}
-          />
-        </div>
-        <div style={{ gridArea: "step", minWidth: 0 }}>
+      <Columns layout="side-main" side="2xs" single={narrow}>
+        {
+          // Wide: the steps beside the header and the step's form. Narrow: the header, the steps, then the form.
+        }
+        <div style={{ order: narrow ? 1 : 0, minWidth: 0 }}>
           <Panel as="aside" title={t("reg.stepsTitle")} inset={phone ? "sm" : "md"} density="portal" locale={locale}>
             <Stepper steps={steps} {...(savedAt !== null ? { savedAt } : {})} label={t("reg.stepsTitle")} locale={locale} />
           </Panel>
         </div>
-        <div style={{ gridArea: "body", minWidth: 0, display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>{children}</div>
-      </div>
+        <div
+          style={
+            narrow
+              ? { display: "contents" }
+              : { display: "flex", flexDirection: "column", gap: "var(--space-6)", minWidth: 0, maxWidth: "var(--container-2xl)" }
+          }
+        >
+          <div style={{ minWidth: 0 }}>
+            <PageHeader
+              crumbs={[{ label: t("reg.crumb"), href: routes.applications() }]}
+              title={title}
+              {...(draft !== null
+                ? {
+                    status: applicationStatus("DRAFT", t),
+                    meta: t("reg.draftMeta", { step: t(`reg.stepLine.${step}`), kind: t(`reg.kind.${draft.kind}`), period: span(draft.period, locale) }),
+                  }
+                : {})}
+              locale={locale}
+            />
+          </div>
+          <div style={{ order: narrow ? 2 : 0, minWidth: 0, display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>{children}</div>
+        </div>
+      </Columns>
     </PortalShell>
   );
 }

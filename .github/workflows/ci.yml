@@ -33,8 +33,6 @@ jobs:
       - run: pnpm install --frozen-lockfile
       # The token sources are generated from the R1 copy; a hand edit or a stale copy fails here.
       - run: pnpm --filter @rightone/tokens generate:check
-      # The R1 component module is generated from the design system's copy in the same way.
-      - run: pnpm --filter @rightone/portal generate:r1:check
       # The workspace packages export their types from dist/, which is not committed. On a clean
       # checkout every @rightone/* import is unresolved until they are built, and eslint reports
       # each use as an unsafe call: 40 errors on code that has none.

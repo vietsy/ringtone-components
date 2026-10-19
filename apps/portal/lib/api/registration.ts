@@ -1,5 +1,6 @@
 import type { LoadOutcome } from "@rightone/ui";
 import type { Locale } from "@/lib/i18n/translate";
+import type { TransitionRule } from "./tariff";
 import {
   addEvidenceItem,
   addRequestedDocument,
@@ -43,6 +44,7 @@ import {
   type Reg07View,
   type Reg08View,
 } from "@/lib/mock/registration";
+import { settlementOf } from "@/lib/mock/backend/finance";
 import { NOT_CONFIGURED, usesMockData } from "./source";
 
 /*
@@ -82,6 +84,9 @@ export type ClaimKind = "NON_USE" | "DIRECT_LICENCE";
 
 /** A document the rules or a reviewer ask for, by the item it answers. */
 export type DocumentItem = "USE_START_PROOF" | "LEASE" | "SUPPLIER_INVOICE" | "MUSIC_INVOICE_Q3" | "EQUIPMENT_PHOTO";
+
+/** SM-266, a claim's states: drafted with the application, in review once sent, then the outcome recorded on the console. */
+export type ClaimState = "DRAFT" | "UNDER_REVIEW" | "ACCEPTED" | "PARTLY_ACCEPTED" | "NOT_ACCEPTED" | "WITHDRAWN";
 
 export interface UploadedFile {
   name: string;
@@ -282,7 +287,8 @@ export interface ReviewStep {
   /** Null when no approved tariff applies; feeRefusal then says so. */
   fee: {
     period: Period;
-    lines: readonly { layer: RightsLayer; amountMinor: number; claimPending: boolean }[];
+    /** A layer the tariff does not charge says why: exempt, no organisation represents it now, or a claim accepted. */
+    lines: readonly { layer: RightsLayer; amountMinor: number; claimPending: boolean; treatment?: "EXEMPT" | "MANDATE_STOPPED" | "CLAIM_ACCEPTED" | null }[];
     totalMinor: number;
     currency: string;
     tariffVersion: string;
@@ -291,15 +297,44 @@ export interface ReviewStep {
   feeRefusal: "TARIFF_NOT_APPROVED" | null;
   /** The fee rests on a class the person declared, not on the register. */
   declaredClass: boolean;
-  /** The small-business exemption the person claimed, criterion by criterion. */
+  /**
+   * The small-business exemption, criterion by criterion: the canvas's three conditions on its design states, or the
+   * tariff's micro-business criteria (`DR-291`) where the calculation applied them and nothing is owed.
+   */
   exemption: readonly (
     | { criterion: "AREA_UNDER_100"; met: boolean; declaredArea: number }
     | { criterion: "ONE_PREMISES"; met: boolean; premisesInRegister: number; party: string }
     | { criterion: "RECORDED_SPEAKERS_ONLY"; met: boolean; declared: MusicMethod }
+    | { criterion: "FLOOR_AREA_M2" | "SEATING_CAPACITY"; met: boolean; atMost: number; value: number | null }
   )[] | null;
   /** The payment deadline, 89 days after use began (DR-23); null while the date is not given. */
   payBy: string | null;
-  explanation: { version: number; published: boolean };
+  /**
+   * The explanation version in force on the governing date, and the change-report period it quotes (TAR's `CFG-360`,
+   * the thirty-day default while no version is approved). Never blank: the canvas's design states quote the default.
+   */
+  explanation: { version: number; published: boolean; changeReportDays: number };
+  /**
+   * What a submission at this moment comes to (`DR-01`): decided at once, with the amount or the basis of no fee, or
+   * sent to an officer, and why. Absent on the canvas's design states.
+   */
+  outcome?: ReviewOutcome | null;
+  /** `DR-22`: what is decided for the time before registration, with the amnesty that applies. Absent on design states. */
+  preRegistration?: PreRegistration | null;
+  /** The calculation the fee rests on (TAR's reference), recorded with the review. */
+  calculation?: string | null;
+}
+
+/** `DR-01` as a review shows it: the outcome a submission now reaches, before anyone confirms anything. */
+export type ReviewOutcome =
+  | { kind: "PAYABLE" }
+  | { kind: "NO_PAYABLE_OBLIGATION"; basis: "OUT_OF_SCOPE" | "EXEMPTION" | "MICRO_BUSINESS_EXEMPTION" }
+  | { kind: "UNDER_REVIEW"; reason: "CLAIM_NEEDS_REVIEW" | "OFFICER_AMENDMENT" | "RULEBOOK_TRIGGER" | "INDETERMINATE_FACTS" };
+
+/** `DR-22`'s answer for the time before registration, and the amnesty version it applied. */
+export interface PreRegistration {
+  treatment: "NO_PRE_REGISTRATION_PERIOD" | "AMNESTY_APPLIED" | "DEC13_NOT_EFFECTIVE";
+  amnesty: { version: string; period: Period } | null;
 }
 
 export interface AttestationStep {
@@ -314,6 +349,8 @@ export interface AttestationStep {
   sendPending: boolean;
   /** What SCR-REG-05 showed, carried with the confirmation; null when no review was recorded. */
   shown: { presentation: string; factsDigest: string } | null;
+  /** The change-report period the explanation shown quoted, which the second box holds the premises to (CFG-360). */
+  changeReportDays: number;
 }
 
 // ---------------------------------------------------------------- SCR-REG-07
@@ -321,13 +358,15 @@ export interface AttestationStep {
 export type HistoryEvent =
   | { event: "STARTED" }
   | { event: "CONFIRMED" }
-  | { event: "SENT"; route: "CLAIM_REVIEW" | "RULEBOOK_REVIEW" | "RULES"; claim: ClaimKind | null }
+  | { event: "SENT"; route: "CLAIM_REVIEW" | "RULEBOOK_REVIEW" | "AMENDMENT_REVIEW" | "RULES"; claim: ClaimKind | null }
   | { event: "EVIDENCE_ASKED"; by: "REVIEWER" | "RIGHTONE" }
   | { event: "EVIDENCE_COMPLETE" }
   /** afterDocument: the decision followed the last document on the automated route. */
   | { event: "DECIDED"; decision: string; afterDocument: boolean }
   | { event: "REFUSED" }
   | { event: "WITHDRAWN" }
+  /** Withdrawn by an officer on the applicant's recorded instruction (SCR-REG-15). */
+  | { event: "WITHDRAWN_ON_INSTRUCTION" }
   | { event: "CLOSED" };
 
 /** Why one requested document was not taken: a bad file, a request that has ended, or no tariff to decide on. */
@@ -350,7 +389,7 @@ export interface ApplicationRecord {
   /** Null while a draft, or where the record does not give the moment. */
   sentAt: string | null;
   /** The queue that reviews it; null while it is a draft, or where the record does not name it. */
-  review: "CLAIM" | "RULEBOOK" | "NONE" | null;
+  review: "CLAIM" | "RULEBOOK" | "AMENDMENT" | "NONE" | null;
   /** The documents asked for once the application was sent; the route is automated when RightOne asked. */
   evidenceRequest: {
     askedBy: "REVIEWER" | "RIGHTONE";
@@ -359,7 +398,17 @@ export interface ApplicationRecord {
     dueOn: string | null;
     /** The request has ended, so no document can be added. */
     closed: boolean;
-    items: readonly { item: DocumentItem; receivedOn: string | null; refusal: EvidenceItemRefusal | null }[];
+    /**
+     * Each item by its code. A reviewer's item carries the sentence the officer wrote for the applicant, read as
+     * written; an item the rules name carries the document instead, worded by the catalogue.
+     */
+    items: readonly {
+      item: string;
+      document: DocumentItem | null;
+      description: string | null;
+      receivedOn: string | null;
+      refusal: EvidenceItemRefusal | null;
+    }[];
   } | null;
   /** The latest expected-date statement; completeness and the expected decision only where a review takes place. */
   dates: {
@@ -374,14 +423,17 @@ export interface ApplicationRecord {
     /** The payment deadline had passed when the application became complete (DR-41 row 3). */
     passedWhenComplete: boolean;
   } | null;
-  claims: readonly { kind: ClaimKind; layer: RightsLayer; period: Period; state: "UNDER_REVIEW" | "DRAFT" | "WITHDRAWN" }[];
+  claims: readonly { kind: ClaimKind; layer: RightsLayer; period: Period; state: ClaimState }[];
   /** Newest first; a moment the record does not give is null. */
   history: readonly ({ at: string | null } & HistoryEvent)[];
   decision: { reference: string; issuedAt: string | null } | null;
-  /** How the application ended; a withdrawal drawn here is the applicant's own, never one on instruction. */
+  /**
+   * How the application ended. A withdrawal is the applicant's own, or one an officer recorded on the
+   * applicant's instruction, which then carries the instruction's reference (convention 9).
+   */
   ended:
     | { kind: "REFUSED"; on: string; statement: RefusalStatement }
-    | { kind: "WITHDRAWN"; on: string; at: string }
+    | { kind: "WITHDRAWN"; on: string; at: string; instruction: string | null }
     | { kind: "CLOSED_INCOMPLETE"; on: string }
     | null;
   canWithdraw: boolean;
@@ -398,12 +450,14 @@ export interface DecisionRecord {
   outcome: "PAYABLE" | "NO_PAYABLE_OBLIGATION";
   issuedAt: string;
   period: Period;
-  basis: "TARIFF" | "OUT_OF_SCOPE";
+  /** Why it owes what it owes: the tariff, outside the obligation, or an exemption the tariff defines (DR-01 rows 3 to 5). */
+  basis: "TARIFF" | "OUT_OF_SCOPE" | "EXEMPTION" | "MICRO_BUSINESS_EXEMPTION";
   /** One line per rights layer; a partly accepted claim splits its layer into the accepted part and the rest. */
   lines: readonly {
     layer: RightsLayer;
     amountMinor: number;
-    treatment: "EXEMPT" | "CLAIM_PENDING" | "CLAIM_ACCEPTED" | null;
+    /** MANDATE_STOPPED: not charged, no organisation represents the right now (TAR's EXCLUDED_MANDATE_STOPPED). */
+    treatment: "EXEMPT" | "CLAIM_PENDING" | "CLAIM_ACCEPTED" | "MANDATE_STOPPED" | null;
     /** The part of the period a split line covers. */
     scope: Period | null;
   }[];
@@ -416,12 +470,45 @@ export interface DecisionRecord {
   rulebookVersion: string;
   /** The time before registration: a period, or a single day. */
   beforeRegistration: Period | string | null;
-  claim: { state: "UNDER_REVIEW" } | { state: "PARTLY_ACCEPTED"; accepted: Period } | null;
-  /** Where the decision departs from the application, when it does, with the statement that says why. */
-  otherwise: { aspect: "CUSTOMER_AREA" | "PRODUCERS_CLAIM"; reason: CaseText; notMet: CaseText; youCan: CaseText } | null;
+  /**
+   * The claim the decision charged pending, as it stands now (`claim_pending` is derived from the claim, never kept):
+   * still in review, partly accepted, or not accepted after the decision, with the statement DR-289 row 6 writes.
+   */
+  claim:
+    | { state: "UNDER_REVIEW" }
+    | { state: "PARTLY_ACCEPTED"; accepted: Period }
+    | { state: "NOT_ACCEPTED"; kind: ClaimKind; layer: RightsLayer; period: Period; reason: CaseText; on: string }
+    | null;
+  /** The statutory payment deadline and where the moment of reading falls against it (DR-23); derived at each read, never kept. */
+  deadline: { on: string; state: "WITHIN_DEADLINE" | "PAST_DEADLINE" } | null;
+  /** The decision this one follows: the one a renewal renews or an amendment replaces (`prior_decision_id`, FR-REG-014). */
+  prior: string | null;
+  /** The expected decision date fell after the payment deadline, as the statement the applicant was told said (FR-REG-030). */
+  lateStatement: { expectedOn: string; deadline: string; toldOn: string | null } | null;
+  /**
+   * Where the decision departs from the application, when it does, with the statement that says why. STATEMENT
+   * is an officer's decision otherwise than applied for, approved on the console: its sentences are the
+   * officer's own, read as written.
+   */
+  otherwise: { aspect: "CUSTOMER_AREA" | "PRODUCERS_CLAIM" | "STATEMENT"; reason: CaseText; notMet: CaseText; youCan: CaseText } | null;
   replacedBy: { reference: string; from: string } | null;
   /** The application it decides, when the data names it. */
   application: string | null;
+  /** The TAR calculation its fee rests on (`tariff_calculation_ref`); absent for a decision the canvas draws. */
+  calculation?: string | null;
+  /** It rests on a premises class the applicant declared (`rests_on_declared_classification`, FR-TAR-012). */
+  declaredClassification?: boolean;
+  /** How it was reached: at submission by the rules, or by an officer (`route`). */
+  route?: "AUTOMATED" | "MANUAL";
+  /** `DR-22`'s answer for the time before registration, with the amnesty version it applied. */
+  preRegistration?: PreRegistration | null;
+  /**
+   * The governing date (`governing_on`, DR-288 row 3): the first day the decision takes effect, on which the rulebook,
+   * explanation and tariff versions were resolved. Absent on a decision the canvas draws.
+   */
+  governingOn?: string;
+  /** The transition rule of the tariff version applied (`transition_rule_ref`, DEC-04); absent on a decision the canvas draws. */
+  transitionRule?: TransitionRule | null;
 }
 
 // ---------------------------------------------------------------- what a form hands back to its page
@@ -470,7 +557,8 @@ export interface StatusAttempt {
   page: "status";
   application: string;
   withdrawRefusal: "APPLICATION_ALREADY_FINAL" | null;
-  document: { item: DocumentItem; code: EvidenceItemRefusal } | null;
+  /** A refused document, by the code of the item it was added to. */
+  document: { item: string; code: EvidenceItemRefusal } | null;
 }
 
 // ---------------------------------------------------------------- the loaders
@@ -567,6 +655,15 @@ export function loadApplicationRecord(sessionId: string, reference: string, view
 }
 
 /** SCR-REG-08: one obligation decision. */
+/**
+ * Whether FIN holds a reconciled payment of this decision (`settlementOf`), so SCR-REG-08 leads to the payment's
+ * position rather than offering to pay again. Read at the seam: registration's backend does not import finance's.
+ */
+export function loadDecisionSettled(sessionId: string, reference: string): Promise<boolean> {
+  if (!usesMockData()) return Promise.resolve(false);
+  return Promise.resolve(settlementOf(sessionId, reference) !== null);
+}
+
 export function loadDecision(sessionId: string, reference: string, view: Exclude<Reg08View, "loading"> | null): Promise<LoadOutcome<DecisionRecord>> {
   if (!usesMockData()) return Promise.resolve(NOT_CONFIGURED);
   return Promise.resolve(view !== null ? mockDecision(reference, view) : decisionRecord(sessionId, reference));

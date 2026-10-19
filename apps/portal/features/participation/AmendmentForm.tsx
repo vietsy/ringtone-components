@@ -2,7 +2,19 @@
 
 import { useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { Button, ButtonRow, ChoiceList, Comparison, DateField, Divider, FieldRow, FieldRows, Panel, Select } from "@/components/r1";
+import {
+  Button,
+  ButtonRow,
+  ChoiceList,
+  Columns,
+  Comparison,
+  DateField,
+  Divider,
+  FieldRow,
+  FieldRows,
+  Panel,
+  Select,
+} from "@/components/r1";
 import type { Repertoire, Right, ScopeKey, Territory } from "@/lib/api/participation";
 import type { Locale } from "@/lib/i18n/translate";
 import { routes } from "@/lib/routes";
@@ -185,7 +197,7 @@ export function AmendmentForm({
         </Panel>
         <Divider />
         <Panel variant="plain" level={2} title={t("part03.effTitle")} density="portal" locale={locale}>
-          <div style={{ display: "grid", gridTemplateColumns: phone ? "minmax(0, 1fr)" : "repeat(2, minmax(0, 1fr))", gap: "var(--space-6)", alignItems: "start" }}>
+          <Columns layout="halves" single={phone}>
             <DateField
               label={t("part03.effLabel")}
               helper={t("part03.effHelp")}
@@ -197,7 +209,7 @@ export function AmendmentForm({
               {...(past ? { error: t("part.refusal.EFFECTIVE_FROM_IN_PAST") } : errorAt("effective_from"))}
               locale={locale}
             />
-          </div>
+          </Columns>
         </Panel>
         <Divider />
         <Panel variant="plain" level={2} title={t("part03.cmpCaption")} density="portal" locale={locale}>

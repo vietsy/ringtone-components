@@ -2,7 +2,21 @@
 
 import { useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { Button, ButtonRow, ChoiceList, DateField, Divider, FieldRow, FieldRows, FileList, FileUpload, Panel, Select, TextField } from "@/components/r1";
+import {
+  Button,
+  ButtonRow,
+  ChoiceList,
+  Columns,
+  DateField,
+  Divider,
+  FieldRow,
+  FieldRows,
+  FileList,
+  FileUpload,
+  Panel,
+  Select,
+  TextField,
+} from "@/components/r1";
 import { Text } from "@/components/Text";
 import type { ApplicationContact, ApplicationFields, EvidenceFile } from "@/lib/api/participation";
 import type { Locale } from "@/lib/i18n/translate";
@@ -141,19 +155,12 @@ export function ApplicationForm({
       <input type="hidden" name="evidence_files" value={JSON.stringify(files)} />
       <Panel gap="xl" inset={phone ? "sm" : "md"} density="portal" locale={locale}>
         <Panel variant="plain" level={2} title={t("part01.orgTitle")} density="portal" locale={locale}>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: phone ? "minmax(0, 1fr)" : "minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr)",
-              gap: "var(--space-6)",
-              alignItems: "start",
-            }}
-          >
+          <Columns layout="thirds" template="minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr)" single={phone}>
             <TextField label={t("part01.legalName")} value={organisation.legalName} readOnly provenance="registry-sourced" name="legal_name" locale={locale} />
             {/* A value the party register does not hold reads as not recorded: R1's dash. */}
             <TextField label={t("part01.partyRecord")} value={organisation.partyRecord ?? ""} readOnly mono name="party_record" locale={locale} />
             <TextField label={t("part01.kind")} value={organisation.partyKind !== null ? t("part01.kindValue") : ""} readOnly name="kind" locale={locale} />
-          </div>
+          </Columns>
           <ChoiceList
             legend={t("part01.asLegend")}
             options={[
@@ -170,7 +177,7 @@ export function ApplicationForm({
         </Panel>
         <Divider />
         <Panel variant="plain" level={2} title={t("part01.evTitle")} density="portal" locale={locale}>
-          <div style={{ display: "grid", gridTemplateColumns: phone ? "minmax(0, 1fr)" : "repeat(2, minmax(0, 1fr))", gap: "var(--space-6)", alignItems: "start" }}>
+          <Columns layout="halves" single={phone}>
             <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)", minWidth: 0 }}>
               <FileList
                 items={files.map((file, index) => ({
@@ -201,7 +208,7 @@ export function ApplicationForm({
               {...errorOf("authority_evidence_ref", t("part01.evRef"))}
               locale={locale}
             />
-          </div>
+          </Columns>
         </Panel>
         <Divider />
         <FieldRows
@@ -259,14 +266,7 @@ export function ApplicationForm({
         </FieldRows>
         <Divider />
         <Panel variant="plain" level={2} title={t("part01.scopeTitle")} description={t("part01.scopeDesc")} density="portal" locale={locale}>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: phone ? "minmax(0, 1fr)" : "repeat(3, minmax(0, 1fr)) minmax(0, 1.4fr)",
-              gap: "var(--space-6)",
-              alignItems: "start",
-            }}
-          >
+          <Columns layout="quarters" template="repeat(3, minmax(0, 1fr)) minmax(0, 1.4fr)" single={phone}>
             <ChoiceList
               legend={t("part01.layer")}
               options={registers.rights.map((value) => ({ value, label: t(`part.right.${value}`) }))}
@@ -313,7 +313,7 @@ export function ApplicationForm({
               {...(periodRefused ? { error: periodError } : errorOf("period", t("part01.period")))}
               locale={locale}
             />
-          </div>
+          </Columns>
         </Panel>
         <Divider />
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>

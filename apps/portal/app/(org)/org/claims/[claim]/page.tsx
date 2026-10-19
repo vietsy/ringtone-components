@@ -1,6 +1,16 @@
 import { R1_FORMAT } from "@rightone/formatting";
 import { notFound } from "next/navigation";
-import { Button, DateField, FactList, PageHeader, Panel, Table, ViewState, type Family } from "@/components/r1";
+import {
+  Button,
+  Columns,
+  DateField,
+  FactList,
+  PageHeader,
+  Panel,
+  Table,
+  ViewState,
+  type Family,
+} from "@/components/r1";
 import { PortalShell } from "@/components/shells/PortalShell";
 import { orgContext, orgNav } from "@/components/shells/org-nav";
 import { Text } from "@/components/Text";
@@ -120,7 +130,7 @@ function Body({ page, phone, t, locale }: { page: ClaimPage; phone: boolean; t: 
       </Panel>
     ) : null;
   return (
-    <div style={{ display: "grid", gridTemplateColumns: phone ? "minmax(0, 1fr)" : "minmax(0, 1fr) var(--container-sm)", gap: "var(--space-6)", alignItems: "start" }}>
+    <Columns single={phone}>
       <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)", minWidth: 0 }}>
         {phone ? completenessPanel : null}
         <Panel title={t("cat07.sharesTitle")} inset={inset} density="portal" locale={locale}>
@@ -174,7 +184,7 @@ function Body({ page, phone, t, locale }: { page: ClaimPage; phone: boolean; t: 
           locale={locale}
         />
       </Panel>
-    </div>
+    </Columns>
   );
 }
 

@@ -1,5 +1,17 @@
 import { redirect } from "next/navigation";
-import { ApprovalPair, Button, Comparison, Dialog, Divider, FactList, PageHeader, Panel, StatusLine, ViewState } from "@/components/r1";
+import {
+  ApprovalPair,
+  Button,
+  Columns,
+  Comparison,
+  Dialog,
+  Divider,
+  FactList,
+  PageHeader,
+  Panel,
+  StatusLine,
+  ViewState,
+} from "@/components/r1";
 import { orgContext, orgNav } from "@/components/shells/org-nav";
 import { PortalShell } from "@/components/shells/PortalShell";
 import { proposeAmendment } from "@/features/participation/actions";
@@ -99,7 +111,7 @@ export default async function AmendPage({ searchParams }: { searchParams: Promis
             locale={locale}
           >
             {step !== null ? (
-              <div style={{ display: "grid", gridTemplateColumns: phone ? "minmax(0, 1fr)" : "minmax(0, 1fr) var(--container-sm)", gap: "var(--space-6)", alignItems: "start" }}>
+              <Columns single={phone}>
                 {drafting ? (
                   <AmendmentForm
                     key={typeof params.attempt === "string" ? params.attempt : "new"}
@@ -124,7 +136,7 @@ export default async function AmendPage({ searchParams }: { searchParams: Promis
                 <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
                   <Approval step={step} drafting={drafting} legal={legal} t={t} locale={locale} />
                 </div>
-              </div>
+              </Columns>
             ) : null}
           </ViewState>
         </div>

@@ -1,6 +1,7 @@
 # payments
 
     page.tsx                    SCR-FIN-03  invoices and corrective documents, where the Payments item opens
+    invoices/[invoice]/page.tsx SCR-FIN-03  one invoice or corrective document, or a payment's invoice not issued yet
     [decision]/page.tsx         SCR-FIN-02  where the payment of one obligation decision stands
     [decision]/pay/page.tsx     SCR-FIN-01  pay an obligation decision: authorise, then the instruction
 
@@ -21,5 +22,19 @@ SCR-FIN-01 shows the instruction to pay and SCR-FIN-02 waits for the new payment
 over to SCR-FIN-02, which shows the payment reconciled with the way to its status record, and SCR-FIN-03 lists
 the new invoice first.
 
-SCR-FIN-03: the list is the session's; one, not-settled, einvoice-unavailable, empty, loading and error are
-review views. An invoice has no address of its own yet, so the list opens none.
+A payer reads only the decisions, payments and invoices of the party the session acts for, as PTY answers for it:
+the principal every premises of the party; a delegate only the premises an authority of theirs in force covers.
+Hầu Ngọc Ánh reads Nguyễn Huệ and, since her authority covers reading and submitting only, is refused Authorise
+payment and Pay by card there with `FIN_PAYMENT_NOT_AUTHORISED`, the refusal naming the principal to ask.
+
+SCR-FIN-03: the list is the session's, with the invoices not issued yet first; each row opens its document on
+`invoices/[invoice]`. empty, loading and error are review views of the list; one, not-settled and
+einvoice-unavailable are drawn on the one-invoice page, which the list hands them to.
+
+The mock card scheme confirms a card payment's settlement `MOCK_CARD_SETTLE_SECONDS` seconds after it is
+authorised (at once unless set): until then the payment is paid and not settled, and its invoice is refused. With
+`MOCK_EINVOICE_UNAVAILABLE` set the e-invoice service is down: an invoice falling due is kept unissued, and issued on
+the first read after the variable is cleared. With `MOCK_BANK_DUPLICATE_TRANSFER` set, a payer who pays by card had
+sent the instruction's transfer as well: it arrives when the transfer would have (set `MOCK_BANK_SETTLE_SECONDS`
+high enough to pay by card first) and pays the fee a second time. It creates no second invoice and no second
+settlement; SCR-FIN-02 shows it held as the board's duplicate, its return proposed, until the finance team returns it.

@@ -215,6 +215,10 @@ function Home({
           >
             {t("ver17.verify")}
           </Button>
+          {/* The inspection console (SCR-VER-07, 18) is the same inspector's other client; its home is the lists. */}
+          <Button variant="secondary" size="md" icon="monitor" fullWidth href={routes.inspectionLists()} locale={locale}>
+            {t("ver17.console")}
+          </Button>
           <ConfirmButton
             trigger={{ label: t("ver17.signOut"), variant: "quiet", size: "md", icon: "log-out" }}
             dialog={{

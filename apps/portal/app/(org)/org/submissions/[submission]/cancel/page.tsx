@@ -1,6 +1,6 @@
 import { R1_FORMAT } from "@rightone/formatting";
 import { notFound, redirect } from "next/navigation";
-import { Banner, FactList, PageHeader, Panel, ViewState } from "@/components/r1";
+import { Banner, Columns, FactList, PageHeader, Panel, ViewState } from "@/components/r1";
 import { PortalShell } from "@/components/shells/PortalShell";
 import { orgContext, orgNav } from "@/components/shells/org-nav";
 import { Text } from "@/components/Text";
@@ -87,7 +87,7 @@ export default async function CancelSubmissionPage({
           locale={locale}
         >
           {submission !== null ? (
-            <div style={{ display: "grid", gridTemplateColumns: phone ? "minmax(0, 1fr)" : "minmax(0, 1fr) var(--container-sm)", gap: "var(--space-6)", alignItems: "start" }}>
+            <Columns single={phone}>
               <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)", minWidth: 0 }}>
                 {open ? (
                   <>
@@ -147,7 +147,7 @@ export default async function CancelSubmissionPage({
                   <Text size="base">{t("cat24.keepsText", { reference: submission.reference })}</Text>
                 </Panel>
               </div>
-            </div>
+            </Columns>
           ) : null}
         </ViewState>
       </div>

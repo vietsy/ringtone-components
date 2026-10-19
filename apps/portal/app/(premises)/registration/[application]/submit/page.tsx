@@ -5,7 +5,7 @@ import { AttestForm } from "@/features/registration/AttestForm";
 import { DraftFrame, DraftUnavailable, StepError } from "@/features/registration/DraftFrame";
 import { MissingBanner } from "@/features/registration/MissingBanner";
 import { sendApplication } from "@/features/registration/actions";
-import { regTranslator } from "@/features/registration/copy";
+import { count, regTranslator } from "@/features/registration/copy";
 import { readForPage } from "@/lib/api/flash";
 import { loadApplicationDraft, loadAttestationStep, type ApplicationDraft, type AttestAttempt, type AttestationStep } from "@/lib/api/registration";
 import { requirePrincipal } from "@/lib/api/session";
@@ -125,7 +125,8 @@ function Attest({
         box1: t("reg06.box1", { premises: draft.premises }),
         box1Help: t("reg06.box1Help", { party: step.party }),
         box2: t("reg06.box2"),
-        box2Help: t("reg06.box2Help"),
+        // The period the explanation quoted: TAR's change-report period (CFG-360), the thirty-day default while none is approved.
+        box2Help: t("reg06.box2Help", { days: count(step.changeReportDays, locale) }),
         recordLine: t("reg06.recordLine"),
         confirm: t(step.sendPending ? "reg06.sendAgain" : "reg06.confirm"),
         sending: t("reg06.sending"),

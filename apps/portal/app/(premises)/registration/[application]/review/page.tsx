@@ -200,7 +200,17 @@ function Review({
           ) : null}
           {fee !== null ? (
             <>
-              <Panel variant="plain" level={2} title={t("reg05.feeFor", { period: span(fee.period, locale) })} density="portal" locale={locale}>
+              <Panel
+                variant="plain"
+                level={2}
+                title={t("reg05.feeFor", { period: span(fee.period, locale) })}
+                // SCR-TAR-14 from the review: the calculation this review recorded, step by step.
+                {...(step.calculation !== undefined && step.calculation !== null && step.calculation !== ""
+                  ? { actions: [{ label: t("reg05.howCalculated"), href: routes.reviewFeeCalculation(reference, step.calculation), variant: "secondary" as const }] }
+                  : {})}
+                density="portal"
+                locale={locale}
+              >
                 <Table
                   columns={
                     phone
@@ -216,7 +226,7 @@ function Review({
                   }
                   rows={fee.lines.map((line) => {
                     const layer = t(`reg.layer.${line.layer}`);
-                    const note = line.claimPending ? t("reg.pending") : null;
+                    const note = line.claimPending ? t("reg.pending") : line.treatment !== undefined && line.treatment !== null ? t(`reg08.treatment.${line.treatment}`) : null;
                     return {
                       _key: line.layer,
                       amount: { amountMinor: line.amountMinor, currency: fee.currency },
@@ -239,7 +249,7 @@ function Review({
                     variant="sunken"
                     level={3}
                     title={t("reg05.exTitle")}
-                    description={t("reg05.exText")}
+                    description={t(step.exemption.every((criterion) => criterion.met) ? "reg05.exApplied" : "reg05.exText")}
                     inset={phone ? "sm" : "md"}
                     density="portal"
                     locale={locale}
@@ -252,10 +262,14 @@ function Review({
                             ? t("reg05.c1d", { area: t("reg.area", { n: count(criterion.declaredArea, locale) }) })
                             : criterion.criterion === "ONE_PREMISES"
                               ? t("reg05.c2d", { count: count(criterion.premisesInRegister, locale), party: criterion.party })
-                              : t("reg05.c3d", { music: lowerFirst(t(`reg.music.${criterion.declared}`), locale) });
+                              : criterion.criterion === "RECORDED_SPEAKERS_ONLY"
+                                ? t("reg05.c3d", { music: lowerFirst(t(`reg.music.${criterion.declared}`), locale) })
+                                : criterion.value === null
+                                  ? t("reg05.cNone")
+                                  : t(`reg05.cValue.${criterion.criterion}`, { n: count(criterion.value, locale) });
                         return {
                           key: criterion.criterion,
-                          title: t(`reg05.criterion.${criterion.criterion}`),
+                          title: t(`reg05.criterion.${criterion.criterion}`, "atMost" in criterion ? { limit: count(criterion.atMost, locale) } : {}),
                           detail,
                           family,
                           status: { family, label: t(criterion.met ? "reg05.met" : "reg05.notMet") },
@@ -270,9 +284,24 @@ function Review({
                 ) : null}
               </Panel>
               <Divider />
+            </>
+          ) : null}
+          {step.outcome !== undefined && step.outcome !== null && step.outcome.kind !== "PAYABLE" ? (
+            <>
+              <StatusLine
+                family={step.outcome.kind === "UNDER_REVIEW" ? "attention" : "info"}
+                text={t(step.outcome.kind === "UNDER_REVIEW" ? `reg05.outcome.${step.outcome.reason}` : `reg05.outcome.${step.outcome.basis}`)}
+                cutout="surface"
+                locale={locale}
+              />
+              <Divider />
+            </>
+          ) : null}
+          {fee !== null || (step.outcome !== undefined && step.outcome !== null) ? (
+            <>
               <Panel variant="plain" level={2} title={t("reg.beforeTitle")} density="portal" locale={locale}>
                 <Text size="base">
-                  {t("reg05.beforeText", { date: day(told.useBeganOn, locale) })}
+                  {beforeWords(step, told.useBeganOn, t, locale)}
                 </Text>
                 {step.payBy !== null ? (
                   <Text size="base" weight="medium">
@@ -304,7 +333,7 @@ function Review({
                         locale={locale}
                       >
                         <Text size="base">
-                          {t(`reg05.section${section}.body`)}
+                          {t(`reg05.section${section}.body`, { days: count(step.explanation.changeReportDays, locale) })}
                         </Text>
                       </Disclosure>
                     ))}
@@ -340,6 +369,19 @@ function Review({
       </ButtonRow>
     </Panel>
   );
+}
+
+/**
+ * The time before registration, as DR-22 decided it (SCR-REG-05's words for each outcome): nothing to consider, the
+ * amnesty, or nothing raised now with the date kept. A design state carries no treatment and reads as the last.
+ */
+function beforeWords(step: ReviewStep, useBeganOn: string, t: Translate, locale: Locale): string {
+  const before = step.preRegistration ?? null;
+  if (before?.treatment === "NO_PRE_REGISTRATION_PERIOD") return t("reg05.before.NO_PRE_REGISTRATION_PERIOD");
+  if (before?.treatment === "AMNESTY_APPLIED" && before.amnesty !== null) {
+    return t("reg05.before.AMNESTY_APPLIED", { version: before.amnesty.version, period: span(before.amnesty.period, locale), date: day(useBeganOn, locale) });
+  }
+  return t("reg05.beforeText", { date: day(useBeganOn, locale) });
 }
 
 /** "Speakers, recorded music" read inside a sentence: "You declared speakers, recorded music." */

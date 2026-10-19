@@ -7,7 +7,7 @@ disabled, loading, error - and never conveys information by colour alone. `Statu
 label and its family's shape as well as its colour, so it survives deuteranopia, a printed A4
 certificate and a photocopied inspection record.
 
-    r1/               the design system R1's components, generated - see r1/README.md
+    r1/               the design system R1's components, one file each - see r1/README.md
     shells/           R1's shells with the language switch wired, and the premises nav
     Text.tsx          running text between R1 components: size, ink, weight and measure, all tokens
     ThemeSurface.tsx  a page in another R1 theme with no shell to set it (the printout's paper)
@@ -24,6 +24,12 @@ paragraphs; `Text` is that one pattern, so no screen styles its own. `test/desig
 every file under `app`, `features` and `components` to this: no raw text, action, field or list element, no
 visual style property, no class name, no length or colour literal, no stylesheet. A finding is fixed by
 using a component, extending one, or adding one here; the test carries no exceptions.
+
+Columns side by side come from R1's `Columns` (a content column and a side column, halves, thirds, quarters), never
+from a grid template written on the screen: a screen cannot hold a media or container query, so its own columns
+would keep their widths on a narrow window, at 400 % zoom or on iPad Safari (which the server lays out as a desktop)
+and squeeze the content to nothing. `Columns` folds on the width of its own box. A layout chosen from the frame
+(`lib/view/frame.ts`) still decides what only a phone or a tablet gets, such as cards in place of a table.
 
 A component added here is a proposal for R1: when the design system ships its own, the screens move to it
 and this one goes.

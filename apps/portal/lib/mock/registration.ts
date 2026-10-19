@@ -28,6 +28,7 @@ import type {
   StartApplication,
 } from "@/lib/api/registration";
 import { MOCK_PRINCIPAL } from "./session";
+import { CHANGE_REPORT_DEFAULT_DAYS } from "./tariff";
 
 /*
  * The registration family's answers, from the premises canvas (SCR-REG-01 to 08) and its data sheet. Today
@@ -587,7 +588,8 @@ export function mockReviewStep(reference: string, view: Exclude<Reg05View, "load
     declaredClass: false,
     exemption: null,
     payBy: "2026-10-31",
-    explanation: { version: 3, published: true },
+    // The canvas's states quote TAR's change-report period as it stands with no version approved (CFG-360).
+    explanation: { version: 3, published: true, changeReportDays: CHANGE_REPORT_DEFAULT_DAYS },
   };
   switch (view) {
     case "populated":
@@ -605,7 +607,7 @@ export function mockReviewStep(reference: string, view: Exclude<Reg05View, "load
     case "declared-class":
       return ok({ ...base, told: base.told !== null ? { ...base.told, premisesClass: "cafe" } : null, declaredClass: true });
     case "no-explanation":
-      return ok({ ...base, explanation: { version: 3, published: false } });
+      return ok({ ...base, explanation: { version: 3, published: false, changeReportDays: CHANGE_REPORT_DEFAULT_DAYS } });
     case "tariff-not-approved":
       return ok({ ...base, fee: null, feeRefusal: "TARIFF_NOT_APPROVED" });
     case "missing-items":
@@ -630,6 +632,7 @@ export function mockAttestationStep(reference: string, view: Reg06View): LoadOut
     sendPending: false,
     // A drawn state carries no review of its own; sending from it is answered as the session's draft stands.
     shown: null,
+    changeReportDays: CHANGE_REPORT_DEFAULT_DAYS,
   };
   const refused = (code: string, governingDecision: string | null = null): AttestationStep => ({ ...base, refusal: { code, governingDecision } });
   switch (view) {
@@ -707,8 +710,8 @@ const HBT_REQUEST: NonNullable<ApplicationRecord["evidenceRequest"]> = {
   dueOn: "2026-10-09",
   closed: false,
   items: [
-    { item: "MUSIC_INVOICE_Q3", receivedOn: null, refusal: null },
-    { item: "EQUIPMENT_PHOTO", receivedOn: "2026-09-24", refusal: null },
+    { item: "SUPPLIER-INVOICE", document: "MUSIC_INVOICE_Q3", description: null, receivedOn: null, refusal: null },
+    { item: "EQUIPMENT-PHOTO", document: "EQUIPMENT_PHOTO", description: null, receivedOn: "2026-09-24", refusal: null },
   ],
 };
 
@@ -785,7 +788,13 @@ const PASTEUR: ApplicationRecord = {
   sentAt: at("2026-09-18", "11:29"),
   review: "NONE",
   claims: [],
-  evidenceRequest: { askedBy: "RIGHTONE", askedOn: "2026-09-18", dueOn: "2026-10-02", closed: false, items: [{ item: "LEASE", receivedOn: null, refusal: null }] },
+  evidenceRequest: {
+    askedBy: "RIGHTONE",
+    askedOn: "2026-09-18",
+    dueOn: "2026-10-02",
+    closed: false,
+    items: [{ item: "TENURE", document: "LEASE", description: null, receivedOn: null, refusal: null }],
+  },
   dates: {
     completeOn: null,
     decisionExpectedBy: null,
@@ -887,8 +896,8 @@ function drawnApplication(view: Exclude<Reg07View, "loading">): LoadOutcome<Appl
           ...HBT_REQUEST,
           dueOn: null,
           items: [
-            { item: "MUSIC_INVOICE_Q3", receivedOn: "2026-10-01", refusal: null },
-            { item: "EQUIPMENT_PHOTO", receivedOn: "2026-09-24", refusal: null },
+            { item: "SUPPLIER-INVOICE", document: "MUSIC_INVOICE_Q3", description: null, receivedOn: "2026-10-01", refusal: null },
+            { item: "EQUIPMENT-PHOTO", document: "EQUIPMENT_PHOTO", description: null, receivedOn: "2026-09-24", refusal: null },
           ],
         },
         dates: { completeOn: "2026-10-01", decisionExpectedBy: "2026-10-22", reset: false, ...HBT_DATES, toldOn: "2026-10-01", passedWhenComplete: false },
@@ -929,7 +938,7 @@ function drawnApplication(view: Exclude<Reg07View, "loading">): LoadOutcome<Appl
       return ok({
         ...HBT,
         status: "WITHDRAWN",
-        ended: { kind: "WITHDRAWN", on: "2026-10-01", at: at("2026-10-01", "10:14") },
+        ended: { kind: "WITHDRAWN", on: "2026-10-01", at: at("2026-10-01", "10:14"), instruction: null },
         claims: HBT.claims.map((claim) => ({ ...claim, state: "WITHDRAWN" as const })),
         history: [{ at: at("2026-10-01", "10:14"), event: "WITHDRAWN" }, HBT_ASKED, ...HBT.history],
         canWithdraw: false,
@@ -939,7 +948,7 @@ function drawnApplication(view: Exclude<Reg07View, "loading">): LoadOutcome<Appl
       return ok({
         ...HBT,
         status: "CLOSED_INCOMPLETE",
-        evidenceRequest: { ...HBT_REQUEST, closed: true, items: [{ item: "MUSIC_INVOICE_Q3", receivedOn: null, refusal: null }] },
+        evidenceRequest: { ...HBT_REQUEST, closed: true, items: [{ item: "SUPPLIER-INVOICE", document: "MUSIC_INVOICE_Q3", description: null, receivedOn: null, refusal: null }] },
         ended: { kind: "CLOSED_INCOMPLETE", on: "2026-10-10" },
         history: [{ at: at("2026-10-10", "00:00"), event: "CLOSED" }, HBT_ASKED, ...HBT.history],
         canWithdraw: false,
@@ -955,7 +964,20 @@ const lines = (authors: number, performers: number, producers: number, producers
   { layer: "PERFORMERS" as const, amountMinor: performers, treatment: null, scope: null },
   { layer: "PRODUCERS" as const, amountMinor: producers, treatment: producersTreatment, scope: null },
 ];
-const decisionBase = { currency: "VND", tariffVersion: TARIFF, explanationVersion: 3, rulebookVersion: "2026.2", claim: null, otherwise: null, replacedBy: null, application: null } as const;
+const decisionBase = {
+  currency: "VND",
+  tariffVersion: TARIFF,
+  explanationVersion: 3,
+  rulebookVersion: "2026.2",
+  claim: null,
+  otherwise: null,
+  replacedBy: null,
+  application: null,
+  // Read at each read from the use-start date (DR-23): the backend works it out; a review state draws none.
+  deadline: null,
+  prior: null,
+  lateStatement: null,
+} as const;
 
 /** One record per decision on the canvas. Amounts are whole dong. */
 const DECISION_RECORDS: Readonly<Record<string, DecisionRecord>> = {
@@ -1095,10 +1117,13 @@ export interface SeedFee {
 
 export interface RegistrationSeed {
   premises: readonly PremisesOption[];
-  /** PTY's register: the company's business registration, and the area and class of each premises it answers. */
+  /**
+   * PTY's register: the company's business registration, and the area and class of each premises it answers; a class
+   * of null is one the register holds in no class the registration rules ask about, so the premises declares it.
+   */
   register: {
     businessRegistration: string;
-    premises: Readonly<Record<string, { administrativeArea: string; premisesClass: PremisesClass; classChanged: boolean }>>;
+    premises: Readonly<Record<string, { administrativeArea: string; premisesClass: PremisesClass | null; classChanged: boolean }>>;
   };
   /** The canvas's list order, newest first. */
   applications: readonly SeedApplication[];
@@ -1186,9 +1211,18 @@ export function registrationSeed(): RegistrationSeed {
     premises: ACTED_FOR,
     register: {
       businessRegistration: BUSINESS_REGISTRATION,
+      // Sala and Pasteur as SCR-REG-03 draws them. The others' wards are the party register's (`premises.ts`, the
+      // PTY boards); it names no ward for Hai Bà Trưng or Phan Xích Long, which the register answers by their city,
+      // Hồ Chí Minh City, where every Then Cửa Việt premises is. Their classes are asked, as SCR-REG-03 asks Đa Kao's.
       premises: {
         sala: { administrativeArea: "Phường An Khánh, TP. Hồ Chí Minh", premisesClass: "cafe", classChanged: false },
         pasteur: { administrativeArea: "Phường Sài Gòn, TP. Hồ Chí Minh", premisesClass: "cafe", classChanged: true },
+        dakao: { administrativeArea: "Phường Tân Định, TP. Hồ Chí Minh", premisesClass: null, classChanged: false },
+        buivien: { administrativeArea: "Phường Bến Thành, TP. Hồ Chí Minh", premisesClass: null, classChanged: false },
+        ltt: { administrativeArea: "Phường Bến Thành, TP. Hồ Chí Minh", premisesClass: null, classChanged: false },
+        nh: { administrativeArea: "Phường Sài Gòn, TP. Hồ Chí Minh", premisesClass: null, classChanged: false },
+        hbt: { administrativeArea: "TP. Hồ Chí Minh", premisesClass: null, classChanged: false },
+        pxl: { administrativeArea: "TP. Hồ Chí Minh", premisesClass: null, classChanged: false },
       },
     },
     applications: [

@@ -19,8 +19,9 @@ const secret = (formData: FormData, name: string): string => {
 
 /**
  * SCR-RID-01 "Đăng nhập". Signed in, a premises principal goes on to choose the organisation they act for, an
- * inspector to the field client and a rights organisation's administrator to the organisation portal;
- * refused, the page shows why, with the address kept and the password not.
+ * inspector to the field client, a rights organisation's administrator to the organisation portal, an artist to
+ * the artist portal and a member of the gateway's staff to the operations console; refused, the page shows why,
+ * with the address kept and the password not.
  */
 export async function signIn(formData: FormData): Promise<void> {
   const outcome = await signInWithPassword(field(formData, "Input.Email"), secret(formData, "Input.Password"), formData.has("Input.RememberMe"));
@@ -28,6 +29,8 @@ export async function signIn(formData: FormData): Promise<void> {
   const { attempt, role } = outcome.data;
   if (role === "inspector") redirect(routes.field());
   if (role === "cmo") redirect(routes.org());
+  if (role === "artist") redirect(routes.artistHome());
+  if (role === "staff") redirect(routes.ops());
   if (role === "principal") redirect(routes.chooseOrganisation());
   redirect(routes.signIn(keepForPage(attempt)));
 }

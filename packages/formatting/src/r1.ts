@@ -2,12 +2,11 @@ import type { Locale } from "./money.js";
 
 /**
  * The format rules of the design system R1, ported from the design system's component bundle so that
- * its components and this package render a value one way (R23.7). The portal's R1 component module is
- * generated with the design system's own copy of these functions removed and `R1_FORMAT` imported in
- * their place; `apps/portal/scripts/generate-r1-components.mjs` refuses to generate when the design
- * system's copy changes, so a change there is ported here first.
+ * its components and this package render a value one way (R23.7). The portal's R1 components
+ * (`apps/portal/components/r1`) take these functions through `lib/formatting.ts` instead of carrying a copy
+ * of their own, so a change of a format rule in the design system is ported here.
  *
- * The exported functions keep the design system's signatures exactly, because the generated module and
+ * The exported functions keep the design system's signatures exactly, because the components and
  * the screens call them positionally. Every one returns `null` for a value it cannot render: a component
  * draws its own dash for a null, read aloud as "not calculated", and this package's older functions turn
  * it into `NO_VALUE`. The `*In` helpers take a time zone and serve those older functions.

@@ -2,8 +2,33 @@ import type { LoadOutcome } from "@rightone/ui";
 import type { Locale } from "@/lib/i18n/translate";
 import {
   abandonInspection as abandonInBackend,
+  appointmentDecisionsOf,
+  authorityWorkOf,
+  closeInspection as closeInBackend,
+  correctionOf,
+  correctRecord as correctInBackend,
+  decideAppointment as decideAppointmentInBackend,
+  decideDesignation as decideDesignationInBackend,
+  designationDecisionsOf,
+  endAppointment as endAppointmentInBackend,
+  endDesignation as endDesignationInBackend,
+  inspectionAuthoritiesOf,
+  inspectorAppointmentsOf,
+  oversightOf,
+  premisesRecordOf,
+  premisesRecordsOf,
+  reconsiderationOf,
+  recordAppointment as recordAppointmentInBackend,
+  recordDesignation as recordDesignationInBackend,
+  reinstateAppointment as reinstateInBackend,
+  requestReconsideration as requestReconsiderationInBackend,
+  suspendAppointment as suspendInBackend,
+  type PremisesActor,
+  type Refused,
+  type StaffActor,
   attachVerification,
   carryAnswerIntoInspection,
+  checkOffline,
   chooseActingFor,
   concludeInspection as concludeInBackend,
   conclusionOf,
@@ -21,6 +46,7 @@ import {
   refreshVerificationKeys,
   requestInspectionList,
   scanAndVerifyOf,
+  scanCode as scanCodeInBackend,
   uploadOfflineResult as uploadInBackend,
   verificationAnswerOf,
   verify,
@@ -47,6 +73,7 @@ import {
   type Ver08View,
   type Ver17View,
 } from "@/lib/mock/inspection";
+import type { Principal, Staff } from "./session";
 import { NOT_CONFIGURED, usesMockData } from "./source";
 
 /**
@@ -71,6 +98,7 @@ export type RefusalCode =
   | "CURSOR_INVALID"
   | "DECISION_READ_UNAVAILABLE"
   | "DELAY_REASON_REQUIRED"
+  | "DEVICE_TIME_IN_FUTURE"
   | "ENTRIES_DISPOSED"
   | "FOLLOW_UP_DATE_INVALID"
   | "GENERATION_TIMED_OUT"
@@ -81,6 +109,7 @@ export type RefusalCode =
   | "JURISDICTION_NOT_RECORDED_FOR_GEOGRAPHY"
   | "KEYS_UNAVAILABLE"
   | "LIST_SUPPLY_LIMIT_REACHED"
+  | "LOCATION_CONTEXT_NOT_PERMITTED"
   | "NOTE_REQUIRED"
   | "NOT_AUTHORISED"
   | "NOT_ISSUING_AUTHORITY"
@@ -105,7 +134,36 @@ export type RefusalCode =
   | "REPRESENTATIVE_ROLE_MISSING"
   | "SCOPE_READ_UNAVAILABLE"
   | "SUPPLY_NOT_FOUND"
-  | "SUPPLY_NOT_READY";
+  | "SUPPLY_NOT_READY"
+  // The operations console's (SCR-VER-09 to 12)
+  | "APPOINTMENT_EXISTS"
+  | "APPOINTMENT_NOT_ACTIVE"
+  | "APPOINTMENT_NOT_FOUND"
+  | "APPOINTMENT_NOT_SUSPENDED"
+  | "AREA_NOT_IN_GEOGRAPHY"
+  | "AUTHORITY_CODE_EXISTS"
+  | "AUTHORITY_NOT_FOUND"
+  | "DESIGNATION_NOT_ACTIVE"
+  | "END_DATE_EXTENDS_PERIOD"
+  | "END_DATE_IN_PAST"
+  | "GEOGRAPHY_READ_UNAVAILABLE"
+  | "NOT_PENDING_APPROVAL"
+  | "PERSON_NOT_FOUND"
+  | "SEGREGATION_REQUIRED"
+  // The premises' records and their reconsideration (SCR-VER-13, 14), and a correction (SCR-VER-15, 18)
+  | "CASE_NOT_DECIDED"
+  | "CASE_NOT_FOR_RECORD"
+  | "CASE_STATE_UNAVAILABLE"
+  | "CHALLENGE_ALREADY_OPEN"
+  | "CORRECTION_ALREADY_RECORDED"
+  | "CORRECTION_NOT_REQUIRED"
+  | "GROUNDS_MISSING"
+  | "INSPECTOR_STILL_APPOINTED"
+  | "NOT_AUTHORISED_FOR_PREMISES"
+  | "NOT_PARTY_TO_SUBJECT"
+  | "PREMISES_REQUIRED"
+  | "SUBJECT_NOT_FOUND"
+  | "SUBJECT_SUPERSEDED";
 
 export type Purpose = "ROUTINE" | "COMPLAINT_FOLLOW_UP" | "LIST_FOLLOW_UP" | "RE_VISIT";
 export type FindingKind =
@@ -123,6 +181,24 @@ export type RepresentativeRole = "OWNER" | "MANAGER" | "EMPLOYEE" | "OTHER_PRESE
 export type Acknowledgement = "ACKNOWLEDGED" | "REFUSED_TO_ACKNOWLEDGE" | "NO_REPRESENTATIVE_PRESENT";
 export type FollowUpKind = "NONE" | "RE_VISIT" | "AWAIT_REGISTRATION" | "CASE";
 export type IdentifierType = "PUBLIC_REFERENCE" | "REPRESENTATION_REFERENCE" | "PREMISES_REFERENCE";
+/**
+ * A status record's state as the inspector route says it (design/03 section 5b): IN_FORCE is CER's ACTIVE inside its
+ * period, NOT_YET_IN_FORCE an ACTIVE record whose first period has not begun; the rest are CER's own states.
+ */
+export type RecordState =
+  | "IN_FORCE"
+  | "NOT_YET_IN_FORCE"
+  | "EXPIRING"
+  | "REINSTATED"
+  | "SUSPENDED"
+  | "EXPIRED"
+  | "REVOKED"
+  | "CANCELLED"
+  | "REPLACED";
+/** The states in which a record is current: the only ones a compliant outcome rests on (DR-741 row 1). */
+export const CURRENT_STATES: readonly RecordState[] = ["IN_FORCE", "EXPIRING", "REINSTATED"];
+/** Where an inspection is said to have taken place (CFG-772): the premises' register address, never a device location. */
+export type LocationContext = "REGISTER_ADDRESS" | "SCANNED_AT_PREMISES" | "DEVICE_LOCATION";
 export type ListKind = "NO_CURRENT_RECORD" | "NOT_CURRENT_WITH_DECISION";
 export type SupplyState = "REQUESTED" | "READY" | "FAILED" | "DISPOSED";
 
@@ -217,23 +293,33 @@ export interface FieldHome {
 
 /** A result checked offline, waiting on the phone to upload, in the outcome words of section 5. */
 export interface WaitingResult {
+  /** The key the phone generated when it checked the code: the upload's idempotency key, and the result's address. */
+  id: string;
   representation: string;
-  /** LIMITED_OFFLINE: authentic, current state unknown. UNABLE_TO_VERIFY: no key held for it, or keys too old. */
-  outcome: "LIMITED_OFFLINE" | "UNABLE_TO_VERIFY";
+  /**
+   * LIMITED_OFFLINE: authentic, current state unknown. NOT_AUTHENTICATED: the signature does not verify under the
+   * keys held. UNABLE_TO_VERIFY: no key held for it, or keys too old.
+   */
+  outcome: "LIMITED_OFFLINE" | "NOT_AUTHENTICATED" | "UNABLE_TO_VERIFY";
   checkedAt: string;
   /** The answer its last upload got that left it waiting (a read RightOne could not make). */
   refusal: RefusalCode | null;
 }
 
-/** RightOne's own answer to a result the phone uploaded in the last 7 days. */
+/**
+ * RightOne's own answer to a result the phone uploaded in the last 7 days: the state an online read gave (the seed's
+ * two), or the outcome RightOne computed from the signed code (`ALG-711` on the server).
+ */
 export interface UploadedResult {
   answer: string;
-  state: "IN_FORCE" | "REVOKED";
+  state: "IN_FORCE" | "REVOKED" | "LIMITED_OFFLINE" | "NOT_AUTHENTICATED" | "NO_RECORD";
   /** RightOne's answer is not what the phone said offline. */
   differsFromDevice: boolean;
   checkedAt: string;
   /** The refusal the answer gave when the inspector opened it. */
   refusal: RefusalCode | null;
+  /** Checked from an inspection and refused there: stored, not attached to it, for this reason. */
+  notAttached: RefusalCode | null;
 }
 
 /** A result a permanent refusal returned; it can only be discarded. */
@@ -257,6 +343,8 @@ export interface ScanAndVerify {
   checking: boolean;
   /** What the inspector had typed when the act was refused. */
   typedReference: string;
+  /** The printout reference the stand-in camera was pointed at, and whether it found no code there. */
+  scan: { printout: string; noCode: boolean };
   /** The open inspection the screen was opened from (SCR-VER-04): what is verified attaches to it. */
   inspection: string | null;
   waiting: readonly WaitingResult[];
@@ -275,7 +363,7 @@ export type AnswerOutcome =
   /** The record's state now; the only outcome headed by the state. */
   | {
       kind: "CURRENT_RESULT";
-      state: "IN_FORCE" | "SUSPENDED";
+      state: RecordState;
       record: string;
       /** Null in the public field set, which names no premises. */
       premises: PremisesName | null;
@@ -295,24 +383,32 @@ export type AnswerOutcome =
   | { kind: "NO_RECORD" }
   | { kind: "NO_PREMISES_IN_JURISDICTION" }
   /** `lastState` null: never issued. */
-  | { kind: "NO_CURRENT_RECORD_FOR_PREMISES"; premises: PremisesName; lastState: "SUSPENDED" | null }
+  | { kind: "NO_CURRENT_RECORD_FOR_PREMISES"; premises: PremisesName; lastState: RecordState | null }
   | { kind: "AMBIGUOUS"; count: number }
-  | { kind: "NOT_AUTHENTICATED" }
-  /** Checked on the phone without a network: the code is authentic, its state is the one printed. */
+  /** The signature does not verify under the key it names, or the key was not valid when the code was issued. */
+  | { kind: "NOT_AUTHENTICATED"; reason: "SIGNATURE_NOT_VERIFIED" | "KEY_NOT_VALID_AT_ISSUE" }
+  /**
+   * Checked without a network, on the phone or by RightOne from the code uploaded: the code is authentic, and its
+   * state is the one printed. `keyRetiredAt` says the key that signed it was retired after the code was issued.
+   */
   | {
       kind: "LIMITED_OFFLINE";
       record: string;
       premises: PremisesName;
-      printedState: "IN_FORCE";
+      printedState: RecordState;
       period: Period;
       printedAt: string;
       keysRefreshedAt: string;
+      keyId: string;
+      keyRetiredAt: string | null;
     };
 
 export interface VerificationAnswer {
   device: FieldDevice;
   /** The answer reference; null for a result not yet uploaded. */
   reference: string | null;
+  /** The identifier presented, as stored with the answer (FR-VER-025); null for an answer of the seed. */
+  identifier: { type: IdentifierType; value: string } | null;
   outcome: AnswerOutcome;
   /** The inspection the answer was verified from, and whether it was attached to it. */
   inspection: { reference: string; attached: boolean } | null;
@@ -359,6 +455,12 @@ export type AttachedAnswerResult =
   | { kind: "SUSPENDED" }
   /** The premises held no record in force when the answer was given. */
   | { kind: "NO_CURRENT_RECORD" }
+  /** The record was in another state that is not current when the answer was given (revoked, expired, ...). */
+  | { kind: "NOT_CURRENT"; state: RecordState }
+  /** Uploaded from a check without a network: authentic, with the state printed and what was not checked. */
+  | { kind: "OFFLINE"; printedAt: string; printedState: RecordState }
+  /** The code's signature did not verify: no fact of the code is evidence. */
+  | { kind: "NOT_AUTHENTICATED" }
   /** Refused at attaching; the answer is stored on its own. */
   | { kind: "NOT_ATTACHED"; refusal: RefusalCode }
   /** Checked offline from this inspection, waiting on the phone: the state printed, not the state now. */
@@ -447,6 +549,29 @@ export interface Conclusion {
 
 // ------------------------------------------------------------------ SCR-VER-06 Inspection record
 
+/**
+ * An answer a record cites, as the record carries it (`ALG-715` step 3, `verified`): an online answer with the state
+ * it read and when, or an offline one with its limits - the state printed at the code's issue, that issue instant and
+ * when the phone's keys were refreshed; the current state and any revocation after issue were not checked.
+ */
+export type VerifiedAnswer =
+  | { answer: string; channel: "ONLINE"; state: RecordState; readAt: string }
+  | { answer: string; channel: "OFFLINE_UPLOAD"; printedState: RecordState; printedAt: string; keysRefreshedAt: string };
+
+/** How a record version reached the inspected party (SM-705), by which route and when. */
+export interface RecordDelivery {
+  state: "PENDING" | "HANDED_OVER" | "NOTICE_DELIVERED" | "UNDELIVERED";
+  route: "ON_SITE" | "NOTICE" | null;
+  handedOverAt: string | null;
+  /** When the notice reached the party, as COM reported it. */
+  deliveredAt: string | null;
+  dueBy: string;
+  /** When the period passed with neither route; kept after a late delivery (FR-VER-035). */
+  undeliveredAt: string | null;
+  /** The notice COM raised to the party at issue, and when; null while none is raised. */
+  notice: { reference: string; raisedAt: string } | null;
+}
+
 export interface InspectionRecord {
   device: FieldDevice;
   reference: string;
@@ -456,12 +581,20 @@ export interface InspectionRecord {
   authority: string;
   issuedAt: string;
   outcome: Outcome;
-  /** Whether the premises asked to reconsider the record; UNKNOWN when it cannot be told just now. */
-  reconsideration: "NONE" | "UNKNOWN";
+  /**
+   * Whether the premises asked to reconsider the record, and the case it opened; UNKNOWN when it cannot be told just
+   * now. The case is null for an inspector of another authority, who is told the record is under challenge and
+   * nothing of the case (FR-VER-027).
+   */
+  reconsideration: "NONE" | "UNKNOWN" | { case: string | null };
   /** The tail of the record's digest. */
   digest: string;
   /** The version in force after a correction. */
   versionInForce: boolean;
+  /** Set when the version read is an earlier one: when a correction superseded it. */
+  supersededAt: string | null;
+  /** The versions a correction superseded, each readable on request (`version`). */
+  earlier: readonly { version: number; supersededAt: string }[];
   /**
    * The whole record, for the issuing authority only. Another authority's inspector reads the confirmation:
    * no person, no finding, no representative.
@@ -469,16 +602,31 @@ export interface InspectionRecord {
   whole: {
     inspector: { name: string; card: string };
     inspectedAt: string;
-    /** The answer in force the record rests on; null where none is attached. */
-    answer: { reference: string; state: "IN_FORCE" } | null;
+    /** What the inspection was opened for and under; null where a record of the seed does not say. */
+    purpose: Purpose | null;
+    basis: string | null;
+    /** Where the record says the inspection took place: the register address, the one context CFG-772 permits. */
+    locationContext: LocationContext;
+    /** The answers the record cites, each with its own limits (FR-VER-037). */
+    verified: readonly VerifiedAnswer[];
+    /** The state CER answered for the premises' record when the inspection took place; null where not read. */
+    recordStateAtObservation: RecordState | null;
+    /** The case CAS opened for the referral's follow-up. */
+    referralCase: string | null;
     findings: readonly Finding[];
-    /** Null where nobody was present. */
-    representative: { role: RepresentativeRole | null; acknowledgement: Acknowledgement };
+    /** The role is null where nobody was present; the whole is null where the record does not say (a seed record). */
+    representative: { role: RepresentativeRole | null; acknowledgement: Acknowledgement } | null;
     followUp: FollowUpKind;
     followUpBy: string | null;
+    /** The guidance given, the referral's route and note, and what the representative said, as issued (FR-VER-007). */
+    guidance: string | null;
+    referral: { route: ReferralRoute; note: string } | null;
+    statement: string | null;
+    /** Why the inspection was recorded after CFG-773's interval, where it was (FR-VER-038). */
+    delayReason: string | null;
     /** The case under which this version corrected the earlier one. */
     correctedUnderCase: string | null;
-    delivery: { state: "PENDING" | "HANDED_OVER"; handedOverAt: string | null; dueBy: string; noticeSent: boolean };
+    delivery: RecordDelivery;
   } | null;
   /** In the page header. */
   refusal: RefusalCode | null;
@@ -598,6 +746,323 @@ export interface ListSupply {
   refusal: RefusalCode | null;
 }
 
+// ------------------------------------------------------------------ SCR-VER-09 to 12 The operations console
+
+/** A designation's or an appointment's standing (SM-700, SM-701), in the words of section 5c. */
+export type Standing = "PENDING_APPROVAL" | "ACTIVE" | "SUSPENDED" | "REFUSED" | "ENDED";
+export type AuthorityLevel = "CENTRAL" | "PROVINCIAL" | "COMMUNE";
+export const AUTHORITY_LEVELS: readonly AuthorityLevel[] = ["CENTRAL", "PROVINCIAL", "COMMUNE"];
+
+/** Who recorded, suspended or decided something: the staff member's name, and the address segregation compares. */
+export interface StaffStamp {
+  name: string;
+  email: string;
+  at: string;
+}
+
+export interface DesignationRow {
+  id: string;
+  code: string;
+  name: string;
+  level: AuthorityLevel;
+  areas: readonly string[];
+  /** The geography version's words ("Địa giới từ 1 tháng 7, 2025"). */
+  geography: string;
+  from: string;
+  to: string | null;
+  state: Standing;
+  /** An end date recorded on a designation in force: it ends after this day. */
+  endsAfter: string | null;
+  recordedBy: StaffStamp | null;
+}
+
+/** SCR-VER-09: the designations, in force first then by code, and what the form offers. */
+export interface InspectionAuthorities {
+  asOf: string;
+  designations: readonly DesignationRow[];
+  geographies: readonly { id: string; label: string }[];
+  /** The reader holds ACT-OPS: the form and the row acts are theirs. */
+  mayAct: boolean;
+}
+
+/** A designation opened for a decision (SCR-VER-10). */
+export interface DesignationDetail extends DesignationRow {
+  legalBasis: string | null;
+  document: { name: string; size: string; at: string; by: string } | null;
+  predecessor: { code: string; name: string } | null;
+}
+
+/** Why the reader may not decide what is opened: DR-746 rows 1 and 2, in the board's order. */
+export type DecisionBar = "SEGREGATION_REQUIRED" | "NOT_AUTHORISED" | null;
+
+export interface DesignationDecisions {
+  asOf: string;
+  waiting: readonly { id: string; code: string; name: string; from: string; recordedBy: StaffStamp | null }[];
+  /** The appointments waiting, for the other tab's count. */
+  appointmentsWaiting: number;
+  opened: { designation: DesignationDetail; bar: DecisionBar } | null;
+  /** In place of the form: the designation named is not found or no longer waits. */
+  openedRefusal: RefusalCode | null;
+  /** The decision just recorded, said above the list. */
+  decided: { code: string; state: "ACTIVE" | "REFUSED"; at: string } | null;
+}
+
+export interface AppointmentRow {
+  id: string;
+  person: string;
+  name: string;
+  card: string | null;
+  instrument: string | null;
+  from: string;
+  to: string | null;
+  state: Standing;
+  /** The suspension's instant, for a suspended appointment. */
+  suspendedAt: string | null;
+  /** An end date recorded on an appointment in force or suspended. */
+  endsAfter: string | null;
+}
+
+/** SCR-VER-11: one authority's appointments, in force first then by name, and the form's authorities. */
+export interface InspectorAppointments {
+  asOf: string;
+  authority: { id: string; code: string; name: string; state: Standing };
+  /** The designations in force, which the form may appoint under. */
+  authorities: readonly { id: string; code: string; name: string }[];
+  appointments: readonly AppointmentRow[];
+  mayAct: boolean;
+}
+
+export interface AppointmentWaiting {
+  id: string;
+  name: string;
+  card: string | null;
+  authorityCode: string;
+  from: string;
+  recordedBy: StaffStamp | null;
+}
+
+export interface SuspendedAppointment {
+  id: string;
+  name: string;
+  card: string | null;
+  authorityCode: string;
+  suspendedAt: string;
+  suspendedBy: string;
+  reason: string;
+  /** Why the reader may not reinstate it. */
+  bar: DecisionBar;
+}
+
+export interface AppointmentDecisions {
+  asOf: string;
+  waiting: readonly AppointmentWaiting[];
+  designationsWaiting: number;
+  opened: {
+    appointment: AppointmentWaiting & { authority: string; person: string; instrument: string | null; to: string | null };
+    bar: DecisionBar;
+  } | null;
+  openedRefusal: RefusalCode | null;
+  suspended: readonly SuspendedAppointment[];
+  decided: { name: string; act: "APPROVE" | "REFUSE" | "REINSTATE"; at: string } | null;
+}
+
+// ------------------------------------------------------------------ SCR-VER-13, 14 The premises' records
+
+/** A record as the premises and the authority read it, whole (FR-VER-012, 027). */
+export interface RecordDetail {
+  reference: string;
+  version: number;
+  premises: { key: string; name: string };
+  inspectedAt: string;
+  issuedAt: string;
+  authority: string;
+  authorityCode: string;
+  inspector: { name: string; card: string };
+  findings: readonly Finding[];
+  outcome: Outcome;
+  guidance: string | null;
+  /** The referral's route and note, what the representative said, and why it was recorded late, as issued. */
+  referral: { route: ReferralRoute; note: string } | null;
+  statement: string | null;
+  delayReason: string | null;
+  followUp: FollowUpKind;
+  followUpBy: string | null;
+  /**
+   * The case of an unsettled request to reconsider this version; null in its place for an inspector of another
+   * authority, who reads that the record is under challenge and nothing of the case (FR-VER-027).
+   */
+  challenge: { case: string | null } | null;
+  correctedUnderCase: string | null;
+  /** The answers the record cites, each with its own limits (FR-VER-037). */
+  verified: readonly VerifiedAnswer[];
+  delivery: RecordDelivery;
+  /** Earlier versions, still readable, each marked superseded (FR-VER-033). */
+  superseded: readonly { version: number; issuedAt: string; supersededAt: string; outcome: Outcome }[];
+}
+
+export interface PremisesInspectionRecords {
+  asOf: string;
+  premises: { id: string; name: string };
+  /** The premises the person acts for, by the portal's id. */
+  options: readonly { id: string; name: string }[];
+  records: readonly RecordDetail[];
+  opened: RecordDetail | null;
+  openedRefusal: RefusalCode | null;
+}
+
+/** What a request to reconsider is about, as it was shown (SCR-VER-14). */
+export type ReconsiderationSubject =
+  | {
+      kind: "INSPECTION_RECORD";
+      record: RecordDetail;
+      /** The version in force, when the one named was superseded. */
+      versionInForce: number;
+    }
+  | {
+      kind: "ANSWER";
+      reference: string;
+      premises: { id: string; name: string } | null;
+      outcome: AnswerOutcome;
+      scope: string | null;
+      shownAt: string;
+    };
+
+export interface Reconsideration {
+  subject: ReconsiderationSubject | null;
+  /** In place of the subject: no answer or record has the reference. */
+  subjectRefusal: RefusalCode | null;
+  typed: string;
+  premisesOptions: readonly { id: string; name: string }[];
+  /** The request just received, with its case. */
+  sent: { case: string } | null;
+}
+
+export interface ReconsiderationAttempt {
+  subject: string;
+  premises: string | null;
+  grounds: string;
+  refusal: RefusalCode | null;
+  /** The case CHALLENGE_ALREADY_OPEN names, or the version in force SUBJECT_SUPERSEDED names. */
+  detail: string | null;
+}
+
+// ------------------------------------------------------------------ SCR-VER-18, 15 The authority's work and a correction
+
+export type WorkFlag = "INSPECTOR_CANNOT_ACT" | "UNDELIVERED" | "CORRECTION_DUE" | "OPEN_BEYOND_INTERVAL" | "FOLLOW_UP_OVERDUE";
+export const WORK_FLAGS: readonly WorkFlag[] = ["INSPECTOR_CANNOT_ACT", "UNDELIVERED", "CORRECTION_DUE", "OPEN_BEYOND_INTERVAL", "FOLLOW_UP_OVERDUE"];
+
+export interface WorkRow {
+  /** An IRC- record or, for an open inspection, its ISP- reference. */
+  reference: string;
+  kind: "RECORD" | "INSPECTION";
+  authorityCode: string;
+  premises: string;
+  flag: WorkFlag;
+  /** When the flag began: the age is said from it. */
+  since: string;
+  /** What the flag's sentence names: the date due, the case, who opened it and when their appointment ended. */
+  detail: { date: string | null; case: string | null; person: string | null };
+}
+
+export interface AuthorityWork {
+  asOf: string;
+  /** DR-740 rows 1 to 3 when no appointment of the person passes them. */
+  refusal: RefusalCode | null;
+  flag: WorkFlag | null;
+  /** One page of the rows, oldest flag first. */
+  rows: readonly WorkRow[];
+  /** The cursor of the page after this one; null on the last page. */
+  nextCursor: string | null;
+  /** The cursor this page was read from; null for the first page. */
+  cursor: string | null;
+  /** The page asked for could not be read (CURSOR_INVALID): the rows are the first page again, with the filter kept. */
+  rowsRefusal: RefusalCode | null;
+  /** The record opened by reference: whole for the issuing authority, the confirmation for another. */
+  opened: { record: RecordDetail; whole: boolean; correctionCase: string | null } | null;
+  openedRef: string;
+  openedRefusal: RefusalCode | null;
+  /** The inspection just closed, said once. */
+  closed: { reference: string; premises: string } | null;
+  /** The closure dialog to open again with its refusal. */
+  closing: { inspection: string; premises: string; openedBy: string; reason: string; refusal: RefusalCode } | null;
+}
+
+export interface CorrectionDraft {
+  caseRef: string;
+  outcome: Outcome | null;
+  findings: readonly { kind: FindingKind | null; note: string }[];
+  guidance: string;
+  route: ReferralRoute;
+  referralNote: string;
+  followUp: FollowUpKind;
+  followUpBy: string;
+  reason: string;
+}
+
+export interface RecordCorrection {
+  record: RecordDetail;
+  /** What CAS answers for the case named, in the page's words. */
+  caseLine: "DECIDED_CORRECTION" | "NOT_DECIDED" | "NOT_FOR_RECORD" | "NO_CORRECTION" | "ALREADY_RECORDED" | "NONE";
+  /** In the page header, with Issue unavailable: DR-740 rows 1 to 3, NOT_ISSUING_AUTHORITY and DR-747 rows 1 to 5. */
+  refusal: RefusalCode | null;
+  /** The version that already names the case (CORRECTION_ALREADY_RECORDED). */
+  already: { version: number; issuedAt: string } | null;
+  draft: CorrectionDraft;
+  /** The refusal the last send got, where the board draws it beside a field. */
+  fieldRefusal: { field: "outcome" | "findings" | "guidance" | "referralNote" | "followUp" | "reason" | "case"; code: RefusalCode } | null;
+}
+
+export interface CorrectionAttempt {
+  draft: CorrectionDraft;
+  refusal: RefusalCode | null;
+}
+
+// ------------------------------------------------------------------ SCR-VER-16 Oversight
+
+export interface OversightCountsRow {
+  authorityCode: string;
+  open: number;
+  concluded: number;
+  abandoned: number;
+  compliant: number;
+  nothingFound: number;
+  guidance: number;
+  referred: number;
+  undelivered: number;
+}
+
+export interface OversightSupply {
+  reference: string;
+  authorityCode: string;
+  kind: ListKind;
+  state: SupplyState;
+  generatedAt: string | null;
+  listed: number | null;
+  /** Who requested it: to ACT-AUD only; ACT-REG receives no person. */
+  requester: string | null;
+}
+
+export interface InspectionOversight {
+  asOf: string;
+  /** The month read, "2026-09". */
+  period: string;
+  periods: readonly string[];
+  authority: string | null;
+  authorities: readonly { id: string; code: string; name: string }[];
+  supplies: readonly OversightSupply[];
+  counts: readonly OversightCountsRow[];
+  /** The reader holds ACT-AUD and reads who requested a supply. */
+  requesterShown: boolean;
+  opened: {
+    supply: OversightSupply;
+    authority: string;
+    areas: readonly string[];
+    register: RegisterRead | null;
+    byArea: readonly { area: string; listed: number }[];
+  } | null;
+  openedRefusal: RefusalCode | null;
+}
+
 // ------------------------------------------------------------------ what a refused form hands back to its page
 
 /** SCR-VER-01: the inspection it verifies for, what was typed, and the refusal the verification got. */
@@ -605,6 +1070,8 @@ export interface ScanAttempt {
   inspection: string | null;
   typed: string;
   refusal: RefusalCode | null;
+  /** The printout the stand-in camera was pointed at, and whether it found no code there. */
+  scan?: { printout: string; noCode: boolean };
 }
 
 /** SCR-VER-03: the form as it was sent, and its refusal. */
@@ -650,6 +1117,52 @@ export interface HandoverAttempt {
   time: string;
   recipient: RepresentativeRole | null;
   refusal: RefusalCode | null;
+}
+
+/** SCR-VER-09: the designation form as it was sent. */
+export interface DesignationForm {
+  code: string;
+  name: string;
+  level: AuthorityLevel | null;
+  legalBasis: string;
+  document: { name: string; size: string } | null;
+  geography: string;
+  areas: string;
+  from: string;
+  to: string;
+  predecessor: string;
+}
+
+/** SCR-VER-11: the appointment form as it was sent. */
+export interface AppointmentForm {
+  authority: string;
+  person: string;
+  name: string;
+  card: string;
+  instrument: string;
+  document: { name: string; size: string } | null;
+  from: string;
+  to: string;
+}
+
+/** A refused form of the operations console: what was sent, the refusal, and the area it names. */
+export interface FormAttempt<F> {
+  form: F;
+  /** Null for a form sent without a field it requires: it comes back as sent, with nothing recorded. */
+  refusal: RefusalCode | null;
+  /** AREA_NOT_IN_GEOGRAPHY names the area; END_DATE_EXTENDS_PERIOD the approved end. */
+  detail: string | null;
+}
+
+/** A refused act on a row (End, Withdraw, Suspend, Reinstate, a decision, Close): the row, what was typed, the refusal. */
+export interface RowAttempt {
+  id: string;
+  act: "end" | "suspend" | "reinstate" | "decide" | "close";
+  effectiveTo: string;
+  reason: string;
+  decision: "APPROVE" | "REFUSE" | null;
+  refusal: RefusalCode;
+  detail: string | null;
 }
 
 /** SCR-VER-07: the request as it was sent, and its refusal. */
@@ -772,10 +1285,11 @@ export function loadInspectionRecord(
   reader: Ver06Reader | null,
   locale: Locale,
   attempt: HandoverAttempt | null,
+  version: number | null = null,
 ): Promise<LoadOutcome<InspectionRecord>> {
   return answer(
     () => mockInspectionRecord(record, view ?? "pending", reader ?? "issuing", locale),
-    () => inspectionRecordOf(sessionId, record, locale, attempt),
+    () => inspectionRecordOf(sessionId, record, locale, attempt, version),
     view === null && reader === null ? null : true,
   );
 }
@@ -823,9 +1337,25 @@ export function chooseAppointment(sessionId: string, appointment: string): Promi
   return act(() => chooseActingFor(sessionId, appointment));
 }
 
-/** SCR-VER-01 Refresh keys (`GET /verification-keys`). */
-export function refreshKeys(sessionId: string): Promise<LoadOutcome<{ accepted: true }>> {
+/** SCR-VER-01 Refresh keys (`GET /verification-keys`): the key set the phone now holds, and when it was served. */
+export function refreshKeys(sessionId: string): Promise<LoadOutcome<{ servedAt: string; keys: readonly string[] }>> {
   return act(() => refreshVerificationKeys(sessionId));
+}
+
+/**
+ * SCR-VER-01 Scan: the code on the printout in front of the camera. The web stand-in has no camera; it reads the code
+ * CER printed on the printout whose reference is typed.
+ */
+export function scanCode(sessionId: string, printout: string): Promise<LoadOutcome<ScannedCode>> {
+  return act(() => scanCodeInBackend(sessionId, printout));
+}
+
+/** SCR-VER-01 Check offline (`ALG-711` on the phone): the result waits to upload, and SCR-VER-02 reads it by its key. */
+export function checkCodeOffline(
+  sessionId: string,
+  request: { printout: string; code: ScannedCode; inspection: string | null },
+): Promise<LoadOutcome<{ result: string }>> {
+  return act(() => checkOffline(sessionId, request));
 }
 
 /** SCR-VER-01 Upload now (`POST /verifications/offline-results`), for one waiting result. */
@@ -838,12 +1368,24 @@ export function discardOfflineResult(sessionId: string, key: string): Promise<Lo
   return act(() => discardInBackend(sessionId, key));
 }
 
-/** What SCR-VER-01 sends to verify a typed reference. */
+/**
+ * The code a camera reads from a printout (`v1`): the base64url payload, its signature and the key it names. The web
+ * stand-in has no camera; it reads the code CER printed on the printout whose reference is typed (`scanCode`).
+ */
+export interface ScannedCode {
+  payload: string;
+  signature: string;
+  keyId: string;
+}
+
+/** What SCR-VER-01 sends to verify a typed reference, or a scanned code with the printout reference it carries. */
 export interface VerificationRequest {
   value: string;
   identifierType: IdentifierType | null;
   /** The open inspection the screen was opened from; the answer attaches to it. */
   inspection: string | null;
+  /** The code scanned; null for a reference typed. */
+  code: ScannedCode | null;
 }
 
 /** SCR-VER-01 Verify (`POST /verifications`): a new answer, by its reference, which SCR-VER-02 opens. */
@@ -860,6 +1402,8 @@ export function inspectPremises(sessionId: string, reference: string): Promise<L
 export interface InspectionOpening {
   /** False for Start without the answer: the answer carried in is not attached. */
   withAnswer: boolean;
+  /** Where the inspection is said to have taken place; the field client sends the register address (CFG-772). */
+  locationContext: string;
   purpose: string;
   basis: string;
   /** The instant it took place, or null where the field could not be read. */
@@ -919,4 +1463,167 @@ export function requestList(
   request: { appointment: string | null; kind: ListKind; areas: readonly string[] },
 ): Promise<LoadOutcome<{ supply: string }>> {
   return act(() => requestInspectionList(sessionId, request));
+}
+
+// ------------------------------------------------------------------ the operations, premises and oversight screens
+
+/** What an act of these screens answers: its result, or its refusal with what the sentence names (an area, a case). */
+export type ActAnswer<T> = Refused<T>;
+
+const asStaff = (staff: Staff): StaffActor => ({ name: staff.account, email: staff.email, roles: staff.roles });
+const asPrincipal = (principal: Principal): PremisesActor => ({ party: principal.organisation, name: principal.account });
+
+function read<T>(live: () => LoadOutcome<T>): Promise<LoadOutcome<T>> {
+  return Promise.resolve(usesMockData() ? live() : NOT_CONFIGURED);
+}
+
+function command<T>(run: () => ActAnswer<T>): Promise<ActAnswer<T>> {
+  return Promise.resolve(usesMockData() ? run() : NOT_CONFIGURED);
+}
+
+/** SCR-VER-09 reads the designations (`GET /inspection-authorities`). */
+export function loadInspectionAuthorities(staff: Staff, locale: Locale): Promise<LoadOutcome<InspectionAuthorities>> {
+  return read(() => inspectionAuthoritiesOf(staff.sessionId, asStaff(staff), locale));
+}
+
+/** SCR-VER-09 Record for approval (`POST /inspection-authorities`). */
+export function recordDesignation(staff: Staff, form: DesignationForm): Promise<ActAnswer<{ designation: string }>> {
+  return command(() => recordDesignationInBackend(staff.sessionId, asStaff(staff), form));
+}
+
+/** SCR-VER-09 End, or Withdraw a pending one (`POST /inspection-authorities/{id}/endings`). */
+export function endDesignation(staff: Staff, id: string, effectiveTo: string, reason: string): Promise<ActAnswer<{ accepted: true }>> {
+  return command(() => endDesignationInBackend(staff.sessionId, asStaff(staff), id, effectiveTo, reason));
+}
+
+/** SCR-VER-10 reads the designations waiting, the one opened and the decision just recorded. */
+export function loadDesignationDecisions(
+  staff: Staff,
+  opened: string | null,
+  decided: string | null,
+  locale: Locale,
+): Promise<LoadOutcome<DesignationDecisions>> {
+  return read(() => designationDecisionsOf(staff.sessionId, asStaff(staff), opened, decided, locale));
+}
+
+/** SCR-VER-10 Record the decision (`POST /inspection-authorities/{id}/decisions`). */
+export function decideDesignation(staff: Staff, id: string, decision: "APPROVE" | "REFUSE" | null, reason: string): Promise<ActAnswer<{ accepted: true }>> {
+  return command(() => decideDesignationInBackend(staff.sessionId, asStaff(staff), id, decision, reason));
+}
+
+/** SCR-VER-11 reads one authority's appointments (`GET /inspection-appointments?authority_id=`). */
+export function loadInspectorAppointments(staff: Staff, authority: string | null): Promise<LoadOutcome<InspectorAppointments>> {
+  return read(() => inspectorAppointmentsOf(staff.sessionId, asStaff(staff), authority));
+}
+
+/** SCR-VER-11 Record for approval (`POST /inspection-appointments`). */
+export function recordAppointment(staff: Staff, form: AppointmentForm): Promise<ActAnswer<{ appointment: string }>> {
+  return command(() => recordAppointmentInBackend(staff.sessionId, asStaff(staff), form));
+}
+
+/** SCR-VER-11 Suspend (`POST /inspection-appointments/{id}/suspensions`). */
+export function suspendAppointment(staff: Staff, id: string, reason: string): Promise<ActAnswer<{ accepted: true }>> {
+  return command(() => suspendInBackend(staff.sessionId, asStaff(staff), id, reason));
+}
+
+/** SCR-VER-11 End, or withdraw a pending one (`POST /inspection-appointments/{id}/endings`). */
+export function endAppointment(staff: Staff, id: string, effectiveTo: string, reason: string): Promise<ActAnswer<{ accepted: true }>> {
+  return command(() => endAppointmentInBackend(staff.sessionId, asStaff(staff), id, effectiveTo, reason));
+}
+
+/** SCR-VER-12 reads the appointments waiting, the one opened, the suspended, and the decision just recorded. */
+export function loadAppointmentDecisions(
+  staff: Staff,
+  opened: string | null,
+  decided: string | null,
+  locale: Locale,
+): Promise<LoadOutcome<AppointmentDecisions>> {
+  return read(() => appointmentDecisionsOf(staff.sessionId, asStaff(staff), opened, decided, locale));
+}
+
+/** SCR-VER-12 Record the decision (`POST /inspection-appointments/{id}/decisions`). */
+export function decideAppointment(staff: Staff, id: string, decision: "APPROVE" | "REFUSE" | null, reason: string): Promise<ActAnswer<{ accepted: true }>> {
+  return command(() => decideAppointmentInBackend(staff.sessionId, asStaff(staff), id, decision, reason));
+}
+
+/** SCR-VER-12 Reinstate (`POST /inspection-appointments/{id}/reinstatements`). */
+export function reinstateAppointment(staff: Staff, id: string): Promise<ActAnswer<{ accepted: true }>> {
+  return command(() => reinstateInBackend(staff.sessionId, asStaff(staff), id));
+}
+
+/** SCR-VER-13 reads a premises' records and the one opened (`GET /premises/{id}/inspection-records`, `GET /inspection-records/{ref}`). */
+export function loadPremisesInspectionRecords(
+  principal: Principal,
+  premises: string | null,
+  record: string | null,
+  locale: Locale,
+): Promise<LoadOutcome<PremisesInspectionRecords>> {
+  return read(() => premisesRecordsOf(principal.sessionId, asPrincipal(principal), premises, record, locale));
+}
+
+/** SCR-VER-13 Download PDF reads one record version of the premises, with its digest, for its printout. */
+export function loadPremisesRecord(principal: Principal, record: string, locale: Locale): Promise<LoadOutcome<RecordDetail & { digest: string }>> {
+  return read(() => premisesRecordOf(principal.sessionId, asPrincipal(principal), record, locale));
+}
+
+/** SCR-VER-14 reads what the request is about, as it was shown, and the case once sent. */
+export function loadReconsideration(
+  principal: Principal,
+  subject: string | null,
+  sent: string | null,
+  locale: Locale,
+): Promise<LoadOutcome<Reconsideration>> {
+  return read(() => reconsiderationOf(principal.sessionId, asPrincipal(principal), subject, sent, locale));
+}
+
+/** SCR-VER-14 Send the request (`POST /verification-challenges`): the case CAS opened. */
+export function requestReconsideration(
+  principal: Principal,
+  request: { subject: string; versionNo: number | null; premises: string | null; grounds: string },
+): Promise<ActAnswer<{ case: string }>> {
+  return command(() => requestReconsiderationInBackend(principal.sessionId, asPrincipal(principal), request));
+}
+
+/** SCR-VER-18 reads the authority's inspections and records needing attention, and a record opened by reference. */
+export function loadAuthorityWork(
+  sessionId: string,
+  flag: WorkFlag | null,
+  record: string | null,
+  closed: string | null,
+  closing: RowAttempt | null,
+  locale: Locale,
+  cursor: string | null = null,
+): Promise<LoadOutcome<AuthorityWork>> {
+  return read(() => authorityWorkOf(sessionId, flag, record, closed, closing, locale, cursor));
+}
+
+/** SCR-VER-18 Close the inspection (`POST /inspections/{id}/abandonments`, INSPECTOR_NO_LONGER_APPOINTED). */
+export function closeInspection(sessionId: string, inspection: string, reason: string): Promise<ActAnswer<{ accepted: true }>> {
+  return command(() => closeInBackend(sessionId, inspection, reason));
+}
+
+/** SCR-VER-15 reads the version in force, what CAS answers for the case, and the correction as the form holds it. */
+export function loadRecordCorrection(
+  sessionId: string,
+  record: string,
+  caseRef: string | null,
+  attempt: CorrectionAttempt | null,
+  locale: Locale,
+): Promise<LoadOutcome<RecordCorrection>> {
+  return read(() => correctionOf(sessionId, record, caseRef, attempt, locale));
+}
+
+/** SCR-VER-15 Issue version n+1 (`POST /inspection-records/{ref}/corrections`). */
+export function correctRecord(sessionId: string, inspector: string, record: string, draft: CorrectionDraft): Promise<ActAnswer<{ record: string; version: number }>> {
+  return command(() => correctInBackend(sessionId, inspector, record, draft));
+}
+
+/** SCR-VER-16 reads a month's supplies and inspection counts, and one supply's header. */
+export function loadInspectionOversight(
+  staff: Staff,
+  period: string | null,
+  authority: string | null,
+  supply: string | null,
+): Promise<LoadOutcome<InspectionOversight>> {
+  return read(() => oversightOf(staff.sessionId, asStaff(staff), period, authority, supply));
 }

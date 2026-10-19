@@ -59,7 +59,9 @@ export default async function ScopePage({ searchParams }: { searchParams: Promis
   const answer = data?.assessment?.data ?? null;
   // The guidance could not reach the tariff, on opening or for the date asked (DR-491 row 1): the support line instead.
   const guidanceOff = failure?.code === "GUIDANCE_UNAVAILABLE" || answer?.cause === "GUIDANCE_UNAVAILABLE";
-  const helpRoutes = guidanceOff ? await loadHelpRoutes() : null;
+  // An answer whose next action is the support route: no scope guide is in effect to say what to do (DR-491).
+  const toSupport = !guidanceOff && answer?.nextAction === "support";
+  const helpRoutes = guidanceOff || toSupport ? await loadHelpRoutes() : null;
   const inputInvalid = refusal?.code === "ASSESSMENT_INPUT_INVALID";
 
   return (
@@ -106,11 +108,16 @@ export default async function ScopePage({ searchParams }: { searchParams: Promis
         {answer !== null && answer.cause === null && data !== null && (
           <Answer answer={answer} declared={data.declared} inset={inset} t={t} locale={locale} />
         )}
+        {toSupport && helpRoutes !== null && <SupportPanel helpRoutes={helpRoutes} withConfirmed inset={inset} t={t} locale={locale} />}
         {refusal !== null && !inputInvalid && <PageError failure={refusal} t={t} locale={locale} />}
 
         <NavList
           title={t("pub.goTitle")}
-          items={[{ label: t("pub.about"), detail: t("pub02.aboutD"), icon: "info", href: routes.home() }]}
+          items={[
+            { label: t("pub.about"), detail: t("pub02.aboutD"), icon: "info", href: routes.home() },
+            { label: t("pub02.tariff"), detail: t("pub02.tariffD"), icon: "banknote", href: routes.disclosures() },
+            { label: t("pub.help"), detail: t("pub.helpD"), icon: "circle-help", href: routes.help() },
+          ]}
           locale={locale}
         />
       </div>
@@ -140,6 +147,9 @@ function Form({
   const asked = noRules ? null : data.questions.questions;
   const declared = data.declared;
   const marked = (name: FactField, message: string) => (invalid.includes(name) ? { error: t(message) } : {});
+  // The floor area and the seats are asked where the version uses them, the floor area required by its size bands.
+  const floor = asked?.facts.find((fact) => fact.key === "FLOOR_AREA_M2") ?? null;
+  const seats = asked?.facts.find((fact) => fact.key === "SEATING_CAPACITY") ?? null;
   return (
     <form action={assessScope}>
       <Panel as="fieldset" title={t("pub.formTitle")} description={t("pub.formLead")} level={2} gap="lg" inset={inset} density="portal" locale={locale}>
@@ -173,29 +183,34 @@ function Form({
               density="portal"
               locale={locale}
             />
-            <TextField
-              label={t("pub.floorQ")}
-              name="floor_area_m2"
-              value={declared.floorAreaM2}
-              {...marked("floor_area_m2", "pub.floorError")}
-              suffix={t("pub.unitM2")}
-              inputMode="decimal"
-              required
-              width="var(--space-48)"
-              density="portal"
-              locale={locale}
-            />
-            <TextField
-              label={t("pub.seatsQ")}
-              name="seating_capacity"
-              helper={t("pub.seatsHelp")}
-              value={declared.seats}
-              {...marked("seating_capacity", "pub.seatsError")}
-              inputMode="numeric"
-              width="var(--space-48)"
-              density="portal"
-              locale={locale}
-            />
+            {floor !== null && (
+              <TextField
+                label={t("pub.floorQ")}
+                name="floor_area_m2"
+                value={declared.floorAreaM2}
+                {...marked("floor_area_m2", "pub.floorError")}
+                suffix={t("pub.unitM2")}
+                inputMode="decimal"
+                required={floor.required}
+                width="var(--space-48)"
+                density="portal"
+                locale={locale}
+              />
+            )}
+            {seats !== null && (
+              <TextField
+                label={t("pub.seatsQ")}
+                name="seating_capacity"
+                helper={t("pub.seatsHelp")}
+                value={declared.seats}
+                {...marked("seating_capacity", "pub.seatsError")}
+                inputMode="numeric"
+                required={seats.required}
+                width="var(--space-48)"
+                density="portal"
+                locale={locale}
+              />
+            )}
             <Button variant="primary" size="md" type="submit" fullWidth={narrow} loading={checking} loadingLabel={t("pub02.checking")} locale={locale}>
               {t("pub02.see")}
             </Button>
@@ -239,7 +254,7 @@ function Answer({
           ...(answer.tariffVersion !== null
             ? [{ label: t("pub.fVersion"), value: t("pub02.version", { version: answer.tariffVersion, date: R1_FORMAT.formatDate(answer.assessmentDate, locale) ?? "-" }) }]
             : []),
-          { label: t("pub.fNext"), ...nextActionFact(answer.nextAction, t) },
+          { label: t("pub.fNext"), ...nextActionFact(answer.nextAction, answer.nextActionText, t, locale) },
         ]}
         locale={locale}
       />

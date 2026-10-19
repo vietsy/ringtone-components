@@ -34,6 +34,7 @@ import {
 import { getLocale } from "@/lib/i18n/locale";
 import { translator, type Locale, type Translate } from "@/lib/i18n/translate";
 import { PUB03_VIEWS } from "@/lib/mock/public";
+import { routes } from "@/lib/routes";
 import { reviewView } from "@/lib/view/demo-view";
 import { getFrame } from "@/lib/view/frame";
 import en from "@/messages/screens/pub.en.json";
@@ -117,12 +118,18 @@ export default async function IndicativeAmountRoute({ searchParams }: { searchPa
             <FactList
               items={[
                 { label: t("pub03.fOutcome"), value: t(result.treatment === "out_of_scope" ? "pub02.outOfScope" : "pub03.outcome") },
-                { label: t("pub.fNext"), ...nextActionFact(result.nextAction, t) },
+                { label: t("pub.fNext"), ...nextActionFact(result.nextAction, null, t, locale) },
               ]}
               locale={locale}
             />
           </Panel>
         )}
+
+        <div>
+          <Button variant="secondary" size="md" icon="arrow-left" href={routes.disclosures()} fullWidth={narrow} locale={locale}>
+            {t("pub03.back")}
+          </Button>
+        </div>
       </div>
     </PublicShell>
   );

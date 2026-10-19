@@ -13,6 +13,8 @@ const UNDATED: FollowUpKind = "NONE";
 interface Props {
   kind: { label: string; options: Options; value: string };
   date: { label: string; value: string; error: string | null };
+  /** The field client's (portal) or the inspection console's (SCR-VER-15). */
+  density?: "portal" | "console";
   locale: Locale;
 }
 
@@ -21,7 +23,7 @@ interface Props {
  * date"; the contract requires `follow_up_by` unless NONE), so the field shows for every follow-up but none and
  * follows the choice at once, as the outcome's fields do.
  */
-export function FollowUpFields({ kind, date, locale }: Props) {
+export function FollowUpFields({ kind, date, density = "portal", locale }: Props) {
   const [chosen, setChosen] = useState(kind.value);
 
   return (
@@ -33,7 +35,7 @@ export function FollowUpFields({ kind, date, locale }: Props) {
         value={chosen}
         required
         onChange={setChosen}
-        density="portal"
+        density={density}
         locale={locale}
       />
       {chosen !== UNDATED && (
@@ -43,7 +45,7 @@ export function FollowUpFields({ kind, date, locale }: Props) {
           value={date.value}
           {...(date.error !== null ? { error: date.error } : {})}
           required
-          density="premises"
+          density={density === "console" ? "console" : "premises"}
           locale={locale}
         />
       )}

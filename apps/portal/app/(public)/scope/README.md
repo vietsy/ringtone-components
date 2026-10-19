@@ -2,11 +2,19 @@
 
     page.tsx    SCR-PUB-02  Scope self-assessment
 
-The page asks the questions of the tariff in effect today and answers "Xem kết quả" in place:
+The page asks the questions of the tariff in effect today, or, after an answer, of the tariff for the date the reader
+stated (`GET /scope-questions`, the floor area required because the version's size bands use it, the seating capacity
+asked for the exemption alone), and answers "Xem kết quả" in place:
 `assessScope` (`features/public/actions.ts`) sends the facts to the mock backend's `POST /scope-assessments`,
 which works the treatment out by `DR-491` from the tariff in `lib/mock/public.ts` (TV-2026.1 from 1 July
 2026; none before 1 March 2026; TV-2026.0 in between, whose content the canvas does not write). The answer
 and the facts as typed come back through `?attempt=`; the service keeps nothing declared.
+
+"Việc tiếp theo" is the section of the scope guide in effect for the treatment (`IN_SCOPE`, `OUT_OF_SCOPE`,
+`INDETERMINATE`, `DR-491`), its approved text: the guide is a page of the policy console (SCR-PUB-14 to 16). While no
+version of the guide is in effect, as in the seed, where 2026.1 is a draft, the next action is the support route, and
+the support line is drawn under the answer. The sentences below are the words of a guide in effect that says what the
+canvas says.
 
 What the answers can be, and what the page draws for each:
 
@@ -27,8 +35,9 @@ What the answers can be, and what the page draws for each:
 Every view the canvas drew is reachable as `?view=`: p1-not-offered, form, checking, in-scope,
 input-invalid, no-rules-for-date, loading.
 
-Deviations: the "Xem biểu phí" and "Trợ giúp" items of "Đi tiếp" are left out (PUB-11 and PUB-12 are not
-built), so "Đi tiếp" holds "Về RightOne" alone, and the shell draws no footer. The canvas's form opens filled
+"Đi tiếp" holds "Về RightOne", "Xem biểu phí" (SCR-PUB-11) and "Trợ giúp" (SCR-PUB-12).
+
+Deviations: the canvas's form opens filled
 with its sample café; the live form opens empty on today's date, the province asked with a placeholder so
 none is chosen for the reader. A failure other than GUIDANCE_UNAVAILABLE, which the canvas does not draw,
 reads as the public error state of PUB convention 2.
@@ -36,4 +45,4 @@ reads as the public error state of PUB convention 2.
 Addition awaiting the BA: an in-scope answer carries "Ước tính số tiền phải trả với các thông tin này" /
 "Estimate the amount to pay with these answers", a link to SCR-PUB-03 with the facts just answered in its
 address (none of them personal), so the form opens filled. On the board SCR-PUB-03 is reached only from the
-tariff page (SCR-PUB-11), which is not built, and the indicative amount would otherwise have no way in.
+tariff page (SCR-PUB-11), whose "Số tiền tham khảo" opens it with an empty form.

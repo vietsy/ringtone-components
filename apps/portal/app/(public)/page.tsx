@@ -16,6 +16,7 @@ import { PublicShell } from "@/components/shells/PublicShell";
 import { Text } from "@/components/Text";
 import { publicLayout } from "@/features/public/layout";
 import { PageError } from "@/features/public/PageError";
+import { PageSections } from "@/features/public/PageSections";
 import { loadAboutPage, loadHelpRoutes, type AboutPage, type HelpRoute } from "@/lib/api/public";
 import { getLocale } from "@/lib/i18n/locale";
 import { translator, type Locale, type Translate } from "@/lib/i18n/translate";
@@ -29,18 +30,21 @@ import type { LoadOutcome } from "@rightone/ui";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
+const one = (value: string | string[] | undefined): string | undefined => (typeof value === "string" ? value : undefined);
+
 /**
  * SCR-PUB-01 What RightOne is: who operates RightOne, on what legal basis, for which rights and
- * organisations, what is not covered and from when. The public site's home.
+ * organisations, what is not covered and from when. The public site's home: the edition in effect, or, opened from a
+ * date in the page's history (SCR-PUB-10, `?at=`), the edition of that instant marked superseded.
  */
 export default async function AboutPageRoute({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const params = await searchParams;
   const [locale, frame] = await Promise.all([getLocale(), getFrame(params)]);
   const t = translator({ vi, en }, locale);
-  // A reviewer's ?view= shows a drawn state; otherwise the page is the version in effect today.
+  // A reviewer's ?view= shows a drawn state; otherwise the page is the version in effect today, or at the instant asked.
   const view = reviewView(params, PUB01_VIEWS);
   const { narrow, gap, inset } = publicLayout(frame);
-  const outcome = view === "loading" ? null : await loadAboutPage(view);
+  const outcome = view === "loading" ? null : await loadAboutPage(view, one(params.at));
   const page = outcome?.data?.page ?? null;
   const failure = outcome?.failure ?? null;
   const superseded = page !== null && page.current !== null;
@@ -80,12 +84,19 @@ export default async function AboutPageRoute({ searchParams }: { searchParams: P
           <Page page={page} inset={inset} t={t} locale={locale} />
         )}
 
-        <Button variant="primary" size="lg" icon="arrow-right" href={routes.scope()} fullWidth={narrow} locale={locale}>
-          {t("pub01.scope")}
-        </Button>
+        <div>
+          <Button variant="primary" size="lg" icon="arrow-right" href={routes.scope()} fullWidth={narrow} locale={locale}>
+            {t("pub01.scope")}
+          </Button>
+        </div>
         <NavList
           title={t("pub.goTitle")}
-          items={[{ label: t("pub01.verify"), detail: t("pub01.verifyD"), icon: "search", href: routes.verify() }]}
+          items={[
+            { label: t("pub01.verify"), detail: t("pub01.verifyD"), icon: "search", href: routes.verify() },
+            { label: t("pub01.tariff"), detail: t("pub01.tariffD"), icon: "banknote", href: routes.disclosures() },
+            { label: t("pub01.legal"), detail: t("pub01.legalD"), icon: "file-text", href: routes.legalDocument() },
+            { label: t("pub.help"), detail: t("pub.helpD"), icon: "circle-help", href: routes.help() },
+          ]}
           locale={locale}
         />
       </div>
@@ -116,16 +127,42 @@ function Page({ page, inset, t, locale }: { page: AboutPage; inset: "sm" | "md";
           </Link>
         </>
       )}
-      {page.newerApprovedVersionExists && <StatusLine family="info" text={t("pub01.newer")} locale={locale} />}
+      <Link href={routes.legalDocument(undefined, { history: "page" })} variant="standalone" size="touch" icon="history" locale={locale}>
+        {t("pub01.history")}
+      </Link>
+      {page.newerApprovedVersionExists && (
+        <StatusLine
+          family="info"
+          text={
+            page.newerApprovedSources.length > 0
+              ? t("pub01.newerOf", { sources: page.newerApprovedSources.map((source) => t(`pub01.source.${source}`)).join(", ") })
+              : t("pub01.newer")
+          }
+          locale={locale}
+        />
+      )}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)", maxWidth: "var(--container-2xl)" }}>
-        <Text size="base">{t("pub01.body1")}</Text>
-        <Text size="base">{t("pub01.body2")}</Text>
-      </div>
+      {page.sections.length > 0 ? (
+        // The edition's own text, as the policy console published it (FR-PUB-001, FR-PUB-030).
+        <PageSections
+          sections={page.sections}
+          words={{ OPERATOR: t("pub01.section.OPERATOR"), SCOPE: t("pub01.section.SCOPE"), ONE_LAWFUL_ROUTE: t("pub01.routeTitle") }}
+          inset={inset}
+          locale={locale}
+        />
+      ) : (
+        // An edition the canvas writes into this page's catalogue rather than into the register.
+        <>
+          <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)", maxWidth: "var(--container-2xl)" }}>
+            <Text size="base">{t("pub01.body1")}</Text>
+            <Text size="base">{t("pub01.body2")}</Text>
+          </div>
 
-      <Panel title={t("pub01.routeTitle")} level={2} inset={inset} density="portal" locale={locale}>
-        <Text size="base">{t("pub01.routeText")}</Text>
-      </Panel>
+          <Panel title={t("pub01.routeTitle")} level={2} inset={inset} density="portal" locale={locale}>
+            <Text size="base">{t("pub01.routeText")}</Text>
+          </Panel>
+        </>
+      )}
 
       <Panel title={t("pub01.opTitle")} level={2} inset={inset} density="portal" locale={locale}>
         <FactList

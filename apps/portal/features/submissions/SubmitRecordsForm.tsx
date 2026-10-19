@@ -2,7 +2,7 @@
 
 import { R1_FORMAT } from "@rightone/formatting";
 import { useEffect, useState, useTransition } from "react";
-import { Button, ButtonRow, Divider, FactList, FileUpload, Panel, Select } from "@/components/r1";
+import { Button, ButtonRow, Columns, Divider, FactList, FileUpload, Panel, Select } from "@/components/r1";
 import { Text } from "@/components/Text";
 import type { ExchangeFormat, SubmitEntered } from "@/lib/api/submissions";
 import type { Locale } from "@/lib/i18n/translate";
@@ -222,7 +222,7 @@ export function SubmitRecordsForm({
   return (
     <Panel gap="xl" inset={phone ? "sm" : "md"} density="portal" locale={locale}>
       <Panel variant="plain" level={2} title={copy.channelTitle} density="portal" locale={locale}>
-        <div style={{ display: "grid", gridTemplateColumns: phone ? "minmax(0, 1fr)" : "repeat(2, minmax(0, 1fr))", gap: "var(--space-6)", alignItems: "start" }}>
+        <Columns layout="halves" single={phone}>
           <Select
             label={copy.channel}
             helper={copy.channelHelp}
@@ -255,7 +255,7 @@ export function SubmitRecordsForm({
             }}
             locale={locale}
           />
-        </div>
+        </Columns>
       </Panel>
       <Divider />
       <Panel variant="plain" level={2} title={copy.payloadTitle} density="portal" locale={locale}>

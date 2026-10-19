@@ -10,8 +10,8 @@ useDefault = true
 # three leaks, which stopped rightone-web main build 9 at its first stage (2026-10-14). Both
 # versions read [allowlist], and a finding is allowed when any one of its entries matches.
 [allowlist]
-description = "Not secrets: local-only defaults; the mock RightOne ID's sample accounts (demonstration passwords published in apps/portal/README.md, used only with RIGHTONE_DATA=mock); message catalogues, which are interface copy (a sentence about verification keys reads like a key assignment)"
-regexes = ['''rightone-local''', '''TODO\(owner\)''']
+description = "Not secrets: local-only defaults; the mock RightOne ID's sample accounts (demonstration passwords published in apps/portal/README.md, used only with RIGHTONE_DATA=mock); message catalogues, which are interface copy (a sentence about verification keys reads like a key assignment); the mock's record references (three capitals, a hyphen and ten characters, such as an application or credential reference), which the tests pass after an argument named key"
+regexes = ['''rightone-local''', '''TODO\(owner\)''', '''^[A-Z]{3}-[A-Z0-9]{10}$''']
 paths = [
   '''^apps/portal/lib/mock/backend/accounts\.ts$''',
   '''^apps/portal/messages/.*\.json$''',

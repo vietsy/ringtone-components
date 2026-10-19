@@ -1,5 +1,6 @@
 import { R1_FORMAT } from "@rightone/formatting";
-import { Banner, Button, ButtonRow, FactList, Link, PageHeader, Panel, Skeleton, ViewState } from "@/components/r1";
+import type { ReactNode } from "react";
+import { Banner, Button, ButtonRow, Columns, FactList, Link, PageHeader, Panel, Skeleton, ViewState } from "@/components/r1";
 import { PortalShell } from "@/components/shells/PortalShell";
 import { premisesNav } from "@/components/shells/premises-nav";
 import { loadPaymentPosition, type InvoiceNumber, type PaymentCheck, type PaymentPosition } from "@/lib/api/finance";
@@ -113,32 +114,30 @@ function Failed({ failure, phone, t, locale }: { failure: Failure | null; phone:
   );
 }
 
-function grid(frame: Frame) {
-  const narrow = frame !== "desktop";
-  return {
-    display: "grid",
-    gridTemplateColumns: narrow ? "minmax(0, 1fr)" : "minmax(0, 1fr) var(--container-sm)",
-    gridTemplateAreas: narrow ? "'verify' 'facts'" : "'verify facts'",
-    gap: frame === "phone" ? "var(--space-4)" : "var(--space-6)",
-    alignItems: "start",
-  } as const;
+/** The verification beside the facts; folded, in that order. */
+function PageColumns({ frame, children }: { frame: Frame; children: ReactNode }) {
+  return (
+    <Columns single={frame !== "desktop"} gap={frame === "phone" ? 4 : 6}>
+      {children}
+    </Columns>
+  );
 }
 
 function Loading({ frame, t, locale }: { frame: Frame; t: Translate; locale: Locale }) {
   const inset = frame === "phone" ? "sm" : "md";
   return (
-    <div style={grid(frame)}>
-      <div style={{ gridArea: "verify", minWidth: 0 }}>
+    <PageColumns frame={frame}>
+      <div style={{ minWidth: 0 }}>
         <Panel title={t("fin02.verifyTitle")} inset={inset} density="portal" locale={locale}>
           <Skeleton variant="facts" rows={4} density="portal" locale={locale} />
         </Panel>
       </div>
-      <div style={{ gridArea: "facts", minWidth: 0 }}>
+      <div style={{ minWidth: 0 }}>
         <Panel as="aside" title={t("fin02.factsPay")} inset={inset} density="portal" locale={locale}>
           <Skeleton variant="facts" rows={5} density="portal" locale={locale} />
         </Panel>
       </div>
-    </div>
+    </PageColumns>
   );
 }
 
@@ -160,13 +159,13 @@ function Content({
   return (
     <>
       <Notice data={data} decision={decision} phone={phone} t={t} locale={locale} />
-      <div style={grid(frame)}>
-        <div style={{ gridArea: "verify", minWidth: 0 }}>
+      <PageColumns frame={frame}>
+        <div style={{ minWidth: 0 }}>
           <Panel title={t("fin02.verifyTitle")} inset={inset} density="portal" locale={locale}>
             <FactList items={data.checks.map((check) => verification(check, t, locale))} density="portal" locale={locale} />
           </Panel>
         </div>
-        <div style={{ gridArea: "facts", minWidth: 0 }}>
+        <div style={{ minWidth: 0 }}>
           <Panel
             as="aside"
             title={t(data.subject.kind === "transfer" ? "fin02.factsTransfer" : "fin02.factsPay")}
@@ -184,7 +183,7 @@ function Content({
             </div>
           </Panel>
         </div>
-      </div>
+      </PageColumns>
       <div>
         <Button variant="quiet" size="md" href={routes.payments()} fullWidth={phone} locale={locale}>
           {t("fin02.back")}
@@ -323,6 +322,10 @@ function verification(check: PaymentCheck, t: Translate, locale: Locale): Facts[
       );
     case "invoice-requested":
       return fact("fin02.fInvoice", badge("neutral", t("fin02.requested")), t("fin02.requestedNote", { issuer: check.issuer }));
+    case "invoice-unavailable":
+      return fact("fin02.fInvoice", badge("attention", t("fin02.notIssued")), t("fin02.unavailableNote", { time: stamp(check.since) }));
+    case "invoice-cancelled":
+      return fact("fin02.fInvoice", badge("neutral", t("fin02.cancelled")), t("fin02.cancelledNote"));
     case "chargeback":
       return fact("fin02.fChargeback", badge("danger", t("fin02.takenBack")), t("fin02.chargebackNote", { date: date(check.at), time: time(check.at) }));
     case "new-payment-awaited":
@@ -343,6 +346,19 @@ function verification(check: PaymentCheck, t: Translate, locale: Locale): Facts[
       return fact("fin02.fMatchedRecord", verified, t("fin02.dupMatch", { date: date(check.on), decision: check.decision, payment: check.paidBy }));
     case "refund-proposed":
       return fact("fin02.fRefund", badge("attention", t("fin02.awaiting")), t("fin02.refundNote", { date: date(check.on) }));
+    case "refund-approved":
+      return fact("fin02.fRefund", badge("attention", t("fin02.awaitingSend")), t("fin02.approvedNote", { date: date(check.on) }));
+    case "refunded":
+      return fact(
+        "fin02.fRefund",
+        badge("positive", t("fin02.refunded")),
+        t(check.case !== null ? "fin02.refundedNoteCase" : "fin02.refundedNote", {
+          amount: R1_FORMAT.formatMoney(check.amountMinor, "VND", locale) ?? "",
+          time: time(check.at),
+          date: date(check.at),
+          case: check.case ?? "",
+        }),
+      );
   }
 }
 
@@ -386,9 +402,17 @@ function facts(data: PaymentPosition, t: Translate, locale: Locale): Facts {
   return items;
 }
 
+/** The invoice of the payment: the one issued, or the page that says why it is not issued yet (SCR-FIN-03). */
+function invoiceLink(data: PaymentPosition, t: Translate): { label: string; href: string }[] {
+  if (data.invoice !== null) return [{ label: t("fin02.openInvoice"), href: routes.invoice(`${data.invoice.series} ${data.invoice.number}`) }];
+  const pending = data.subject.kind === "payment" && data.checks.some((check) => check.check === "invoice-requested" || check.check === "invoice-unavailable");
+  return pending ? [{ label: t("fin02.openInvoice"), href: routes.invoice(data.subject.reference) }] : [];
+}
+
 /**
- * The ways on, as the board draws them per state. A reconciled payment also opens the status record it
- * unlocks: the design has no way from a paid fee to its record (deviation awaiting the BA, see README).
+ * The ways on, as the board draws them per state. A reconciled or paid payment also opens the status record it
+ * unlocks: the design has no way from a paid fee to its record (deviation awaiting the BA, see README). The payment's
+ * invoice opens on SCR-FIN-03, issued or not issued yet.
  */
 function links(data: PaymentPosition, decision: string, t: Translate): { label: string; href: string }[] {
   const openDecision = data.decision !== null ? [{ label: t("fin02.openDecision"), href: routes.decision(data.decision) }] : [];
@@ -396,14 +420,14 @@ function links(data: PaymentPosition, decision: string, t: Translate): { label: 
   const openRecord = data.record !== null ? [{ label: t("fin02.openRecord"), href: routes.statusRecord(data.record) }] : [];
   switch (data.status) {
     case "reconciled":
-      return [...openDecision, openInvoices, ...openRecord];
+      return [...openDecision, ...invoiceLink(data, t), openInvoices, ...openRecord];
     case "failed":
       // The transfer that paid it afterwards is this decision's payment, which its position opens on.
       return [{ label: t("fin02.seePayment"), href: routes.paymentPosition(decision) }, ...openDecision];
     case "paid":
-      return [...openDecision, ...openRecord];
+      return [...openDecision, ...invoiceLink(data, t), ...openRecord];
     case "disputed":
-      return [...openDecision, openInvoices];
+      return [...openDecision, ...invoiceLink(data, t), openInvoices];
     case "held":
       return data.decision !== null ? [...openDecision, openInvoices] : [];
   }

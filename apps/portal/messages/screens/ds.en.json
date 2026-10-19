@@ -1,6 +1,6 @@
 {
   "title": "Design system R1",
-  "meta": "{count} components, each in the states the design system’s specimen draws, rendered by the portal’s copy.",
+  "meta": "{count} components in their specimen states, rendered by the portal’s copy of the design system.",
   "jump": "Component groups",
   "failed": "The {name} specimen did not render",
   "group.Actions": "Actions",

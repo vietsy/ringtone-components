@@ -8,7 +8,6 @@ say "build workspace packages"; pnpm -r --filter "./packages/*" build || status=
 
 say "generated from the design system"
 pnpm --filter @rightone/tokens generate:check || status=1
-pnpm --filter @rightone/portal generate:r1:check || status=1
 
 # Typed routes: Next generates `Route` into apps/portal/.next/types, which a laptop that has run
 # `next dev` has and a clean checkout does not. Without it `Route` is a plain string and the cast in

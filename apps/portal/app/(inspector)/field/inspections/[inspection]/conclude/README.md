@@ -22,9 +22,16 @@ confirm, not-authorised, error. There is no loading view: the screen opens on wh
 review fixtures select the inspection as before: ISP-5H3WQ8KM2A is the board's, ISP-2QK7TM4W8E is concluded as
 IRC-7T2MW9KQ4D reads, any other reference is not found.
 
-What the mock cannot do: there is no case service, so a referral for case follow-up and a follow-up in a case are
-answered as the API answers while CAS cannot take them (CASE_INTAKE_UNAVAILABLE) and the inspection stays open;
-the canvas's draft for Quán Nướng Hẻm 214 meets that answer, and guidance given issues the record.
+A referral for case follow-up, or a follow-up by case, opens its case in CAS first (`openCase`, subject
+INSPECTION_REFERRAL, the premises' party the respondent), and the record carries the case's reference; the case is in
+the case officers' queue (SCR-CAS). COMPLIANT reads CER's live record of the premises at the instant the inspection
+took place, so a record issued after it, or revoked before it, is refused RECORD_NOT_CURRENT_AT_INSPECTION. The record
+cites every attached answer with its limits (an offline one: the state printed, its instant, the keys' refresh, what was
+not checked), and is raised to the premises' party through COM at its principal's address. While a result checked
+offline for the inspection waits on the phone, the page says so (offlineResultWaiting).
+
+What the mock cannot do: CAS never fails to take a case and CER never fails to answer, so CASE_INTAKE_UNAVAILABLE and
+CERTIFICATE_READ_UNAVAILABLE are drawn only in their review views.
 
 Deviations: the follow-up date shows for every follow-up but none (the contract requires `follow_up_by` unless
 NONE); the board draws it with its re-visit. A field the chosen outcome does not show is not sent, and keeps what

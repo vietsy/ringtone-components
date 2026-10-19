@@ -33,6 +33,9 @@ import type {
   FindingKind,
   FollowUpKind,
   Outcome,
+  AuthorityLevel,
+  StaffStamp,
+  Standing,
 } from "@/lib/api/inspection";
 import type { Locale } from "@/lib/i18n/translate";
 import { MOCK_INSPECTOR } from "./session";
@@ -381,16 +384,16 @@ export function mockFieldHome(view: Exclude<Ver17View, "loading">): LoadOutcome<
 // ------------------------------------------------------------------ SCR-VER-01
 
 const WAITING_ONE: readonly WaitingResult[] = [
-  { representation: "CRP-7QX2M4KD9A", outcome: "LIMITED_OFFLINE", checkedAt: "2026-09-30T09:52:00+07:00", refusal: null },
+  { id: "seed-waiting-1", representation: "CRP-7QX2M4KD9A", outcome: "LIMITED_OFFLINE", checkedAt: "2026-09-30T09:52:00+07:00", refusal: null },
 ];
 
 /** P1: the keys cannot be read, so nothing checked offline can be checked or uploaded. */
 const WAITING_P1: readonly WaitingResult[] = [
-  { representation: "CRP-6TB5KN9XWE", outcome: "UNABLE_TO_VERIFY", checkedAt: "2026-09-30T09:58:00+07:00", refusal: null },
-  { representation: "CRP-4RW8QJ2MVH", outcome: "UNABLE_TO_VERIFY", checkedAt: "2026-09-30T09:31:00+07:00", refusal: null },
-  { representation: "CRP-9DK3XM7TPA", outcome: "UNABLE_TO_VERIFY", checkedAt: "2026-09-30T09:06:00+07:00", refusal: null },
-  { representation: "CRP-2HN6WT8QKC", outcome: "UNABLE_TO_VERIFY", checkedAt: "2026-09-29T16:44:00+07:00", refusal: null },
-  { representation: "CRP-7QX2M4KD9A", outcome: "UNABLE_TO_VERIFY", checkedAt: "2026-09-29T15:12:00+07:00", refusal: null },
+  { id: "p1-waiting-1", representation: "CRP-6TB5KN9XWE", outcome: "UNABLE_TO_VERIFY", checkedAt: "2026-09-30T09:58:00+07:00", refusal: null },
+  { id: "p1-waiting-2", representation: "CRP-4RW8QJ2MVH", outcome: "UNABLE_TO_VERIFY", checkedAt: "2026-09-30T09:31:00+07:00", refusal: null },
+  { id: "p1-waiting-3", representation: "CRP-9DK3XM7TPA", outcome: "UNABLE_TO_VERIFY", checkedAt: "2026-09-30T09:06:00+07:00", refusal: null },
+  { id: "p1-waiting-4", representation: "CRP-2HN6WT8QKC", outcome: "UNABLE_TO_VERIFY", checkedAt: "2026-09-29T16:44:00+07:00", refusal: null },
+  { id: "p1-waiting-5", representation: "CRP-7QX2M4KD9A", outcome: "UNABLE_TO_VERIFY", checkedAt: "2026-09-29T15:12:00+07:00", refusal: null },
 ];
 
 const FAILED_ONE: readonly FailedResult[] = [
@@ -398,8 +401,8 @@ const FAILED_ONE: readonly FailedResult[] = [
 ];
 
 const UPLOADED: readonly UploadedResult[] = [
-  { answer: "VRA-8MQ2TK5WXD", state: "REVOKED", differsFromDevice: true, checkedAt: "2026-09-29T16:05:00+07:00", refusal: null },
-  { answer: "VRA-3WT8KQ2M5N", state: "IN_FORCE", differsFromDevice: false, checkedAt: "2026-09-29T14:20:00+07:00", refusal: null },
+  { answer: "VRA-8MQ2TK5WXD", state: "REVOKED", differsFromDevice: true, checkedAt: "2026-09-29T16:05:00+07:00", refusal: null, notAttached: null },
+  { answer: "VRA-3WT8KQ2M5N", state: "IN_FORCE", differsFromDevice: false, checkedAt: "2026-09-29T14:20:00+07:00", refusal: null, notAttached: null },
 ];
 
 /**
@@ -416,6 +419,7 @@ export function mockScanAndVerify(view: Exclude<Ver01View, "loading">): LoadOutc
     scannedCode: null,
     checking: false,
     typedReference: "",
+    scan: { printout: "", noCode: false },
     inspection: null,
     waiting: WAITING_ONE,
     uploaded: UPLOADED,
@@ -482,6 +486,7 @@ const READ_AT = (second: string) => `2026-09-30T10:14:${second}+07:00`;
 const ONLINE: VerificationAnswer = {
   device: MOCK_FIELD_DEVICE,
   reference: ONLINE_ANSWER,
+  identifier: null,
   outcome: {
     kind: "CURRENT_RESULT",
     state: "IN_FORCE",
@@ -561,7 +566,7 @@ export function mockVerificationAnswer(view: Exclude<Ver02View, "loading">): Loa
     case "ambiguous":
       return answer("VRA-2TK8WQ5MXD", { kind: "AMBIGUOUS", count: 2 });
     case "not-authenticated":
-      return answer("VRA-9XQ4MT7KWC", { kind: "NOT_AUTHENTICATED" });
+      return answer("VRA-9XQ4MT7KWC", { kind: "NOT_AUTHENTICATED", reason: "SIGNATURE_NOT_VERIFIED" });
     case "offline":
       // Checked on the phone from the open inspection; it is attached when it uploads.
       return ok({
@@ -575,7 +580,10 @@ export function mockVerificationAnswer(view: Exclude<Ver02View, "loading">): Loa
           period: { from: "2026-09-10", to: "2027-09-09" },
           printedAt: "2026-09-10T15:02:00+07:00",
           keysRefreshedAt: "2026-09-30T07:00:00+07:00",
+          keyId: "CK-2026-01",
+          keyRetiredAt: null,
         },
+        identifier: { type: "REPRESENTATION_REFERENCE", value: "CRP-8TQ3WK6MXA" },
         inspection: { reference: OPEN_INSPECTION, attached: false },
         attachRefusal: null,
       });
@@ -952,23 +960,46 @@ export function mockInspectionRecord(
     reconsideration: view === "challenge-unknown" ? "UNKNOWN" : "NONE",
     digest: "…4f2a9c",
     versionInForce: corrected,
+    supersededAt: null,
+    // The corrected record's version 1, which a correction under CAS-2026-000377 superseded on 25 September.
+    earlier: corrected ? [{ version: 1, supersededAt: "2026-09-25T16:40:00+07:00" }] : [],
     whole:
       reader === "other"
         ? null
         : {
             inspector: { name: MOCK_INSPECTOR.account, card: "KTVH-0418" },
             inspectedAt: corrected ? "2026-09-10T14:05:00+07:00" : "2026-09-30T09:40:00+07:00",
-            answer: { reference: corrected ? "VRA-8QW3KT6MXC" : "VRA-4TW9KQ3MXA", state: "IN_FORCE" },
+            purpose: "ROUTINE",
+            basis: null,
+            locationContext: "REGISTER_ADDRESS",
+            verified: [
+              {
+                answer: corrected ? "VRA-8QW3KT6MXC" : "VRA-4TW9KQ3MXA",
+                channel: "ONLINE",
+                state: "IN_FORCE",
+                readAt: corrected ? "2026-09-10T14:02:00+07:00" : "2026-09-30T09:46:00+07:00",
+              },
+            ],
+            recordStateAtObservation: "IN_FORCE",
+            referralCase: null,
             findings: [{ kind: "MUSIC_IN_USE", note: FINDING_NOTE[locale] }],
             representative: { role: "MANAGER", acknowledgement: "ACKNOWLEDGED" },
             followUp: "NONE",
             followUpBy: null,
+            guidance: null,
+            referral: null,
+            statement: null,
+            delayReason: null,
             correctedUnderCase: corrected ? "CAS-2026-000377" : null,
             delivery: {
               state: handedOver ? "HANDED_OVER" : "PENDING",
+              route: handedOver ? "ON_SITE" : null,
               handedOverAt: handedOver ? "2026-09-30T10:34:00+07:00" : null,
+              deliveredAt: handedOver ? "2026-09-30T10:34:00+07:00" : null,
               dueBy: corrected ? "2026-09-30T16:40:00+07:00" : "2026-10-05T10:31:00+07:00",
-              noticeSent: false,
+              undeliveredAt: null,
+              // The board draws the notice to the premises not yet sent.
+              notice: null,
             },
           },
     refusal: null,
@@ -1342,14 +1373,15 @@ export const APPOINTMENTS: {
 /** A premises in the register, by the key the seed joins on. */
 export interface CanvasPremises {
   key: string;
-  /** The premises reference a list entry gives (PRM-); null where the canvas draws none. */
+  /**
+   * The premises register's reference (PRM-), which a list entry gives and CER names a record's premises by; null where
+   * no board draws one.
+   */
   reference: string | null;
   name: string;
   address: string | null;
   /** The ward it lies in, which decides the authority whose jurisdiction it is in. */
   area: string | null;
-  /** It holds a record in force whose reference the canvas never draws (SCR-VER-08's second list). */
-  recordNotDrawn: boolean;
 }
 
 const premisesOf = (key: string, name: PremisesName, area: string | null, reference: string | null = null): CanvasPremises => ({
@@ -1358,16 +1390,14 @@ const premisesOf = (key: string, name: PremisesName, area: string | null, refere
   name: name.name,
   address: name.address,
   area,
-  recordNotDrawn: false,
 });
 
-const fromEntry = (entry: SupplyEntry, recordNotDrawn = false): CanvasPremises => ({
+const fromEntry = (entry: SupplyEntry): CanvasPremises => ({
   key: entry.reference,
   reference: entry.reference,
   name: entry.premises,
   address: entry.address,
   area: entry.area,
-  recordNotDrawn,
 });
 
 const ENTRY = (reference: string): SupplyEntry => {
@@ -1377,13 +1407,14 @@ const ENTRY = (reference: string): SupplyEntry => {
 };
 
 /**
- * The premises the boards name. Those of SCR-VER-02 and SCR-VER-17 carry the addresses the answers print; those
+ * The premises the boards name. Those of SCR-VER-02 and SCR-VER-17 carry the addresses the answers print, and the
+ * register reference the CER boards draw for the same premises (SCR-CER-01), by which CER's records join them; those
  * of SCR-VER-08's lists carry their entry's reference, address and ward. Quán Nướng Hẻm 214 is both.
  */
 export const CANVAS_PREMISES: readonly CanvasPremises[] = [
-  premisesOf("pasteur", PASTEUR, "Phường Xuân Hoà"),
-  premisesOf("le-thanh-ton", LE_THANH_TON, "Phường Sài Gòn"),
-  premisesOf("da-kao", DA_KAO, "Phường Tân Định"),
+  premisesOf("pasteur", PASTEUR, "Phường Xuân Hoà", "PRM-5PSR9VJA"),
+  premisesOf("le-thanh-ton", LE_THANH_TON, "Phường Sài Gòn", "PRM-8RTN5QZD"),
+  premisesOf("da-kao", DA_KAO, "Phường Tân Định", "PRM-4DKX7WNP"),
   premisesOf("hem-214", HEM_214, "Phường Cầu Ông Lãnh", "PRM-8QNH6WZT"),
   premisesOf(
     "ap-mai-ton-that-thiep",
@@ -1391,89 +1422,12 @@ export const CANVAS_PREMISES: readonly CanvasPremises[] = [
     "Phường Sài Gòn",
     "PRM-5AMT2HXR",
   ),
-  premisesOf("ap-mai-thao-dien", { name: "Áp Mái Bar – Thảo Điền", address: null }, null),
+  premisesOf("ap-mai-thao-dien", { name: "Áp Mái Bar – Thảo Điền", address: null }, null, "PRM-7KD2WQ9M"),
   fromEntry(ENTRY("PRM-3NHZ6PKW")),
   fromEntry(ENTRY("PRM-3LTX7KQV")),
   fromEntry(ENTRY("PRM-9NTR4KBE")),
   fromEntry(ENTRY("PRM-6BVK3RQT")),
-  fromEntry(ENTRY("PRM-4MSG8TDX"), true),
-];
-
-/** A status record as CER answers it to the inspector route, with the printouts that carry its code. */
-export interface CanvasStatusRecord {
-  reference: string;
-  /** The premises key; null where the canvas names no premises for it. */
-  premises: string | null;
-  state: "IN_FORCE" | "SUSPENDED";
-  /** A timestamp, a date where the canvas gives only the day, or null where it gives neither. */
-  since: string | null;
-  period: Period;
-  printouts: readonly string[];
-}
-
-/**
- * The status records the canvas draws, with their states. From SCR-VER-02: Lê Thánh Tôn's, Áp Mái Bar – Tôn Thất
- * Thiệp's (suspended), one outside the jurisdiction whose premises is not named, and Đa Kao's (whose state
- * since is never drawn). From the premises canvas and the public verification boards: Pasteur's with its
- * printout, Nguyễn Huệ's, and one suspended since 26 September whose premises is not named.
- */
-export const CANVAS_STATUS_RECORDS: readonly CanvasStatusRecord[] = [
-  {
-    reference: "R1-CER-2026-K9TE4WQC",
-    premises: "le-thanh-ton",
-    state: "IN_FORCE",
-    since: "2026-09-02T15:05:00+07:00",
-    period: { from: "2026-09-28", to: "2027-09-01" },
-    printouts: [],
-  },
-  {
-    reference: "R1-CER-2026-V8JD3MRA",
-    premises: "ap-mai-ton-that-thiep",
-    state: "SUSPENDED",
-    since: "2026-09-22T16:30:00+07:00",
-    period: { from: "2026-06-15", to: "2027-06-14" },
-    printouts: [],
-  },
-  {
-    reference: "R1-CER-2026-F9RB2KXN",
-    premises: null,
-    state: "IN_FORCE",
-    since: "2026-09-11T10:02:00+07:00",
-    period: { from: "2026-09-11", to: "2027-09-10" },
-    printouts: [],
-  },
-  {
-    reference: "R1-CER-2026-D4KX7MQA",
-    premises: "da-kao",
-    state: "IN_FORCE",
-    since: null,
-    period: { from: "2026-09-10", to: "2027-09-09" },
-    printouts: [],
-  },
-  {
-    reference: "R1-CER-2026-T7QM4BWJ",
-    premises: "pasteur",
-    state: "IN_FORCE",
-    since: "2026-09-18T11:40:00+07:00",
-    period: { from: "2026-09-18", to: "2027-09-17" },
-    printouts: ["CRP-4WTN8QHC2K"],
-  },
-  {
-    reference: "R1-CER-2026-N6PZ2RKE",
-    premises: "PRM-3NHZ6PKW",
-    state: "IN_FORCE",
-    since: "2026-09-24T16:52:00+07:00",
-    period: { from: "2026-09-24", to: "2027-09-23" },
-    printouts: [],
-  },
-  {
-    reference: "R1-CER-2026-Q4RT8XZW",
-    premises: null,
-    state: "SUSPENDED",
-    since: "2026-09-26",
-    period: { from: "2026-08-03", to: "2027-08-02" },
-    printouts: [],
-  },
+  fromEntry(ENTRY("PRM-4MSG8TDX")),
 ];
 
 /** A stored verification answer of the seed. */
@@ -1573,7 +1527,14 @@ export const CANVAS_ANSWERS: readonly CanvasAnswer[] = [
     outcome: { kind: "NO_CURRENT_RECORD_FOR_PREMISES", premises: HEM_214, lastState: null },
   },
   { reference: "VRA-2TK8WQ5MXD", appointment: "kv1", channel: "ONLINE", answeredAt: CANVAS_READ, premises: null, outcome: { kind: "AMBIGUOUS", count: 2 } },
-  { reference: "VRA-9XQ4MT7KWC", appointment: "kv1", channel: "ONLINE", answeredAt: CANVAS_READ, premises: null, outcome: { kind: "NOT_AUTHENTICATED" } },
+  {
+    reference: "VRA-9XQ4MT7KWC",
+    appointment: "kv1",
+    channel: "ONLINE",
+    answeredAt: CANVAS_READ,
+    premises: null,
+    outcome: { kind: "NOT_AUTHENTICATED", reason: "SIGNATURE_NOT_VERIFIED" },
+  },
   {
     reference: ATTACHED_IN_FORCE.answer,
     appointment: "kv3",
@@ -1813,3 +1774,448 @@ export const CANVAS_DEVICE: {
   uploaded: UPLOADED,
   failed: FAILED_ONE,
 };
+
+// ------------------------------------------------------------------ the authorities, their inspectors and their records
+
+/*
+ * The world the operations, premises and oversight boards draw beside the field client (SCR-VER-09 to 16, 18):
+ * the designations of the four authorities, the appointments of KTVH-KV1's five inspectors, the records the
+ * premises portal and the authority's console read, the cases of the requests to reconsider them, and the
+ * month the oversight console counts. The values are the boards'; where a board leaves a field undrawn the seed
+ * says so beside it rather than making one up.
+ */
+
+/** A document attached to a designation or an appointment: its name and size only (there is no document store). */
+export interface CanvasDocument {
+  name: string;
+  size: string;
+  at: string;
+  by: string;
+}
+
+/** The staff the boards name as the recorder of the pending entries: Phan Gia Lượng (accounts.ts). */
+const LUONG = { name: "Phan Gia Lượng", email: "phan.gialuong@rightone.example" } as const;
+
+/** The geography version the boards record every jurisdiction under, and the wards it holds. */
+export const GEOGRAPHY_2025 = {
+  id: "g2025",
+  label: { vi: "Địa giới từ 1 tháng 7, 2025", en: "Geography from 1 July 2025" },
+  /** The wards the boards draw; an area outside them is refused AREA_NOT_IN_GEOGRAPHY, as SCR-VER-09 draws "Phường 6". */
+  areas: [
+    "Phường Sài Gòn",
+    "Phường Bến Thành",
+    "Phường Tân Định",
+    "Phường Cầu Ông Lãnh",
+    "Phường An Khánh",
+    "Phường Thủ Đức",
+    "Phường Hiệp Bình",
+    "Phường Xuân Hoà",
+    "Phường Nhiêu Lộc",
+    "Phường Bàn Cờ",
+    "Phường Chợ Lớn",
+    "Phường An Đông",
+    "Phường Chợ Quán",
+  ],
+} as const;
+
+export interface CanvasDesignation {
+  id: string;
+  code: string;
+  name: string;
+  level: AuthorityLevel;
+  /** Null where the board draws no legal basis (the designations in force are drawn as a row only). */
+  legalBasis: string | null;
+  document: CanvasDocument | null;
+  geography: string;
+  areas: readonly string[];
+  from: string;
+  to: string | null;
+  predecessor: string | null;
+  state: Standing;
+  /** Null where the board draws no recorder. */
+  recordedBy: StaffStamp | null;
+}
+
+/**
+ * SCR-VER-09's four designations. KTVH-KV4 waits for a decision, recorded by Phan Gia Lượng (SCR-VER-10). The
+ * decision board also draws KTVH-KV5 waiting, but SCR-VER-09 counts four authorities and nothing else of KV5 is
+ * drawn (no level, basis or jurisdiction), so it is not in the seed.
+ */
+export const CANVAS_DESIGNATIONS: readonly CanvasDesignation[] = [
+  {
+    id: "dsg-kv1",
+    code: "KTVH-KV1",
+    name: "Đội Kiểm tra Văn hoá Khu vực 1",
+    level: "PROVINCIAL",
+    legalBasis: null,
+    document: null,
+    geography: "g2025",
+    areas: KV1_AREAS,
+    from: "2026-09-01",
+    to: "2027-08-31",
+    predecessor: null,
+    state: "ACTIVE",
+    recordedBy: null,
+  },
+  {
+    id: "dsg-kv2",
+    code: "KTVH-KV2",
+    name: "Đội Kiểm tra Văn hoá Khu vực 2",
+    level: "PROVINCIAL",
+    legalBasis: null,
+    document: null,
+    geography: "g2025",
+    areas: ["Phường An Khánh", "Phường Thủ Đức", "Phường Hiệp Bình"],
+    from: "2026-09-01",
+    to: "2027-08-31",
+    predecessor: null,
+    state: "ACTIVE",
+    recordedBy: null,
+  },
+  {
+    id: "dsg-kv3",
+    code: "KTVH-KV3",
+    name: "Đội Kiểm tra Văn hoá Khu vực 3",
+    level: "PROVINCIAL",
+    legalBasis: null,
+    document: null,
+    geography: "g2025",
+    areas: KV3.areas,
+    from: "2026-09-15",
+    to: "2027-09-14",
+    predecessor: null,
+    state: "ACTIVE",
+    recordedBy: null,
+  },
+  {
+    id: "dsg-kv4",
+    code: "KTVH-KV4",
+    name: "Đội Kiểm tra Văn hoá Khu vực 4",
+    level: "PROVINCIAL",
+    legalBasis: "Quyết định số 2388/QĐ-SVHTT",
+    document: { name: "QD-2388-SVHTT.pdf", size: "388 KB", at: "2026-09-29T15:18:00+07:00", by: LUONG.name },
+    geography: "g2025",
+    areas: ["Phường Chợ Lớn", "Phường An Đông", "Phường Chợ Quán"],
+    from: "2026-11-01",
+    to: "2027-10-31",
+    predecessor: null,
+    state: "PENDING_APPROVAL",
+    recordedBy: { ...LUONG, at: "2026-09-29T15:20:00+07:00" },
+  },
+];
+
+export interface CanvasAppointment {
+  id: string;
+  /** The designation that appoints. */
+  authority: string;
+  /** The party person reference the person's own RightOne account shows. */
+  person: string;
+  name: string;
+  card: string | null;
+  /** Null where the board draws no instrument (Âu Thị Ngọc Diệp's KTVH-KV2 and KV3 appointments). */
+  instrument: string | null;
+  document: CanvasDocument | null;
+  from: string;
+  to: string | null;
+  state: Standing;
+  recordedBy: StaffStamp | null;
+  suspension: (StaffStamp & { reason: Localised }) | null;
+  /** After an ended appointment's last day, until when a visit already made may still be recorded (CFG-779). */
+  allowanceUntil: string | null;
+}
+
+/** The person Âu Thị Ngọc Diệp's account shows (SCR-VER-11), by her RightOne address. */
+export const INSPECTOR_PERSONS: Readonly<Record<string, string>> = { "ngocdiep.au@kiemtra.example": "PTY-552817" };
+
+/**
+ * The persons the register knows, by party person reference: the five inspectors of SCR-VER-11 and Đinh Khánh
+ * Vy, whose appointment its form records. Any other reference is PERSON_NOT_FOUND.
+ */
+export const CANVAS_PERSONS: Readonly<Record<string, string>> = {
+  "PTY-552817": "Âu Thị Ngọc Diệp",
+  "PTY-553104": "Tạ Quốc Huy",
+  "PTY-551938": "Mạc Văn Toàn",
+  "PTY-553480": "Hứa Minh Tâm",
+  "PTY-550274": "La Thị Bích Ngân",
+  "PTY-553671": "Đinh Khánh Vy",
+};
+
+const appointment = (
+  id: string,
+  authority: string,
+  person: string,
+  card: string | null,
+  instrument: string | null,
+  period: { from: string; to: string | null },
+  state: Standing,
+  rest: Partial<Pick<CanvasAppointment, "recordedBy" | "suspension" | "allowanceUntil">> = {},
+): CanvasAppointment => ({
+  id,
+  authority,
+  person,
+  name: CANVAS_PERSONS[person] ?? person,
+  card,
+  instrument,
+  document: null,
+  ...period,
+  state,
+  recordedBy: rest.recordedBy ?? null,
+  suspension: rest.suspension ?? null,
+  allowanceUntil: rest.allowanceUntil ?? null,
+});
+
+/**
+ * KTVH-KV1's five inspectors as SCR-VER-11 draws them, and Âu Thị Ngọc Diệp's two other appointments, which the
+ * field client acts under: KTVH-KV3 in force (its period is the designation's; the board draws no instrument)
+ * and KTVH-KV2, ended, within its last-day allowance (SCR-VER-17). Her appointments keep the ids the seed's
+ * inspections, answers and supplies join on ("kv1", "kv2", "kv3").
+ */
+export const CANVAS_APPOINTMENTS: readonly CanvasAppointment[] = [
+  appointment("kv1", "dsg-kv1", "PTY-552817", INSPECTOR_CARD, "Quyết định số 115/QĐ-KTVH", { from: "2026-09-01", to: "2027-08-31" }, "ACTIVE"),
+  appointment("apt-kv1-huy", "dsg-kv1", "PTY-553104", "KTVH-0422", "Quyết định số 116/QĐ-KTVH", { from: "2026-09-01", to: "2027-08-31" }, "ACTIVE"),
+  appointment("apt-kv1-toan", "dsg-kv1", "PTY-551938", "KTVH-0407", "Quyết định số 108/QĐ-KTVH", { from: "2026-09-01", to: "2027-08-31" }, "SUSPENDED", {
+    suspension: {
+      ...LUONG,
+      at: "2026-09-28T16:45:00+07:00",
+      reason: {
+        vi: "Đang được xem xét theo phản ánh của cơ sở về lượt kiểm tra ngày 26 tháng 9.",
+        en: "Under review following a premises’ report about the inspection of 26 September.",
+      },
+    },
+  }),
+  appointment("apt-kv1-tam", "dsg-kv1", "PTY-553480", "KTVH-0431", "Quyết định số 129/QĐ-KTVH", { from: "2026-10-15", to: "2027-10-14" }, "PENDING_APPROVAL", {
+    recordedBy: { ...LUONG, at: "2026-09-29T11:05:00+07:00" },
+  }),
+  appointment("apt-kv1-ngan", "dsg-kv1", "PTY-550274", "KTVH-0391", "Quyết định số 097/QĐ-KTVH", { from: "2026-09-01", to: "2026-09-26" }, "ENDED"),
+  appointment("kv3", "dsg-kv3", "PTY-552817", INSPECTOR_CARD, null, { from: "2026-09-15", to: "2027-09-14" }, "ACTIVE"),
+  appointment("kv2", "dsg-kv2", "PTY-552817", INSPECTOR_CARD, null, { from: "2026-09-01", to: null }, "ENDED", {
+    allowanceUntil: APPOINTMENTS.withinAllowance[0]?.until ?? null,
+  }),
+];
+
+/** Premises of the Then Cửa Việt chain, by the inspection seed's key, with the portal's premises id (registration). */
+export const PREMISES_OF_PARTY: Readonly<Record<string, { party: string; portalId: string }>> = {
+  pasteur: { party: "tcv", portalId: "pasteur" },
+  "le-thanh-ton": { party: "tcv", portalId: "ltt" },
+  "da-kao": { party: "tcv", portalId: "dakao" },
+  "PRM-6BVK3RQT": { party: "tcv", portalId: "buivien" },
+  "PRM-3NHZ6PKW": { party: "tcv", portalId: "nh" },
+};
+
+/** A record of the premises portal and the authority's console, beyond the field client's own (SCR-VER-13, 18). */
+export interface CanvasAuthorityRecord {
+  reference: string;
+  premises: string;
+  appointment: string;
+  inspectedAt: string;
+  issuedAt: string;
+  outcome: Outcome;
+  findings: readonly { kind: FindingKind; note: Localised | null }[];
+  guidance: Localised | null;
+  followUp: FollowUpKind;
+  followUpBy: string | null;
+  delivery: { state: "PENDING" | "HANDED_OVER"; dueBy: string; handedOverAt: string | null };
+}
+
+const handed = (at: string) => ({ state: "HANDED_OVER" as const, dueBy: at, handedOverAt: at });
+
+/**
+ * The records the premises portal draws for Then Cửa Coffee & Tea – Lê Thánh Tôn (SCR-VER-13), and the two the
+ * authority's console draws needing attention (SCR-VER-18): Bùi Viện's, not delivered by 27 September, and Áp
+ * Mái Bar – Tôn Thất Thiệp's, whose re-visit was due by 25 September. None of them draws its representative,
+ * so the seed records none; the boards draw no outcome for the two console rows and no finding for the oldest
+ * Lê Thánh Tôn record, and none is given. Where a board draws when a record reached the premises (14:31 on
+ * SCR-VER-14, 10:05 on SCR-VER-18) it was handed over then; the oldest record is taken as handed over when issued.
+ */
+export const CANVAS_AUTHORITY_RECORDS: readonly CanvasAuthorityRecord[] = [
+  {
+    reference: "IRC-6KD2TW8QMX",
+    premises: "le-thanh-ton",
+    appointment: "kv1",
+    inspectedAt: "2026-09-29T14:10:00+07:00",
+    issuedAt: "2026-09-29T14:31:00+07:00",
+    outcome: "GUIDANCE_GIVEN",
+    findings: [
+      { kind: "MUSIC_IN_USE", note: null },
+      {
+        kind: "RECORD_SCOPE_EXCEEDED",
+        note: {
+          vi: "nhạc phát ở cả sân thượng, ngoài khu vực ghi trong giấy xác nhận",
+          en: "music also plays on the roof terrace, outside the area the certificate names",
+        },
+      },
+    ],
+    guidance: {
+      vi: "Đã hướng dẫn cơ sở báo thay đổi khu vực sử dụng nhạc qua cổng một cửa RightOne trong 30 ngày.",
+      en: "Advised the premises to report the change of music area through the RightOne single window within 30 days.",
+    },
+    followUp: "RE_VISIT",
+    followUpBy: "2026-11-30",
+    delivery: handed("2026-09-29T14:31:00+07:00"),
+  },
+  {
+    reference: "IRC-4M8QK2TW7C",
+    premises: "le-thanh-ton",
+    appointment: "kv1",
+    inspectedAt: "2026-09-10T09:40:00+07:00",
+    issuedAt: "2026-09-10T10:02:00+07:00",
+    outcome: "GUIDANCE_GIVEN",
+    findings: [
+      { kind: "MUSIC_IN_USE", note: null },
+      { kind: "RECORD_NOT_PRESENTED", note: null },
+    ],
+    guidance: {
+      vi: "Đã hướng dẫn cơ sở xuất trình giấy xác nhận đang có hiệu lực tại quầy.",
+      en: "Advised the premises to show the certificate in force at the counter.",
+    },
+    followUp: "NONE",
+    followUpBy: null,
+    delivery: handed("2026-09-10T10:05:00+07:00"),
+  },
+  {
+    reference: "IRC-1TQ9WM4KXD",
+    premises: "le-thanh-ton",
+    appointment: "kv1",
+    inspectedAt: "2026-08-12T15:25:00+07:00",
+    issuedAt: "2026-08-12T15:25:00+07:00",
+    outcome: "NOTHING_FOUND",
+    findings: [],
+    guidance: null,
+    followUp: "NONE",
+    followUpBy: null,
+    delivery: handed("2026-08-12T15:25:00+07:00"),
+  },
+  {
+    reference: "IRC-8KT3QW5MXA",
+    premises: "PRM-6BVK3RQT",
+    appointment: "kv1",
+    inspectedAt: "2026-09-22T10:00:00+07:00",
+    issuedAt: "2026-09-22T10:00:00+07:00",
+    outcome: "GUIDANCE_GIVEN",
+    findings: [],
+    guidance: null,
+    followUp: "NONE",
+    followUpBy: null,
+    delivery: { state: "PENDING", dueBy: "2026-09-27T10:00:00+07:00", handedOverAt: null },
+  },
+  {
+    reference: "IRC-2QX7MK4TWD",
+    premises: "ap-mai-ton-that-thiep",
+    appointment: "kv1",
+    inspectedAt: "2026-09-18T15:00:00+07:00",
+    issuedAt: "2026-09-18T15:00:00+07:00",
+    outcome: "GUIDANCE_GIVEN",
+    findings: [],
+    guidance: null,
+    followUp: "RE_VISIT",
+    followUpBy: "2026-09-25",
+    delivery: handed("2026-09-18T15:00:00+07:00"),
+  },
+];
+
+/**
+ * The inspection SCR-VER-18 draws whose inspector can no longer act: opened at The Lintel Coffee – Lý Tự Trọng
+ * by La Thị Bích Ngân, whose appointment ended on 26 September, six days before the canvas's moment.
+ */
+export const CANVAS_ORPHANED_INSPECTIONS: readonly CanvasInspection[] = [
+  {
+    reference: "ISP-3T7KW2MQ9A",
+    premises: "PRM-3LTX7KQV",
+    appointment: "apt-kv1-ngan",
+    purpose: null,
+    observedAt: "2026-09-24T10:00:00+07:00",
+    late: false,
+    attached: [],
+    findings: [],
+    draft: null,
+  },
+];
+
+/** A request to reconsider a record, and the case it opened. */
+export interface CanvasChallenge {
+  subjectKind: "ANSWER" | "INSPECTION_RECORD";
+  subjectRef: string;
+  versionNo: number | null;
+  premises: string;
+  caseRef: string;
+  /** Null where the board draws no instant. */
+  openedAt: string | null;
+}
+
+/**
+ * The requests to reconsider VER's boards draw, and the cases they opened, which CAS's seed holds under the same
+ * references (`SEED_CASES`): CAS-2026-000412, decided, requires IRC-4M8QK2TW7C corrected (SCR-VER-13, 15, 18);
+ * CAS-2026-000377, decided, under which Đa Kao's record was corrected to version 2 (SCR-VER-06).
+ */
+export const CANVAS_CHALLENGES: readonly CanvasChallenge[] = [
+  { subjectKind: "INSPECTION_RECORD", subjectRef: "IRC-4M8QK2TW7C", versionNo: 1, premises: "le-thanh-ton", caseRef: "CAS-2026-000412", openedAt: null },
+  { subjectKind: "INSPECTION_RECORD", subjectRef: "IRC-3XK7QW2MTD", versionNo: 1, premises: "da-kao", caseRef: "CAS-2026-000377", openedAt: null },
+];
+
+/**
+ * The answer SCR-VER-14 draws a premises asking to reconsider: given on the public verification page at 19:40 on
+ * 29 September about Lê Thánh Tôn, in force, for background music in the main room.
+ */
+export interface CanvasPublicAnswer {
+  reference: string;
+  answeredAt: string;
+  premises: string;
+  outcome: AnswerOutcome;
+  /** The scope of use the answer showed. */
+  scope: Localised;
+}
+
+export const CANVAS_PUBLIC_ANSWERS: readonly CanvasPublicAnswer[] = [
+  {
+    reference: "VRA-6T2KQ9MW4A",
+    answeredAt: "2026-09-29T19:40:00+07:00",
+    premises: "le-thanh-ton",
+    outcome: inForce("R1-CER-2026-K9TE4WQC", LE_THANH_TON, "2026-09-02T15:05:00+07:00", { from: "2026-09-28", to: "2027-09-01" }, "2026-09-29T19:40:00+07:00"),
+    scope: { vi: "Nhạc nền tại phòng chính", en: "Background music in the main room" },
+  },
+];
+
+/** The supply SCR-VER-16 draws requested by Tạ Quốc Huy for Phường Tân Định alone (SCR-VER-08, empty and limited). */
+export const CANVAS_OTHER_SUPPLIES: readonly (CanvasSupply & { requester: string })[] = [
+  {
+    supply: { reference: "ILS-2TQ6WK8MXN", kind: "NO_CURRENT_RECORD", state: "READY", generatedAt: "2026-09-30T09:15:00+07:00", failure: null },
+    appointment: "apt-kv1-huy",
+    areas: ["Phường Tân Định"],
+    requestedAt: null,
+    register: {
+      route: "ALTERNATIVE_ROUTE",
+      reconciledAt: "2026-09-15T02:00:00+07:00",
+      reconciledDaysAgo: 15,
+      scope: "AREAS",
+      limitedAreas: ["Phường Tân Định"],
+      version: "RR-2026-09-15-01",
+      readAt: "2026-09-30T09:15:00+07:00",
+    },
+    counts: { byArea: [{ area: "Phường Tân Định", listed: 0 }], listed: 0, current: 9, outOfScope: 1, indeterminate: 0, notOperating: 0 },
+    entries: [],
+    requester: "Tạ Quốc Huy",
+  },
+];
+
+/** The counts of SCR-VER-16 per authority over a month: inspections by state, records by outcome, deliveries. */
+export interface OversightCounts {
+  open: number;
+  concluded: number;
+  abandoned: number;
+  compliant: number;
+  nothingFound: number;
+  guidance: number;
+  referred: number;
+  undelivered: number;
+}
+
+/**
+ * What SCR-VER-16 counts in September 2026 beyond the inspections and records the seed holds one by one: the
+ * board's figures per authority less those the world draws (two open and five records of KTVH-KV1, KV2's and
+ * KV3's open inspections). The page adds the world's own, so an act made now moves the count.
+ */
+export const OVERSIGHT_BASELINE: readonly { month: string; authority: string; counts: OversightCounts }[] = [
+  { month: "2026-09", authority: "dsg-kv1", counts: { open: 0, concluded: 9, abandoned: 1, compliant: 6, nothingFound: 2, guidance: 0, referred: 1, undelivered: 0 } },
+  { month: "2026-09", authority: "dsg-kv2", counts: { open: 0, concluded: 5, abandoned: 0, compliant: 3, nothingFound: 1, guidance: 1, referred: 0, undelivered: 0 } },
+  { month: "2026-09", authority: "dsg-kv3", counts: { open: 0, concluded: 3, abandoned: 0, compliant: 2, nothingFound: 0, guidance: 1, referred: 0, undelivered: 0 } },
+];

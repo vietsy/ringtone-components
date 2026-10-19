@@ -1,7 +1,11 @@
 import type { ReactNode } from "react";
 
-/** The type styles a screen sets running text in; each is a class the theme emits from the tokens. */
-type Size = "sm" | "base" | "lg";
+/**
+ * The type styles a screen sets running text in; each is a class the theme emits from the tokens. guest is the
+ * body of a guest display, read across a room.
+ */
+const SIZE = { sm: "text-sm", base: "text-base", lg: "text-lg", guest: "guest-body" } as const;
+type Size = keyof typeof SIZE;
 
 /** The design system's inks for text: the surface's own, secondary for a supporting line, muted for the least. */
 const TONE = {
@@ -38,7 +42,7 @@ export function Text({ as: Element = "p", size, tone, weight, measure, id, child
   return (
     <Element
       {...(id !== undefined ? { id } : {})}
-      {...(size !== undefined ? { className: `text-${size}` } : {})}
+      {...(size !== undefined ? { className: SIZE[size] } : {})}
       style={{
         margin: 0,
         ...(tone !== undefined ? { color: TONE[tone] } : {}),

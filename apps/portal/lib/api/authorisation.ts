@@ -1,7 +1,7 @@
 import type { LoadOutcome } from "@rightone/ui";
 import { loadParticipationStanding } from "@/lib/api/participation";
-import type { CmoAdministrator } from "@/lib/api/session";
-import { enquiryForm, readVerificationReads, verifyAuthorityScope } from "@/lib/mock/backend/authorisation";
+import type { CmoAdministrator, Staff } from "@/lib/api/session";
+import { enquiryForm, overlapReport, readVerificationReads, verifyAuthorityScope } from "@/lib/mock/backend/authorisation";
 import { mockOverlapReport, mockVerifyAuthorisation, type Pty17View, type Pty18View } from "@/lib/mock/authorisation";
 import { NOT_CONFIGURED, usesMockData } from "./source";
 
@@ -28,6 +28,29 @@ export interface AuthorityVerification {
   period: { from: string; to: string } | null;
   /** When the read was recorded in `party.verification_reads`. */
   readAt: string;
+}
+
+/** One verification read of a premises, as the overlap report lists it: who asked, about when, and what they were told. */
+export interface OverlapRow {
+  id: string;
+  organisation: { id: string; name: string };
+  askedAt: string;
+  answer: VerificationAnswer;
+  readAt: string;
+}
+
+/** SCR-PTY-18 for the data owner and assurance: GET /premises/{id}/verification-reads. */
+export interface OverlapReport {
+  asOf: string;
+  /** The premises asked about; null until one is chosen. */
+  premises: RegisterPremises | null;
+  filter: { from: string | null; to: string | null };
+  rows: readonly OverlapRow[];
+  /** How many organisations asked, and how many of them were told another authority exists. */
+  organisations: number;
+  toldAnother: number;
+  /** The register to choose another premises from. */
+  register: readonly RegisterPremises[];
 }
 
 /** The refusals SCR-PTY-17 renders (PTY 04, the account-free surface's three). */
@@ -119,4 +142,13 @@ export async function sendAuthorityVerification(
 export function loadOverlapReport(cmo: CmoAdministrator, view: Pty18View | null): Promise<LoadOutcome<never>> {
   if (!usesMockData()) return Promise.resolve(NOT_CONFIGURED);
   return Promise.resolve(view !== null ? mockOverlapReport() : readVerificationReads(cmo.sessionId, { organisation: cmo.organisation }));
+}
+
+/**
+ * SCR-PTY-18 on the register data console: the verification reads of one premises for the data owner and assurance,
+ * optionally from and to a day. Reading it changes nothing.
+ */
+export function loadConsoleOverlapReport(staff: Staff, premises: string, period: { from: string | null; to: string | null }): Promise<LoadOutcome<OverlapReport>> {
+  if (!usesMockData()) return Promise.resolve(NOT_CONFIGURED);
+  return Promise.resolve(overlapReport(staff, premises, period));
 }

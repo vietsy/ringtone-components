@@ -10,7 +10,7 @@ import vi from "@/messages/screens/page.vi.json";
  * the specification is approved. Drawn with the design system so a reserved address looks like the product
  * rather than a bare page.
  */
-export async function ReservedPage({ surface }: { surface: "artist" | "ops" }) {
+export async function ReservedPage({ surface }: { surface: "artist" }) {
   const locale = await getLocale();
   const t = translator({ vi, en }, locale);
   return (

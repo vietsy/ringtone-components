@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import "@/components/r1/generated/r1.css";
+import "@/components/r1/r1.css";
 import { MockDataNote } from "@/components/MockDataNote";
 import { usesMockData } from "@/lib/api/source";
 import { getLocale } from "@/lib/i18n/locale";

@@ -53,7 +53,7 @@ export const rowCount = (rows: number, t: Translate, locale: Locale) =>
   rows === 1 ? t("gov14.rowCountOne") : t("gov14.rowCount", { n: count(rows, locale) });
 
 /**
- * A refusal's sentence, word for word from GOV `04-refusal-codes.md`, its placeholders filled with what the
+ * A refusal's sentence, with the meaning of GOV `04-refusal-codes.md` written short for the screen, its placeholders filled with what the
  * refusal names. `fieldKey` names the field's words where the sentence names a field.
  */
 export function refusalSentence(refusal: GovRefusal, fieldKey: string | null, t: Translate, locale: Locale): string {

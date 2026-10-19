@@ -14,7 +14,6 @@ import {
   type ApplicationKind,
   type AttestAttempt,
   type ChosenFile,
-  type DocumentItem,
   type EvidenceAttempt,
   type EvidenceItemRefusal,
   type FactQuestion,
@@ -37,7 +36,6 @@ import { readDate, text } from "./fields";
 const QUESTIONS: readonly FactQuestion[] = ["premises_class", "customer_area", "days_open", "music_method", "use_began_on"];
 const LAYERS: readonly RightsLayer[] = ["AUTHORS", "PERFORMERS", "PRODUCERS"];
 const ITEM_REFUSALS: readonly EvidenceItemRefusal[] = ["DOCUMENT_INVALID", "EVIDENCE_REQUEST_CLOSED", "TARIFF_NOT_APPROVED", "EVIDENCE_NOT_REQUESTED"];
-const ITEMS: readonly DocumentItem[] = ["USE_START_PROOF", "LEASE", "SUPPLIER_INVOICE", "MUSIC_INVOICE_Q3", "EQUIPMENT_PHOTO"];
 
 const kindOf = (value: string): ApplicationKind => (value === "RENEWAL" || value === "AMENDMENT" ? value : "NEW");
 
@@ -222,8 +220,8 @@ export async function addRequestedDocument(application: string, item: string, fi
   const outcome = await sendRequestedDocument(principal.sessionId, application, String(item), chosen(file));
   const code = outcome.data?.refusal?.code ?? null;
   const refusal = ITEM_REFUSALS.find((candidate) => candidate === code);
-  const asked = ITEMS.find((candidate) => candidate === item);
-  if (refusal === undefined || asked === undefined) redirect(routes.application(application));
-  const attempt: StatusAttempt = { page: "status", application, withdrawRefusal: null, document: { item: asked, code: refusal } };
+  if (refusal === undefined) redirect(routes.application(application));
+  // The item by its code, as the request names it: a reviewer's code or a document the rules name.
+  const attempt: StatusAttempt = { page: "status", application, withdrawRefusal: null, document: { item: String(item), code: refusal } };
   redirect(withAttempt(routes.application(application), keepForPage(attempt)));
 }

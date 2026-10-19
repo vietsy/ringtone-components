@@ -13,6 +13,9 @@ interface Props {
   refusal: { code: string; title: string; text: string } | null;
   guidance: { label: string; value: string; error: string | null };
   referral: { legend: string; options: Options; value: string; noteLabel: string; noteValue: string; noteError: string | null };
+  /** The field client's (portal) or the inspection console's (SCR-VER-15). */
+  density?: "portal" | "console";
+  layout?: "list" | "inline";
   locale: Locale;
 }
 
@@ -20,7 +23,7 @@ interface Props {
  * SCR-VER-05's outcome and what it asks for next: "Đã hướng dẫn" asks for the guidance given, "Chuyển theo dõi
  * tiếp" for the route and its note. Choosing another outcome changes the fields under it at once, as on the board.
  */
-export function OutcomeFields({ outcome, refusal, guidance, referral, locale }: Props) {
+export function OutcomeFields({ outcome, refusal, guidance, referral, density = "portal", layout = "list", locale }: Props) {
   const [chosen, setChosen] = useState(outcome.value);
 
   return (
@@ -31,15 +34,16 @@ export function OutcomeFields({ outcome, refusal, guidance, referral, locale }: 
         options={outcome.options}
         value={chosen}
         required
+        layout={layout}
         onChange={(event) => {
           const target = (event as { target?: { value?: unknown } }).target;
           if (typeof target?.value === "string") setChosen(target.value);
         }}
-        density="portal"
+        density={density}
         locale={locale}
       />
       {refusal !== null && (
-        <Banner family="attention" title={refusal.title} code={refusal.code} density="portal" locale={locale}>
+        <Banner family="attention" title={refusal.title} code={refusal.code} density={density} locale={locale}>
           {refusal.text}
         </Banner>
       )}
@@ -53,7 +57,7 @@ export function OutcomeFields({ outcome, refusal, guidance, referral, locale }: 
           rows={4}
           required
           maxLength={4000}
-          density="portal"
+          density={density}
           locale={locale}
         />
       )}
@@ -65,7 +69,7 @@ export function OutcomeFields({ outcome, refusal, guidance, referral, locale }: 
             options={referral.options}
             value={referral.value}
             required
-            density="portal"
+            density={density}
             locale={locale}
           />
           <TextField
@@ -77,7 +81,7 @@ export function OutcomeFields({ outcome, refusal, guidance, referral, locale }: 
             rows={3}
             required
             maxLength={4000}
-            density="portal"
+            density={density}
             locale={locale}
           />
         </>

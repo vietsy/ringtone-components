@@ -5,16 +5,24 @@
  * Paths are English and stable; the screen codes (SCR-*) are the design's names for them and appear
  * only in comments, never in a URL or on screen.
  */
-import type { Route } from "next";
-
-const enc = encodeURIComponent;
-
-/**
- * Typed routes check a literal path against the app directory, but a path built from a reference is a
- * plain string to the compiler. Every path is built here and nowhere else, so this is the one place that
- * vouches for it, and `redirect()` and `<Link>` take the result without a cast at each call site.
- */
-const route = (path: string): Route => path as Route;
+import { enc, route } from "./route-groups/route";
+import { registrationOpsRoutes } from "./route-groups/registration-ops";
+import { statusOpsRoutes } from "./route-groups/status-ops";
+import { financeOpsRoutes } from "./route-groups/finance-ops";
+import { venuePortalRoutes } from "./route-groups/venue-portal";
+import { publicPagesRoutes } from "./route-groups/public-pages";
+import { inspectionMoreRoutes } from "./route-groups/inspection-more";
+import { premisesMoreRoutes } from "./route-groups/premises-more";
+import { partiesRoutes } from "./route-groups/parties";
+import { premisesRegisterRoutes } from "./route-groups/premises-register";
+import { playerOpsRoutes } from "./route-groups/player-ops";
+import { venueOpsRoutes } from "./route-groups/venue-ops";
+import { policyRoutes } from "./route-groups/policy";
+import { oversightRoutes } from "./route-groups/oversight";
+import { casesRoutes } from "./route-groups/cases";
+import { noticesRoutes } from "./route-groups/notices";
+import { engagementRoutes } from "./route-groups/engagement";
+import { artistRoutes } from "./route-groups/artist";
 
 export const routes = {
   // (public) - no credential
@@ -62,12 +70,19 @@ export const routes = {
   decision: (decision: string) => route(`/decisions/${enc(decision)}`),
   /** SCR-FIN-03 Invoices and corrective documents */
   payments: () => route("/payments"),
+  /** SCR-FIN-03 One invoice or corrective document, by its number ("1C26TRO 00000418"), or a payment's invoice not issued yet (PAY-) */
+  invoice: (reference: string) => route(`/payments/invoices/${enc(reference.trim().replace(/\s+/g, "-"))}`),
   /** SCR-FIN-01 Pay an obligation */
   pay: (decision: string) => route(`/payments/${enc(decision)}/pay`),
   /** SCR-FIN-02 Payment position */
   paymentPosition: (decision: string) => route(`/payments/${enc(decision)}`),
-  /** SCR-CER-11 Status records of a premises */
-  statusRecords: () => route("/status-records"),
+  /** SCR-CER-11 Status records of a premises: the premises the address names (REG's id or its register record), else a choice of them */
+  statusRecords: (premises?: string, pages?: number) =>
+    route(
+      premises === undefined || premises === ""
+        ? "/status-records"
+        : `/status-records?premises=${enc(premises)}${pages !== undefined && pages > 1 ? `&pages=${String(pages)}` : ""}`,
+    ),
   /** SCR-CER-12 Status record */
   statusRecord: (record: string) => route(`/status-records/${enc(record)}`),
   /** SCR-CER-13 Status record printout */
@@ -130,6 +145,29 @@ export const routes = {
   /** SCR-VER-08 List supply and entries */
   inspectionList: (list: string) => route(`/inspection/lists/${enc(list)}`),
 
+  // The gateway's staff
+  /** The operations console's landing: the workspaces the signed-in member's roles open ("Việc của tôi") */
+  ops: () => route("/ops"),
+  /** Returns this browser's world to the seed and signs out (mock data only) */
+  resetData: () => route("/id/reset"),
+
+  ...registrationOpsRoutes,
+  ...statusOpsRoutes,
+  ...financeOpsRoutes,
+  ...venuePortalRoutes,
+  ...publicPagesRoutes,
+  ...inspectionMoreRoutes,
+  ...premisesMoreRoutes,
+  ...partiesRoutes,
+  ...premisesRegisterRoutes,
+  ...playerOpsRoutes,
+  ...venueOpsRoutes,
+  ...policyRoutes,
+  ...oversightRoutes,
+  ...casesRoutes,
+  ...noticesRoutes,
+  ...engagementRoutes,
+  ...artistRoutes,
 } as const;
 
 /**

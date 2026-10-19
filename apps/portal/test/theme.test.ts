@@ -1,11 +1,19 @@
-import { readFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { themeCss } from "../lib/theme/css-variables.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const read = (path: string) => readFileSync(resolve(here, "..", path), "utf8");
+
+/** The source of every R1 component: the component files, lib/ and the gallery's specimens. */
+function componentSource(dir = resolve(here, "../components/r1")): string {
+  return readdirSync(dir)
+    .map((name) => join(dir, name))
+    .map((path) => (statSync(path).isDirectory() ? componentSource(path) : /\.tsx?$/.test(path) ? readFileSync(path, "utf8") : ""))
+    .join("\n");
+}
 
 type Scopes = Map<string, Map<string, string>>;
 
@@ -32,7 +40,7 @@ function resolveRefs(value: string, primitives: Map<string, string>): string {
 
 describe("the theme emitted from @rightone/tokens", () => {
   const ours = scopes(themeCss());
-  const r1 = scopes(read("components/r1/source/tokens.css"));
+  const r1 = scopes(read("../../packages/tokens/r1/tokens.css"));
   const r1Primitives = r1.get(':root, [data-theme="dark"]') ?? new Map<string, string>();
 
   it("defines every custom property of R1's tokens.css, in the same scope, with the same value", () => {
@@ -54,8 +62,8 @@ describe("the theme emitted from @rightone/tokens", () => {
   });
 
   it("defines every custom property the R1 components read", () => {
-    const stylesheet = read("components/r1/generated/r1.css");
-    const module = read("components/r1/generated/r1.js");
+    const stylesheet = read("components/r1/r1.css");
+    const module = componentSource();
     const defined = new Set([...ours.values()].flatMap((props) => [...props.keys()]));
     // The component stylesheet declares some properties of its own (the Player frame's --pl-* sizes), and
     // the module sets others on an element at run time ('--r1-field-width', setProperty('--r1-notice-h')).

@@ -87,7 +87,16 @@ export default async function VerificationPage({
 
         {/* The public reader's next steps are a labelled row on the canvas; an inspector, not admitted to the
             help journey, has the one way on. */}
-        {reader === "public" ? <ButtonRow label={t("pub05.next")}>{again}</ButtonRow> : <div>{again}</div>}
+        {reader === "public" ? (
+          <ButtonRow label={t("pub05.next")}>
+            {again}
+            <Button variant="quiet" size="md" href={routes.help({ from: routes.verification(reference) })} fullWidth={narrow} locale={locale}>
+              {t("pub.correct")}
+            </Button>
+          </ButtonRow>
+        ) : (
+          <div>{again}</div>
+        )}
       </div>
     </PublicShell>
   );

@@ -2,7 +2,9 @@
 
     page.tsx   SCR-FIN-02  payment position of one obligation decision
 
-Live: the latest payment made in the session for the decision, or the position the canvas drew for it.
+Live: a second payment of the decision still held or not returned yet (the board's duplicate, see `../README.md`),
+else the latest payment made in the session for the decision, or the position the canvas drew for it. A card
+payment taken back before its invoice was issued shows the invoice cancelled.
 Pasteur (`OBD-3FJW6NRA5C`) opens on its payment taken back (disputed); once the payer has authorised payment
 again it waits for the new payment under that instruction, as the board's disputed drawing does, and once the
 transfer or the card is settled it opens on the new payment, reconciled and invoiced. Nguyễn Huệ

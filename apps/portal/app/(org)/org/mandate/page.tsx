@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { Banner, FactList, ItemList, Link, PageHeader, Panel, ViewState } from "@/components/r1";
+import { Banner, Columns, FactList, ItemList, Link, PageHeader, Panel, ViewState } from "@/components/r1";
 import { PortalShell } from "@/components/shells/PortalShell";
 import { orgContext, orgNav } from "@/components/shells/org-nav";
 import { actOnMandate } from "@/features/governance/actions";
@@ -177,7 +177,7 @@ function ReadOnlyMandate({ mandate, data, phone, t, locale }: { mandate: Mandate
           {localised(mandate.review.reason, locale)}
         </Banner>
       ) : null}
-      <div style={{ display: "grid", gridTemplateColumns: phone ? "minmax(0, 1fr)" : "repeat(2, minmax(0, 1fr))", gap: "var(--space-6)", alignItems: "start" }}>
+      <Columns layout="halves" single={phone}>
         <Panel title={t("gov14.basis")} level={2} inset={inset} gap="sm" density="portal" locale={locale}>
           <FactList
             items={[
@@ -194,7 +194,7 @@ function ReadOnlyMandate({ mandate, data, phone, t, locale }: { mandate: Mandate
         <Panel title={t("gov14.rights")} level={2} meta={rowCount(mandate.scope.length, t, locale)} gap="sm" inset={inset} density="portal" locale={locale}>
           <ItemList items={scopeItems(mandate.scope, register, t)} density="portal" label={t("gov14.rights")} locale={locale} />
         </Panel>
-      </div>
+      </Columns>
     </>
   );
 }

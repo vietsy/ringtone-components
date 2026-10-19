@@ -21,11 +21,12 @@ The canvas's café (Ho Chi Minh City, 85 m², 40 seats, 30 September 2026) comes
 Every view the canvas drew is reachable as `?view=`: not-offered, guidance-not-offered, form, indicated,
 no-amount, no-tariff-for-date, tariff-unavailable, loading.
 
-Deviations: the page's way in and its "Quay lại biểu phí" are SCR-PUB-11, which is not built, so the page is
-reached at its own address; the not-offered refusal keeps its sentence "Bạn có thể xem biểu phí đang hiệu
-lực." verbatim. The questions are one answer for both pages (`GET /scope-questions`), so the live form offers
+The page is reached from SCR-PUB-11's "Số tiền tham khảo", and "Quay lại biểu phí" returns there.
+
+Deviations: the not-offered refusal keeps its sentence "Bạn có thể xem biểu phí đang hiệu lực." verbatim; SCR-PUB-11
+publishes the same tariff versions this page calculates under. The questions are one answer for both pages (`GET /scope-questions`), so the live form offers
 the five provinces SCR-PUB-02 draws where this board draws three. The live form opens empty on today's date.
-The shell draws no footer. A failure the canvas does not draw reads as the public error state of PUB
+A failure the canvas does not draw reads as the public error state of PUB
 convention 2.
 
 Reached from SCR-PUB-02's in-scope answer (an addition awaiting the BA): the facts it carries in the address

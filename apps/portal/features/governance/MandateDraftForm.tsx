@@ -2,7 +2,22 @@
 
 import { useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { Button, ButtonRow, Combobox, DateField, Dialog, Divider, FieldRow, FieldRows, FileUpload, ItemList, Panel, Select, TextField } from "@/components/r1";
+import {
+  Button,
+  ButtonRow,
+  Columns,
+  Combobox,
+  DateField,
+  Dialog,
+  Divider,
+  FieldRow,
+  FieldRows,
+  FileUpload,
+  ItemList,
+  Panel,
+  Select,
+  TextField,
+} from "@/components/r1";
 import { Text } from "@/components/Text";
 import type { ChosenFile, GovField, GovRefusal, MandateForm, MandateRegister, Organisation, ScopeRow } from "@/lib/api/governance";
 import type { Locale, Translate } from "@/lib/i18n/translate";
@@ -84,7 +99,6 @@ export function MandateDraftForm({
   const errorOf = (field: GovField, row: number | null = null) =>
     refusal?.field === field && refusal.row === row ? { error: refusalSentence(refusal, `gov.field.${field}`, t, locale) } : {};
   const periodError = { ...errorOf("effective_from"), ...errorOf("effective_to") };
-  const cols = phone ? "minmax(0, 1fr)" : "repeat(2, minmax(0, 1fr))";
   const rightOptions = register.rightTypes.map((value) => ({ value, label: rightLabel(value, t) }));
   const provinceOptions = register.provinces.map((province) => ({ value: province.code, label: province.name }));
 
@@ -103,7 +117,7 @@ export function MandateDraftForm({
         <input type="hidden" name="evidence_size" value={evidence !== null ? String(evidence.sizeBytes) : ""} />
         <Panel gap="xl" inset={phone ? "sm" : "md"} density="portal" locale={locale}>
           <Panel variant="plain" level={2} title={t("gov14.basis")} density="portal" locale={locale}>
-            <div style={{ display: "grid", gridTemplateColumns: cols, gap: "var(--space-6)", alignItems: "start" }}>
+            <Columns layout="halves" single={phone}>
               <TextField label={t("gov14.org")} value={organisation.name} readOnly provenance="registry-sourced" wrap density="portal" locale={locale} />
               <Select
                 label={t("gov14.authority")}
@@ -131,7 +145,7 @@ export function MandateDraftForm({
                   locale={locale}
                 />
               </div>
-            </div>
+            </Columns>
           </Panel>
           <Divider />
           <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
@@ -190,7 +204,7 @@ export function MandateDraftForm({
                 </FieldRow>
               ))}
             </FieldRows>
-            <div style={{ display: "grid", gridTemplateColumns: cols, gap: "var(--space-6)" }}>
+            <Columns layout="halves" single={phone}>
               <DateField
                 range
                 label={t("gov14.period")}
@@ -206,7 +220,7 @@ export function MandateDraftForm({
                 density="portal"
                 locale={locale}
               />
-            </div>
+            </Columns>
           </div>
           <Divider />
           <Controls

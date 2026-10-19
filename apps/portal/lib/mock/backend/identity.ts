@@ -100,7 +100,7 @@ export function register(fullName: string, email: string, password: string, conf
   const book = accountBook();
   let token: string | null = null;
   if (!book.has(address)) {
-    book.set(address, { email: address, name: fullName, role: "principal", password, state: "unconfirmed", organisations: [], failedAttempts: 0, lockedUntil: null });
+    book.set(address, { email: address, name: fullName, role: "principal", password, state: "unconfirmed", organisations: [], staffRoles: [], position: null, failedAttempts: 0, lockedUntil: null });
   }
   if (book.get(address)?.state === "unconfirmed") {
     token = randomUUID();

@@ -8,11 +8,12 @@ import { refusalOf } from "./words";
 
 /**
  * The inspection console's frame: R1's ConsoleShell with the inspection area, its rail and the signed-in
- * inspector. The rail carries the lists only: "Inspections and records" (SCR-VER-18) and the queue that opens it
- * have no route yet, and a rail entry that leads nowhere is worse than none.
+ * inspector. The rail carries the lists (SCR-VER-07, 08) and the inspections and records of the authority
+ * (SCR-VER-18, 15), the page's own marked.
  */
 export function ConsoleFrame({
   account,
+  current = "lists",
   keyMap,
   t,
   locale,
@@ -20,6 +21,8 @@ export function ConsoleFrame({
 }: {
   /** The inspector signed in; null draws no account. */
   account: string | null;
+  /** The rail entry the page belongs to. */
+  current?: "lists" | "records";
   /** The page's own keys, joined to the shell's list. */
   keyMap: { keys: string[]; label: string }[];
   t: Translate;
@@ -30,7 +33,11 @@ export function ConsoleFrame({
     <ConsoleShell
       area={t("console.area")}
       searchLabel={t("console.search")}
-      rail={[{ label: t("console.rail.lists"), icon: "file-spreadsheet", href: routes.inspectionLists(), current: true }]}
+      rail={[
+        { label: t("console.rail.lists"), icon: "file-spreadsheet", href: routes.inspectionLists(), ...(current === "lists" ? { current: true } : {}) },
+        { label: t("console.rail.records"), icon: "file-check", href: routes.inspectionWork(), ...(current === "records" ? { current: true } : {}) },
+        { label: t("console.rail.field"), icon: "smartphone", href: routes.field() },
+      ]}
       {...(account !== null ? { account } : {})}
       keyMap={keyMap}
       fill

@@ -3,8 +3,7 @@ import { R1_FORMAT } from "@rightone/formatting";
 import { Banner, Button, ButtonRow, DateField, FactList, PageHeader, Panel, Select, Skeleton, StatusLine } from "@/components/r1";
 import { recordHandover } from "@/features/inspection/actions";
 import { FieldFailure, FieldFrame } from "@/features/inspection/FieldFrame";
-import { PrintButton } from "@/features/inspection/PrintButton";
-import { date, joined, premisesAt, refusalOf, refusalSentence, timestamp } from "@/features/inspection/words";
+import { date, deliveryText, joined, premisesAt, refusalOf, refusalSentence, stateWords, timestamp, verifiedText } from "@/features/inspection/words";
 import {
   REPRESENTATIVE_ROLES as ROLES,
   currentFieldDevice,
@@ -53,7 +52,9 @@ export default async function InspectionRecordPage({
   // session's own reader is decided by its appointments.
   const reader = reviewView({ view: query.reader }, VER06_READERS);
   const attempt = readForPage<HandoverAttempt>(query);
-  const outcome = view === "loading" ? null : await loadInspectionRecord(sessionId, record, view, reader, locale, attempt);
+  // A version a correction superseded is read on request, whole as it was issued (FR-VER-026).
+  const version = typeof query.version === "string" && /^\d+$/.test(query.version) ? Number(query.version) : null;
+  const outcome = view === "loading" ? null : await loadInspectionRecord(sessionId, record, view, reader, locale, attempt, version);
   const data = outcome?.data ?? null;
   const failure = outcome?.failure ?? null;
 
@@ -77,7 +78,7 @@ export default async function InspectionRecordPage({
       {failure !== null ? (
         <FieldFailure
           failure={failure}
-          refusals={["RECORD_NOT_FOUND", "NOT_AUTHORISED"]}
+          refusals={["RECORD_NOT_FOUND", "NOT_AUTHORISED", "NO_EFFECTIVE_APPOINTMENT", "APPOINTMENT_SUSPENDED", "AUTHORITY_NOT_ACTIVE"]}
           action={{ for: "RECORD_NOT_FOUND", label: t("ver.home"), href: routes.field(), icon: "arrow-left" }}
           t={t}
           locale={locale}
@@ -131,16 +132,57 @@ function Record({ data, reference, t, locale }: { data: InspectionRecord; refere
         </Banner>
       )}
 
+      {data.supersededAt !== null && (
+        <Banner
+          family="attention"
+          title={t("ver06.supersededTitle", { n: R1_FORMAT.formatCount(data.version, locale) ?? "", t: timestamp(data.supersededAt, locale) })}
+          actions={{ label: t("ver06.toInForce"), icon: "arrow-right", variant: "secondary", href: routes.fieldRecord(data.reference) }}
+          density="portal"
+          locale={locale}
+        >
+          {t("ver06.supersededText")}
+        </Banner>
+      )}
+
       <Panel inset="sm" density="portal" locale={locale}>
         <FactList items={whole !== null ? wholeFacts(data, whole, t, locale) : confirmationFacts(data, t, locale)} locale={locale} />
       </Panel>
       {whole === null && <StatusLine family="neutral" text={t("ver06.onlyIssuing")} locale={locale} />}
 
-      {whole !== null && <Delivery data={data} whole={whole} reference={reference} offline={offline} t={t} locale={locale} />}
+      {whole !== null && data.supersededAt === null && <Delivery data={data} whole={whole} reference={reference} offline={offline} t={t} locale={locale} />}
+
+      {data.supersededAt === null && data.earlier.length > 0 && (
+        // The versions a correction superseded stay readable, each on request (FR-VER-033).
+        <ButtonRow>
+          {data.earlier.map((earlier) => (
+            <Button
+              key={earlier.version}
+              variant="quiet"
+              size="md"
+              icon="history"
+              fullWidth
+              href={routes.fieldRecordVersion(data.reference, earlier.version)}
+              locale={locale}
+            >
+              {t("ver06.readEarlier", { n: R1_FORMAT.formatCount(earlier.version, locale) ?? "" })}
+            </Button>
+          ))}
+        </ButtonRow>
+      )}
 
       <ButtonRow>
         {whole !== null && (
-          <PrintButton label={t("ver06.print")} variant={whole.delivery.state === "HANDED_OVER" ? "primary" : "secondary"} locale={locale} />
+          // The copy printed for the premises carries the reference in a QR code any inspector scans to confirm it.
+          <Button
+            variant={whole.delivery.state === "HANDED_OVER" ? "primary" : "secondary"}
+            size="md"
+            icon="printer"
+            fullWidth
+            href={routes.fieldRecordPrint(data.reference, data.supersededAt !== null ? data.version : null)}
+            locale={locale}
+          >
+            {t("ver06.print")}
+          </Button>
         )}
         <Button variant="quiet" size="md" icon="x" fullWidth href={routes.field()} locale={locale}>
           {t("ver06.close")}
@@ -167,7 +209,8 @@ function Delivery({
   locale: Locale;
 }) {
   const { delivery } = whole;
-  const handedOver = delivery.state === "HANDED_OVER";
+  // A handover is recorded while the copy has reached nobody, the period passed or not (SM-705 transitions 2 and 5).
+  const handedOver = delivery.state === "HANDED_OVER" || delivery.state === "NOTICE_DELIVERED";
   const blocked = data.refusal !== null && NO_ACTS.includes(data.refusal) ? data.refusal : null;
   const handWhy = offline
     ? t("ver06.offlineWhy")
@@ -183,20 +226,23 @@ function Delivery({
     <Panel title={t("ver06.delivery")} level={2} inset="sm" gap="lg" density="portal" locale={locale}>
       <FactList
         items={[
-          {
-            label: t("ver06.lState"),
-            value:
-              handedOver && delivery.handedOverAt !== null
-                ? t("ver06.handed", { t: timestamp(delivery.handedOverAt, locale) })
-                : t("ver06.pending"),
-          },
+          { label: t("ver06.lState"), value: deliveryText(t, delivery, locale) },
           { label: t("ver06.lDue"), value: delivery.dueBy, kind: "datetime" },
-          // The board draws only a notice not yet sent.
-          { label: t("ver06.lNotice"), value: t("ver06.notice") },
+          {
+            label: t("ver06.lNotice"),
+            value:
+              delivery.notice !== null
+                ? t("ver06.noticeRaised", { r: delivery.notice.reference, t: timestamp(delivery.notice.raisedAt, locale) })
+                : t("ver06.notice"),
+          },
+          // The instant the period passed stays on the record after a late delivery (FR-VER-035).
+          ...(delivery.undeliveredAt !== null && delivery.state !== "UNDELIVERED"
+            ? [{ label: t("ver06.lUndelivered"), value: delivery.undeliveredAt, kind: "datetime" as const }]
+            : []),
         ]}
         locale={locale}
       />
-      {handedOver && delivery.handedOverAt !== null && data.deliveryRefusal === null && (
+      {delivery.state === "HANDED_OVER" && delivery.handedOverAt !== null && data.deliveryRefusal === null && (
         <StatusLine family="positive" text={t("ver06.handedShort", { t: timestamp(delivery.handedOverAt, locale) })} locale={locale} />
       )}
       {data.deliveryRefusal !== null && (
@@ -246,13 +292,22 @@ function wholeFacts(data: InspectionRecord, whole: Whole, t: Translate, locale: 
     { label: t("ver06.lAuthority"), value: data.authority },
     { label: t("ver06.lInspector"), value: t("ver06.inspector", { name: whole.inspector.name, card: whole.inspector.card }) },
     { label: t("ver06.lPremises"), value: premisesAt(t, data.premises) },
+    // Where the record says it took place: the register address, never where a code was scanned (FR-VER-005).
+    { label: t("ver06.lLocation"), value: t(`ver06.location.${whole.locationContext}`) },
+    ...(whole.purpose !== null ? [{ label: t("ver03.purpose"), value: t(`ver.purpose.${whole.purpose}`) }] : []),
+    ...(whole.basis !== null ? [{ label: t("ver03.basis"), value: whole.basis }] : []),
     { label: t("ver06.lAt"), value: whole.inspectedAt, kind: "datetime" },
     { label: t("ver06.lRecorded"), value: data.issuedAt, kind: "datetime" },
+    // A visit recorded after CFG-773's interval carries the reason for the delay (FR-VER-038).
+    ...(whole.delayReason !== null ? [{ label: t("ver05.delay"), value: whole.delayReason }] : []),
     {
       label: t("ver06.lVerified"),
-      value: whole.answer !== null ? t("ver06.verified", { answer: whole.answer.reference, state: t("ver.inForce") }) : null,
+      value: whole.verified.length > 0 ? whole.verified.map((cited) => verifiedText(t, cited, locale)).join(t("ver.listSeparator")) : null,
       missing: t("ver06.none"),
     },
+    ...(whole.recordStateAtObservation !== null
+      ? [{ label: t("ver06.lStateAtVisit"), value: stateWords(t, whole.recordStateAtObservation, null, locale) }]
+      : []),
     {
       label: t("ver06.lFindings"),
       value:
@@ -267,15 +322,27 @@ function wholeFacts(data: InspectionRecord, whole: Whole, t: Translate, locale: 
       missing: t("ver06.none"),
     },
     { label: t("ver06.lOutcome"), value: t(`ver.outcome.${data.outcome}`) },
+    ...(whole.guidance !== null ? [{ label: t("ver13.lGuidance"), value: whole.guidance }] : []),
+    ...(whole.referral !== null
+      ? [
+          { label: t("ver05.route"), value: t(`ver.route.${whole.referral.route}`) },
+          { label: t("ver05.referralNote"), value: whole.referral.note },
+        ]
+      : []),
+    ...(whole.referralCase !== null ? [{ label: t("ver06.lReferralCase"), value: whole.referralCase, kind: "id" as const }] : []),
     ...(corrected !== null ? [{ label: t("ver06.lCorrection"), value: corrected, kind: "id" as const }] : []),
     {
       label: t("ver06.lRep"),
-      // Nobody present: the record says so, with no role.
+      // Nobody present: the record says so, with no role. A record that does not say is drawn as missing.
       value:
-        whole.representative.role !== null
-          ? t("ver06.rep", { role: t(`ver.role.${whole.representative.role}`), ack: t(`ver06.ack.${whole.representative.acknowledgement}`) })
-          : t(`ver.ack.${whole.representative.acknowledgement}`),
+        whole.representative === null
+          ? null
+          : whole.representative.role !== null
+            ? t("ver06.rep", { role: t(`ver.role.${whole.representative.role}`), ack: t(`ver06.ack.${whole.representative.acknowledgement}`) })
+            : t(`ver.ack.${whole.representative.acknowledgement}`),
+      missing: t("ver06.none"),
     },
+    ...(whole.statement !== null ? [{ label: t("ver05.statement"), value: whole.statement }] : []),
     { label: t("ver06.lFollow"), value: followUp(whole, t, locale) },
     { label: t("ver06.lChallenge"), value: challenge(data, t) },
     { label: t("ver06.lDigest"), value: data.digest, kind: "mono" },
@@ -302,7 +369,12 @@ function followUp(whole: Whole, t: Translate, locale: Locale): string {
   return t(`ver.followUp.${whole.followUp}`);
 }
 
-/** Whether the premises asked to reconsider the record, or that it cannot be told just now. */
+/**
+ * Whether the premises asked to reconsider the record, and the case it opened, or that it cannot be told just now. An
+ * inspector of another authority reads that it is under challenge and nothing of the case (FR-VER-027).
+ */
 function challenge(data: InspectionRecord, t: Translate): string {
-  return data.reconsideration === "UNKNOWN" ? t("ver06.unknown") : t("ver06.no");
+  if (data.reconsideration === "UNKNOWN") return t("ver06.unknown");
+  if (data.reconsideration === "NONE") return t("ver06.no");
+  return data.reconsideration.case === null ? t("ver06.yesWithheld") : t("ver06.yes", { c: data.reconsideration.case });
 }

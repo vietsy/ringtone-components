@@ -1,6 +1,17 @@
 import { R1_FORMAT } from "@rightone/formatting";
 import { notFound } from "next/navigation";
-import { Banner, Button, FactList, Meter, PageHeader, Panel, StatStrip, StatusLine, ViewState } from "@/components/r1";
+import {
+  Banner,
+  Button,
+  Columns,
+  FactList,
+  Meter,
+  PageHeader,
+  Panel,
+  StatStrip,
+  StatusLine,
+  ViewState,
+} from "@/components/r1";
 import { PortalShell } from "@/components/shells/PortalShell";
 import { orgContext, orgNav } from "@/components/shells/org-nav";
 import { Text } from "@/components/Text";
@@ -142,7 +153,7 @@ function Body({ submission, phone, t, locale }: { submission: Submission; phone:
   const count = (value: number) => R1_FORMAT.formatCount(value, locale) ?? "";
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)", minWidth: 0 }}>
-      <div style={{ display: "grid", gridTemplateColumns: phone ? "minmax(0, 1fr)" : "minmax(0, 1fr) var(--container-sm)", gap: "var(--space-6)", alignItems: "start" }}>
+      <Columns single={phone}>
         {done ? (
           <Panel title={t("cat05.countsTitle")} density="portal" locale={locale}>
             <StatStrip items={OUTCOME_CLASSES.map((outcome) => ({ label: t(`cat05.outcome.${outcome}`), value: counts[outcome] }))} locale={locale} />
@@ -173,7 +184,7 @@ function Body({ submission, phone, t, locale }: { submission: Submission; phone:
             </Button>
           )}
         </Panel>
-      </div>
+      </Columns>
       {done ? (
         <Panel title={t("cat05.needTitle")} density="portal" locale={locale}>
           <OutcomeTable

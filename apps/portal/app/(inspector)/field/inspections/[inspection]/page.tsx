@@ -3,7 +3,7 @@ import { abandonInspection, addFinding, attachToInspection, verifyForInspection 
 import { ConfirmButton } from "@/features/inspection/ConfirmButton";
 import { FieldFailure, FieldFrame } from "@/features/inspection/FieldFrame";
 import { RowActTable } from "@/features/inspection/RowActTable";
-import { counted, date, refusalOf, refusalSentence, timestamp } from "@/features/inspection/words";
+import { counted, date, refusalOf, refusalSentence, stateWords, timestamp } from "@/features/inspection/words";
 import {
   FINDING_KINDS,
   currentFieldDevice,
@@ -323,6 +323,20 @@ function attachedRow(row: AttachedAnswer, t: Translate, locale: Locale): Record<
       return { ...base, res: { family: "attention", label: t("ver02.suspended") } };
     case "NO_CURRENT_RECORD":
       return { ...base, res: { family: "neutral", label: t("ver04.noCurrent") } };
+    case "NOT_CURRENT":
+      return { ...base, res: { family: "attention", label: stateWords(t, row.result.state, null, locale) } };
+    case "OFFLINE":
+      // Authentic, with the state printed and what was not checked: the limits travel with it to the record.
+      return {
+        ...base,
+        res: {
+          family: "attention",
+          label: t("ver04.offline"),
+          detail: t("ver04.printedState", { d: date(row.result.printedAt, locale), s: stateWords(t, row.result.printedState, null, locale) }),
+        },
+      };
+    case "NOT_AUTHENTICATED":
+      return { ...base, res: { family: "attention", label: t("ver01.notAuthResult") } };
     case "NOT_ATTACHED":
       return {
         ...base,

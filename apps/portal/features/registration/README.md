@@ -17,3 +17,24 @@ need beyond links.
     ClaimForm.tsx         SCR-REG-04's claim form, opened in place
     AttestForm.tsx        SCR-REG-06's two confirmations and Confirm and send
     WithdrawControl.tsx   SCR-REG-07's Withdraw and its confirmation dialog
+
+The operations console's registration screens (`app/(ops)/ops/registration`, `app/(ops)/ops/reports/registration`,
+SCR-REG-09 to 18):
+
+    review-actions.ts         the officer's and the approver's acts: correct a fact, start and send an amendment,
+                              request evidence, record a claim outcome, propose a decision, approve or return it,
+                              record a withdrawal
+    console-copy.ts           the console's translator (`regops`), its codes, documents, facts and refusals in words
+    ConsoleFailure.tsx        a read that failed: a refusal in the family's words, or our error with its trace
+    ConfirmSubmit.tsx         an act confirmed in a dialog that names it, then sent with its form
+    ShortcutButton.tsx        a button whose Alt shortcut is drawn once the page has hydrated
+    QueueFilter.tsx           SCR-REG-09's filters, each a field of the request
+    CorrectionPanel.tsx       SCR-REG-10's Correct a fact, opened under the facts
+    AmendmentFields.tsx       SCR-REG-10's Start an amendment: the officer's cause, the appeal case, the first day
+    EvidenceRequestFields.tsx SCR-REG-11's items and Request {n} items
+    ClaimOutcomeFields.tsx    SCR-REG-12's outcome, reason, scope and effect
+    ProposalFields.tsx        SCR-REG-13's outcome, statement and the act it calls for
+    VerdictFields.tsx         SCR-REG-14's note, Approve and Return with the note
+    WithdrawalFields.tsx      SCR-REG-15's instruction and Record the withdrawal
+    reporting.ts              the reporting surface's link tabs, by the reader's roles
+

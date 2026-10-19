@@ -15,7 +15,9 @@ Trưng's REG-W3HN6DRZ2Q, Bùi Viện's REG-D2VL7KQE3S (after-deadline), Pasteur'
 tariff-not-approved, decided) and the Sala draft (draft, and in review once sent at the canvas's moment).
 
 - Sent from SCR-REG-06, an application waits here in review - claim review with a claim, rulebook review
-  otherwise - because a decision is a reviewer's, on the operations console, which is not built. Its dates
+  otherwise - for an officer on the operations console (SCR-REG-09 to 14), whose acts this page then shows: the
+  documents a reviewer asked for, each in the reviewer's own sentence; the decision once issued; a refusal with
+  its statement; a withdrawal recorded on the applicant's instruction, named as such. Its dates
   are the canvas's rules: complete on the day it and its last document were both in, decision expected 21 days
   later, payment deadline 89 days after use began; a decision expected after that deadline says so (DR-41).
 - Add a document opens the browser's file chooser and records the file's name, type and size against the item;

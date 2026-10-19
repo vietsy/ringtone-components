@@ -75,7 +75,7 @@ correctly in both locales and a server-side wording change is not a breaking cha
 
 The shell, the rules and the packages: design tokens with every documented contrast ratio asserted
 in a test, the formatting layer, the four-state contract, the status system, and the design system R1
-as React components (`apps/portal/components/r1`, generated from the design system's own bundle).
+as React components (`apps/portal/components/r1`, TypeScript source kept in step with the design system).
 
 On top of them, the screens of the first journeys: the premises journey (public pages, registration,
 payment, status records) and the inspector's journey (the field client and the inspection console),

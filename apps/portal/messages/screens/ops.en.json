@@ -1,0 +1,8 @@
+{
+  "ops.title": "My work",
+  "ops.meta": "{name}, {position}. The workspaces your roles open.",
+  "ops.search": "Find a reference or a premises",
+  "ops.listLabel": "Workspaces",
+  "ops.emptyTitle": "Your roles open no workspace yet",
+  "ops.emptyText": "When a workspace opens for your roles, it appears here and in the rail."
+}

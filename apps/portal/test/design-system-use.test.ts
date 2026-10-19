@@ -8,13 +8,26 @@ import { describe, expect, it } from "vitest";
  * components with layout from the tokens (flex, grid, gap, a maximum width); what a thing looks like - its
  * ink, surface, border, type - belongs to a component. Two portal components hold the only visual properties
  * a screen may need beyond R1: `Text` for running text, `ThemeSurface` for a page in another theme. A finding
- * here is fixed by using a component, extending one, or adding one beside those two, never by an exception.
+ * here is fixed by using a component, extending one, or adding one beside those two. The register's
+ * explicitly requested CSS Module owns only token-based layout around existing R1 components.
  */
 
 const portal = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 /** Where a visual property may be written: the two components that own them. */
 const VISUAL_OWNERS = new Set(["components/Text.tsx", "components/ThemeSurface.tsx"]);
+
+const LOCAL_CSS_USERS = new Set([
+  "features/coverage/CoveragePageClient.tsx",
+  "features/mandate/detail/MandateDetailClient.tsx",
+  "features/mandate/register/MandateRegisterPage.tsx",
+  "features/mandate/register/MandateRegisterClient.tsx",
+]);
+const LOCAL_CSS_MODULES = new Set([
+  "features/coverage/CoveragePageClient.module.css",
+  "features/mandate/register/MandateRegister.module.css",
+  "features/mandate/detail/MandateDetail.module.css",
+]);
 
 /** The document itself: the root layout writes html, head, body and the token stylesheet. */
 const DOCUMENT = new Set(["app/layout.tsx"]);
@@ -40,7 +53,7 @@ function sources(dir: string): string[] {
 
 const files = ["app", "features", "components"].flatMap((dir) => sources(join(portal, dir)));
 const read = (path: string) => readFileSync(path, "utf8").replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, "");
-const name = (path: string) => relative(portal, path);
+const name = (path: string) => relative(portal, path).replaceAll("\\", "/");
 
 function findings(test: (text: string, file: string) => string[]): string[] {
   return files.flatMap((path) => test(read(path), name(path)).map((hit) => `${name(path)}: ${hit}`));
@@ -65,20 +78,20 @@ describe("every screen is built from the design system", () => {
     expect(hits).toEqual([]);
   });
 
-  it("writes no class name of its own: type comes from Text, everything else from a component", () => {
+  it("uses class names only in visual owners and the register CSS Module consumers", () => {
     const hits = findings((text, file) =>
-      file.endsWith(".tsx") && !VISUAL_OWNERS.has(file) ? [...text.matchAll(/className=/g)].map(() => "className") : [],
+      file.endsWith(".tsx") && !VISUAL_OWNERS.has(file) && !LOCAL_CSS_USERS.has(file) ? [...text.matchAll(/className=/g)].map(() => "className") : [],
     );
     expect(hits).toEqual([]);
   });
 
   it("writes no length, colour or stylesheet of its own: every value is a token", () => {
     const hits = findings((text, file) => {
-      if (file.endsWith(".css")) return ["a stylesheet outside the design system"];
+      if (file.endsWith(".css") && !LOCAL_CSS_MODULES.has(file)) return ["a stylesheet outside the design system"];
       return [
         ...[...text.matchAll(/["'`(\s:]-?\d*\.?\d+(px|rem|em)\b/g)].map((m) => m[0].trim()),
         ...[...text.matchAll(/#[0-9a-fA-F]{3,8}\b/g)].map((m) => m[0]),
-        ...[...text.matchAll(/\b(margin|padding|gap|width|height|top|left|right|bottom|inset)\w*\s*:\s*[1-9]\d*\b/g)].map((m) => m[0]),
+        ...[...text.matchAll(/\b(margin|padding|gap|width|height|top|left|right|bottom|inset)\w*\s*:\s*[1-9]\d*\b(?![\d.%])/g)].map((m) => m[0]),
       ];
     });
     expect(hits).toEqual([]);

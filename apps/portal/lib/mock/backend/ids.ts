@@ -27,3 +27,11 @@ export function recordReference(year: number): string {
 export function sessionId(): string {
   return randomUUID();
 }
+
+/**
+ * An opaque reference of `length` characters from the same alphabet, with no prefix: nothing in it says what it is
+ * or whose, which is what a reference meant to travel outside the service needs (ENG's referral reference).
+ */
+export function opaqueReference(length: number): string {
+  return characters(length);
+}

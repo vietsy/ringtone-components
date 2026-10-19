@@ -1,5 +1,5 @@
 import { R1_FORMAT } from "@rightone/formatting";
-import { Banner, ChoiceList, Combobox, Divider, FactList, PageHeader, Panel, Select } from "@/components/r1";
+import { Banner, ChoiceList, Columns, Combobox, Divider, FactList, PageHeader, Panel, Select } from "@/components/r1";
 import { requestList } from "@/features/inspection/actions";
 import { ConsoleFailure, ConsoleFrame } from "@/features/inspection/ConsoleFrame";
 import { ShortcutButton } from "@/features/inspection/ShortcutButton";
@@ -122,7 +122,7 @@ function Request({ data, t, locale }: { data: InspectionLists; t: Translate; loc
     <Panel title={t("ver07.requestTitle")} level={2} density="console" gap="lg" locale={locale}>
       {/* display: contents keeps the form's parts in the panel's own rhythm; the form only carries them to the action. */}
       <form action={requestList} style={{ display: "contents" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "var(--space-6)", alignItems: "start" }}>
+        <Columns layout="thirds">
           {/* The authority is asked for only when the inspector holds two or more appointments (design/03). */}
           {data.appointments.length > 1 && (
             <Select
@@ -160,7 +160,7 @@ function Request({ data, t, locale }: { data: InspectionLists; t: Translate; loc
             density="console"
             locale={locale}
           />
-        </div>
+        </Columns>
         <Divider />
         <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--space-6)", alignItems: "center", justifyContent: "space-between" }}>
           <FactList

@@ -15,10 +15,20 @@ handover-time-invalid, no-appointment, premises-unavailable, policy-unavailable,
 not-authorised, loading, error. Who reads it is a second review axis: `?reader=other` draws another authority's
 confirmation. The review fixtures select the record as before (IRC-7T2MW9KQ4D, or IRC-3XK7QW2MTD in corrected).
 
-Deviations: "Read version 1, superseded" (the corrected view) is left out: the board links it to itself and no
-route opens an earlier version. A record with no answer in force attached, or no finding, says "None" there
-(`ver06.none`, design/03 section 5c's word); with nobody present the representative line is the acknowledgement's
-words alone; a dated follow-up carries its date (`ver05.reVisitBy`, `ver05.awaitBy`). Print is the browser's
-print of the page, not the PDF with a QR code design/03 describes. The notice to the premises is drawn only as
-"Not sent": the mock has no notification service. A request to reconsider is never recorded in the mock, so it
-reads "No". Retry under a header refusal reloads the page.
+The record cites every answer it rests on with its limits (FR-VER-037), CER's state at the inspection for a compliant
+outcome, and the case a referral opened; it says where the inspection took place (the register address, CFG-772), its
+purpose and basis, the guidance, a referral's route and note, what the representative said and, recorded late, the
+reason for the delay (FR-VER-007, FR-VER-038), as the printed copy does. Another authority's inspector reads that the
+record is under challenge and nothing of the case (FR-VER-027). The delivery says how the record reached the premises: the notice raised
+through COM at issue (its COM- reference and instant), the notice reaching the principal (NOTICE_DELIVERED, by the
+notice route), a handover on site, or the period passed with neither (UNDELIVERED); a handover is recorded while it is
+pending or undelivered, and a late one keeps the instant the period passed. Any inspector reads a record within
+DR-740 rows 1 to 3; one whose appointments are all suspended or ended reads nothing, and under the last-day allowance
+alone only the records made under it. Read version n, superseded opens a version a correction replaced
+(`?version=n`), whole as it was issued, with the way back to the version in force. Print a copy opens the printable
+sheet (`print/`), with a QR code carrying the reference.
+
+Deviations: a record with no answer cited, or no finding, says "None" there (`ver06.none`, design/03 section 5c's
+word); with nobody present the representative line is the acknowledgement's words alone; a dated follow-up carries its
+date (`ver05.reVisitBy`, `ver05.awaitBy`). The sheet is the browser's print of an A4 page, not a PDF the phone builds.
+Retry under a header refusal reloads the page.

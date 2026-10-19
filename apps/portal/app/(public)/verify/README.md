@@ -4,6 +4,9 @@ Certificate verification: the form (SCR-PUB-04) and the answer at the reference'
 (SCR-PUB-05, in `[reference]/`), the address a certificate's QR code opens.
 
     page.tsx    SCR-PUB-04  Verify a record
+    player/     SCR-PUB-06  Player service verification, under [code]
+    licence/    SCR-PUB-07  Direct-licence verification, under [reference]
+    proof/      SCR-PUB-07  Proof verification, under [reference]
 
 `D-PUB-05` and `D-PUB-06` must be **unmistakable from each other**: a Player service entitlement is
 never presented as the authoritative RightOne certificate, and never as proof that unrelated
@@ -23,7 +26,10 @@ Deviations: the canvas draws the answer in place under the form, and those views
 through the same seam as SCR-PUB-05; so their "lookup ended" or "answered at" time and the error's trace id
 are SCR-PUB-05's (10:14:07, 5e2a91c07d4b8f36) rather than the form board's (10:12:40, d84a1c3e07b9f526).
 Live, an answer is shown at its own address instead, so the page a QR code opens and the page a typed
-reference opens are one. "Loại giấy tờ khác" is left out: its Player and licence items lead to SCR-PUB-06
-and SCR-PUB-07, which are not built, and its certificate item to SCR-PUB-05 with no reference to open.
-"Trợ giúp" (SCR-PUB-12) is left out; "Về RightOne" stays. The verification shell draws no footer, its one
-contact link being SCR-PUB-12's.
+reference opens are one. "Loại giấy tờ khác" chooses the kind of document the form checks (`?kind=`): the
+certificate (the default), a RightOne Player document ("Mã in trên giấy", the Player route's hint) or a direct
+licence or proof; for the last two "Tra cứu" submits to `verifyDocument`, which opens SCR-PUB-06 or 07 at the
+answer's address, or comes back with the refusal and what was typed. A licence and a proof share the field: a
+reference in a proof's form (PRF-) asks the proof route, any other the licence route. The board draws the items
+as links to the answer screens; with no reference to open, they choose the form instead. "Về RightOne" and
+"Trợ giúp" are the public reader's; the verification shell's one link is Liên hệ (SCR-PUB-12).

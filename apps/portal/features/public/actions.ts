@@ -2,7 +2,14 @@
 
 import { redirect } from "next/navigation";
 import { keepForPage } from "@/lib/api/flash";
-import { requestIndicativeAmount, requestScopeAssessment, type FormFacts } from "@/lib/api/public";
+import {
+  lookUpDirectRecord,
+  lookUpPlayerCode,
+  requestIndicativeAmount,
+  requestScopeAssessment,
+  type DocumentLookupAttempt,
+  type FormFacts,
+} from "@/lib/api/public";
 import { lookUpCertificate, type VerificationAttempt } from "@/lib/api/verification";
 import { routes, withAttempt } from "@/lib/routes";
 
@@ -57,4 +64,25 @@ export async function verifyReference(formData: FormData): Promise<void> {
   const attempt: VerificationAttempt = { typed, asked, outcome };
   if (outcome.data === null) redirect(withAttempt(routes.verify(), keepForPage(attempt)));
   redirect(withAttempt(routes.verification(asked), keepForPage(attempt)));
+}
+
+/**
+ * SCR-PUB-04 "Tra cứu" for a RightOne Player document or a direct licence or proof (`?kind=`). As `verifyReference`:
+ * an answer opens the route's own page (SCR-PUB-06, 07) with it, the address a QR code opens; a refusal comes back
+ * to the field with what was typed. A Player code is RFC 4648 base 32, the same in either case, so it is sent in
+ * upper case. A licence and a proof share the field; a reference in a proof's form (PRF-) asks the proof route, and
+ * any other the licence route, so only one route is asked.
+ */
+export async function verifyDocument(formData: FormData): Promise<void> {
+  const typed = field(formData, "reference");
+  if (field(formData, "kind") === "player") {
+    const asked = typed.toUpperCase();
+    const attempt: DocumentLookupAttempt = { route: "player", typed, asked, outcome: await lookUpPlayerCode(asked) };
+    if (attempt.outcome.data === null) redirect(withAttempt(routes.verifyOf("player"), keepForPage(attempt)));
+    redirect(withAttempt(routes.verifyPlayer(asked), keepForPage(attempt)));
+  }
+  const route = /^PRF-/i.test(typed) ? "proof" : "licence";
+  const attempt: DocumentLookupAttempt = { route, typed, asked: typed, outcome: await lookUpDirectRecord(route, typed) };
+  if (attempt.outcome.data === null) redirect(withAttempt(routes.verifyOf("licence"), keepForPage(attempt)));
+  redirect(withAttempt(route === "proof" ? routes.verifyProof(typed) : routes.verifyLicence(typed), keepForPage(attempt)));
 }

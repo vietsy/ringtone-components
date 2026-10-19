@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { Banner, FactList, PageHeader, Panel, ViewState } from "@/components/r1";
+import { Banner, Columns, FactList, PageHeader, Panel, ViewState } from "@/components/r1";
 import { Text } from "@/components/Text";
 import { orgContext, orgNav } from "@/components/shells/org-nav";
 import { PortalShell } from "@/components/shells/PortalShell";
@@ -80,7 +80,7 @@ export default async function ObjectionPage({ searchParams }: { searchParams: Pr
             locale={locale}
           >
             {step !== null ? (
-              <div style={{ display: "grid", gridTemplateColumns: phone ? "minmax(0, 1fr)" : "minmax(0, 1fr) var(--container-sm)", gap: "var(--space-6)", alignItems: "start" }}>
+              <Columns single={phone}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)", minWidth: 0 }}>
                   <Answer step={step} attempt={attempt} confirm={view === "confirm"} phone={phone} t={t} locale={locale} />
                 </div>
@@ -93,7 +93,7 @@ export default async function ObjectionPage({ searchParams }: { searchParams: Pr
                     <Text size="base">{t("part25.inForce")}</Text>
                   </Panel>
                 </div>
-              </div>
+              </Columns>
             ) : null}
           </ViewState>
         </div>

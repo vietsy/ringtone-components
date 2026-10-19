@@ -1,5 +1,17 @@
 import { redirect } from "next/navigation";
-import { Banner, Button, DateField, FactList, NavList, PageHeader, Panel, StatusLine, Table, ViewState } from "@/components/r1";
+import {
+  Banner,
+  Button,
+  Columns,
+  DateField,
+  FactList,
+  NavList,
+  PageHeader,
+  Panel,
+  StatusLine,
+  Table,
+  ViewState,
+} from "@/components/r1";
 import { Text } from "@/components/Text";
 import { orgContext, orgNav } from "@/components/shells/org-nav";
 import { PortalShell } from "@/components/shells/PortalShell";
@@ -111,7 +123,7 @@ export default async function ParticipationPage({ searchParams }: { searchParams
           locale={locale}
         >
           {participation !== null ? (
-            <div style={{ display: "grid", gridTemplateColumns: phone ? "minmax(0, 1fr)" : "minmax(0, 1fr) var(--container-sm)", gap: "var(--space-6)", alignItems: "start" }}>
+            <Columns single={phone}>
               <Panel
                 title={t("part02.scopeTitle")}
                 description={legal ? t("part02.scopeDescLegal", { org: participation.shortName }) : t("part02.scopeDesc")}
@@ -132,7 +144,7 @@ export default async function ParticipationPage({ searchParams }: { searchParams
                 ) : null}
                 {/* The legal reader's stop controls open SCR-CAT-21 and 22, which have no route here (README). */}
               </div>
-            </div>
+            </Columns>
           ) : null}
         </ViewState>
       </div>

@@ -16,12 +16,16 @@ CRP-4WTN8QHC2K) and the other issued records of SCR-CER-01, R1-CER-2026-Q4RT8XZW
 R1-CER-2026-V8JD3MRA (suspended, SCR-VER-02). A record's reference answers the record; its current printout's
 reference answers the same record and names the printout ("Bản in đã quét"); any other well-formed reference
 is no record (R1-CER-2026-H8WX2DQR, as the canvas answers it); a malformed one is refused. Each answer
-carries the instant of the lookup and a new answer reference (`VRA-`, VER's `ALG-718` form).
+carries the instant of the lookup and a new answer reference (`VRA-`, VER's `ALG-718` form), and the world keeps it
+as VER keeps a public answer (`SEC-741`: what it showed, the hour, the record resolved or the value presented, nobody
+who asked), so the premises can quote it in a request to reconsider (SCR-VER-14) and VER reads it back
+(`publicVerificationAnswer`). The record's fields are those the disclosure profile in effect admits (SCR-PUB-20);
+while GOV has approved no version, the minimum of `DR-486` row 6.
 
 `?view=` shows any view the canvas drew: unable, absent, record, record-suspended, checking,
 identifier-not-accepted, rate-limited, enumeration, error; `?reader=inspector` draws the inspector's page,
 as does an inspector's own session.
 
-Deviations: "Đề nghị đính chính" is left out because SCR-PUB-12 is not built, so the public reader's
-"Việc tiếp theo" row holds "Tra cứu mã khác" alone. `UNABLE` is reached only as `?view=unable`: the mock's
-register always answers. The verification shell draws no footer.
+"Đề nghị đính chính" opens SCR-PUB-12 with the way back here; an inspector is not offered it.
+
+Deviation: `UNABLE` is reached only as `?view=unable`: the mock's register always answers.

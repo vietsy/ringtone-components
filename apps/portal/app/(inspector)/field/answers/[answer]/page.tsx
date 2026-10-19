@@ -3,7 +3,7 @@ import { Banner, Button, ButtonRow, FactList, PageHeader, Panel, Skeleton, Statu
 import { Text } from "@/components/Text";
 import { inspectThisPremises } from "@/features/inspection/actions";
 import { FieldFrame } from "@/features/inspection/FieldFrame";
-import { joined, premisesAt, refusalOf, splitSentence, timestamp, timestampToSecond } from "@/features/inspection/words";
+import { isCurrentState, joined, premisesAt, refusalOf, splitSentence, stateWords, timestamp, timestampToSecond } from "@/features/inspection/words";
 import {
   currentFieldDevice,
   loadVerificationAnswer,
@@ -26,7 +26,7 @@ type Facts = NonNullable<ComponentProps<typeof VerificationResult>["facts"]>;
 /** Refusals that replace the answer; the page keeps its way on. */
 const IN_PLACE: readonly RefusalCode[] = ["ANSWER_NOT_FOUND", "PAYLOAD_REFERENCE_MISMATCH", "NOT_AUTHORISED"];
 /** Refusals said in the page header, with the way on under them. */
-const IN_HEADER: readonly RefusalCode[] = ["NO_EFFECTIVE_APPOINTMENT", "PREMISES_READ_UNAVAILABLE"];
+const IN_HEADER: readonly RefusalCode[] = ["NO_EFFECTIVE_APPOINTMENT", "APPOINTMENT_SUSPENDED", "AUTHORITY_NOT_ACTIVE", "PREMISES_READ_UNAVAILABLE"];
 
 /**
  * SCR-VER-02 Verification answer. One answer as the register gave it: the state in words as its heading for a
@@ -152,12 +152,16 @@ function Answer({ data, t, locale }: { data: VerificationAnswer; t: Translate; l
         <Banner family="attention" density="portal" locale={locale}>
           {t("ver02.offlineBody", { p: timestamp(outcome.printedAt, locale), k: timestamp(outcome.keysRefreshedAt, locale) })}
         </Banner>
+        {/* A code printed under a key since retired still verifies under it (AC-FR-VER-017-01). */}
+        {outcome.keyRetiredAt !== null && (
+          <StatusLine family="info" text={t("ver02.keyRetired", { k: outcome.keyId, t: timestamp(outcome.keyRetiredAt, locale) })} locale={locale} />
+        )}
         <Panel inset="sm" density="portal" locale={locale}>
           <FactList
             items={[
               { label: t("ver02.lRecord"), value: outcome.record, kind: "id" },
               { label: t("ver02.lPremises"), value: premisesAt(t, outcome.premises) },
-              { label: t("ver02.lPrintedState"), value: t("ver.inForce") },
+              { label: t("ver02.lPrintedState"), value: stateWords(t, outcome.printedState, outcome.period.from, locale) },
               { label: t("ver02.lScope"), value: t("ver.scope") },
               { label: t("ver02.lPeriod"), value: outcome.period, kind: "period" },
               { label: t("ver02.lPrintedAt"), value: outcome.printedAt, kind: "datetime" },
@@ -168,7 +172,19 @@ function Answer({ data, t, locale }: { data: VerificationAnswer; t: Translate; l
         </Panel>
         {line !== null && <StatusLine family={line.family} text={line.text} locale={locale} />}
         <Text size="base">{t("ver02.statement")}</Text>
-        <Actions answer={null} inspection={inspection} inspect={{ off: true, why: t("ver02.notUploaded") }} t={t} locale={locale} />
+        {data.reference !== null && (
+          <Panel inset="sm" density="portal" locale={locale}>
+            <FactList items={[{ label: t("ver02.lAnswer"), value: data.reference, kind: "id" }]} locale={locale} />
+          </Panel>
+        )}
+        {/* Uploaded, an offline answer names the premises an inspection can start from; on the phone it waits to upload. */}
+        <Actions
+          answer={data.reference}
+          inspection={inspection}
+          inspect={data.reference !== null ? { off: false } : { off: true, why: t("ver02.notUploaded") }}
+          t={t}
+          locale={locale}
+        />
       </>
     );
   }
@@ -265,7 +281,8 @@ function present(
   });
   switch (outcome.kind) {
     case "CURRENT_RESULT": {
-      const state = outcome.state === "IN_FORCE" ? t("ver.inForce") : t("ver02.suspended");
+      const state = stateWords(t, outcome.state, outcome.period.from, locale);
+      const current = isCurrentState(outcome.state);
       const since = outcome.stateSince;
       const facts: Facts = [
         ...(outcome.premises !== null ? [{ label: t("ver02.lPremises"), value: premisesAt(t, outcome.premises) }] : []),
@@ -277,8 +294,8 @@ function present(
       ];
       const outside = outcome.publicFieldSetReason === "OUTSIDE_JURISDICTION";
       return {
-        result: outcome.state === "IN_FORCE" ? "valid" : "answer",
-        family: outcome.state === "IN_FORCE" ? null : "attention",
+        result: current ? "valid" : "answer",
+        family: current ? null : "attention",
         title: state,
         text: `${t("ver02.online", { s: state })} ${t("ver02.authentic")}`,
         recordId: outcome.record,
@@ -317,7 +334,7 @@ function present(
     case "NO_PREMISES_IN_JURISDICTION":
       return words(t("ver02.noPremisesInJ"), "neutral", { statement: false });
     case "NO_CURRENT_RECORD_FOR_PREMISES":
-      return words(noCurrent(outcome, t), "neutral", {
+      return words(noCurrent(outcome, t, locale), "neutral", {
         statement: false,
         inspect: { off: false },
       });
@@ -329,9 +346,12 @@ function present(
 }
 
 /** The no-current-record sentence with the premises' last known state: never issued, or the state in words (5b). */
-function noCurrent(outcome: Extract<AnswerOutcome, { kind: "NO_CURRENT_RECORD_FOR_PREMISES" }>, t: Translate): string {
+function noCurrent(outcome: Extract<AnswerOutcome, { kind: "NO_CURRENT_RECORD_FOR_PREMISES" }>, t: Translate, locale: Locale): string {
   const named = { p: outcome.premises.name, a: outcome.premises.address ?? "" };
-  return t(outcome.lastState === null ? "ver02.noCurrent" : "ver02.noCurrentSuspended", named);
+  if (outcome.lastState === null) return t("ver02.noCurrent", named);
+  // The state's words continue the sentence, so they start in lower case.
+  const words = stateWords(t, outcome.lastState, null, locale);
+  return t("ver02.noCurrentLast", { ...named, s: words.charAt(0).toLocaleLowerCase(locale) + words.slice(1) });
 }
 
 /** Back to the inspection the answer was verified from, or Inspect this premises; then Scan another. */
