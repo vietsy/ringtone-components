@@ -24,7 +24,7 @@ import {
   StatusBadge,
   TextField,
 } from "@/components/r1";
-import { GovernanceShell } from "@/features/mandate/GovernanceShell";
+import { GovernanceShell } from "@/components/shells/GovernanceShell";
 import { Text } from "@/components/Text";
 import { translator, type Locale } from "@/lib/i18n/translate";
 import type { Frame } from "@/lib/view/frame";
@@ -153,11 +153,14 @@ export function CoveragePageClient({
       : "coverage.error.unknown";
 
   return (
-    <GovernanceShell account={account} locale={locale} mock current="coverage" mockQueueCount={14}>
-      <div
-        className={styles.root}
-        data-frame={frame}
-      >
+    <GovernanceShell
+      account={account}
+      locale={locale}
+      mock
+      current="coverage"
+      mockQueueCount={14}
+    >
+      <div className={styles.root} data-frame={frame}>
         <PageHeader
           title={t("coverage.title")}
           crumbs={[

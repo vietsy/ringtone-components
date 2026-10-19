@@ -14,7 +14,7 @@ import {
   Table,
   ViewState,
 } from "@/components/r1";
-import { GovernanceShell } from "../GovernanceShell";
+import { GovernanceShell } from "@/components/shells/GovernanceShell";
 import { Text } from "@/components/Text";
 import type {
   MandateRegisterSnapshot,

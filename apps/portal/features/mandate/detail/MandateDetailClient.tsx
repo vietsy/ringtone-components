@@ -16,7 +16,7 @@ import {
   type Family,
 } from "@/components/r1";
 import { Text } from "@/components/Text";
-import { GovernanceShell } from "../GovernanceShell";
+import { GovernanceShell } from "@/components/shells/GovernanceShell";
 import type { MandateState } from "@/lib/api/governance";
 import { translator } from "@/lib/i18n/translate";
 import en from "@/messages/screens/mandate-detail.en.json";
