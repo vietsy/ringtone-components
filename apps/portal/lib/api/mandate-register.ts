@@ -1,5 +1,4 @@
 import type { LoadOutcome } from "@rightone/ui";
-import type { CmoAdministrator } from "@/lib/api/session";
 import type { Locale } from "@/lib/i18n/translate";
 import { mockMandateRegister } from "@/lib/mock/mandate-register";
 import { NOT_CONFIGURED, usesMockData } from "./source";
@@ -49,7 +48,7 @@ export interface MandateRegisterSnapshot {
  * Loading is rendered by the feature without calling the loader.
  */
 export function loadMandateRegister(
-  _reader: CmoAdministrator,
+  _reader: { account: string },
   view: Exclude<MandateRegisterView, "loading"> | null,
 ): Promise<LoadOutcome<MandateRegisterSnapshot>> {
   if (!usesMockData()) return Promise.resolve(NOT_CONFIGURED);

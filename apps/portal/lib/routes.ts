@@ -148,6 +148,12 @@ export const routes = {
   // The gateway's staff
   /** The operations console's landing: the workspaces the signed-in member's roles open ("Việc của tôi") */
   ops: () => route("/ops"),
+  /** SCR-GOV-01 Mandate register */
+  governanceMandates: () => route("/ops/governance/mandates"),
+  /** SCR-GOV-02 Mandate detail */
+  governanceMandate: (mandateId: string) => route(`/ops/governance/mandates/${enc(mandateId)}`),
+  /** SCR-GOV-03 Coverage lookup */
+  governanceCoverage: () => route("/ops/governance/coverage"),
   /** Returns this browser's world to the seed and signs out (mock data only) */
   resetData: () => route("/id/reset"),
 

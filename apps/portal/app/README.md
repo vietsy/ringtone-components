@@ -38,6 +38,7 @@ states what failed, whether retrying is worthwhile, and the digest support can s
 | | `/org/submissions/**`, `/org/claims/**` | SCR-CAT-04, 05, 24, 07 |
 | | `/org/verify`, `/org/verify/overlaps` | SCR-PTY-17, 18 (refused to a CMO) |
 | `(ops)` | `/ops` | the gateway staff's landing ("Việc của tôi"); each workspace adds its rows below |
+| | `/ops/governance/mandates`, `.../[mandateId]`, `/ops/governance/coverage` | SCR-GOV-01, 02, 03 (the Governance workspace) |
 | | `/ops/parties`, `/ops/parties/[party]`, `.../identification`, `/ops/identification-reviews`, `.../[review]` | SCR-PTY-01, 02, 03, 04, 05 (the Parties and premises workspace) |
 | | `/ops/premises`, `/ops/premises/coverage`, `/ops/premises/[premises]`, `.../provenance`, `.../change`, `.../history` (and `.../export`) | SCR-PTY-06 and RPT-PTY-01's CSV, 07, 08, 09, 10 and its CSV (the Parties and premises workspace: the premises register; 08 on the register data console for the data owner) |
 | | `/ops/reconciliation`, `/ops/reconciliation/exceptions` | SCR-PTY-14, 15 (the register data console) |

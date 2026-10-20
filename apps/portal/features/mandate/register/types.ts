@@ -3,6 +3,7 @@ import type { MandateRegisterSnapshot } from "@/lib/api/mandate-register";
 import type { Locale } from "@/lib/i18n/translate";
 import type { Frame } from "@/lib/view/frame";
 import type { StatusValue } from "@/components/r1";
+import type { Staff } from "@/lib/api/session";
 
 export type RegisterSearchParams = Readonly<
   Record<string, string | string[] | undefined>
@@ -13,7 +14,7 @@ export interface MandateRegisterPageProps {
 }
 
 export interface MandateRegisterClientProps {
-  account: string;
+  staff: Staff;
   mock?: boolean;
   outcome: LoadOutcome<MandateRegisterSnapshot> | null;
   locale: Locale;

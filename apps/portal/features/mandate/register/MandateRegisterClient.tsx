@@ -14,7 +14,7 @@ import {
   Table,
   ViewState,
 } from "@/components/r1";
-import { GovernanceShell } from "../GovernanceShell";
+import { GovernanceShell, governanceSearchLabel } from "@/components/shells/GovernanceShell";
 import { Text } from "@/components/Text";
 import type {
   MandateRegisterSnapshot,
@@ -53,7 +53,7 @@ const ERROR_MESSAGES: Readonly<Record<string, string>> = {
 };
 
 export function MandateRegisterClient({
-  account,
+  staff,
   outcome,
   locale,
   frame,
@@ -66,7 +66,7 @@ export function MandateRegisterClient({
   const snapshot = outcome?.data ?? null;
 
   return (
-    <GovernanceShell account={account} locale={locale} mock={mock}>
+    <GovernanceShell staff={staff} searchLabel={governanceSearchLabel(locale)} locale={locale} mock={mock}>
       <div className={styles.page} data-frame={frame}>
         <div className={styles.register} data-frame={frame}>
           <PageHeader
