@@ -4,8 +4,7 @@ import {
   loadMandateRegister,
   MANDATE_REGISTER_VIEWS,
 } from "@/lib/api/mandate-register";
-import { loadParticipationStanding } from "@/lib/api/participation";
-import { requireCmo } from "@/lib/api/session";
+import { requireStaff } from "@/lib/api/session";
 import { usesMockData } from "@/lib/api/source";
 import { getLocale } from "@/lib/i18n/locale";
 import { reviewView } from "@/lib/view/demo-view";
@@ -16,14 +15,13 @@ import type { MandateRegisterPageProps } from "./types";
 export async function MandateRegisterPage({
   searchParams,
 }: MandateRegisterPageProps) {
-  // Review query parameters do not bypass the organisation portal's session gate.
-  const reader = await requireCmo();
+  // Review query parameters do not bypass the Operations Console role gate.
+  const reader = await requireStaff("ACT-POL-PRE", "ACT-LGL");
   const query = await searchParams;
   const view = reviewView(query, MANDATE_REGISTER_VIEWS);
-  const [locale, frame, , outcome] = await Promise.all([
+  const [locale, frame, outcome] = await Promise.all([
     getLocale(),
     getFrame(query),
-    loadParticipationStanding(reader),
     view === "loading"
       ? Promise.resolve(null)
       : loadMandateRegister(reader, view),
@@ -44,7 +42,7 @@ export async function MandateRegisterPage({
     >
       <MandateRegisterClient
         mock={usesMockData()}
-        account={reader.account}
+        staff={reader}
         outcome={outcome}
         locale={locale}
         frame={frame}

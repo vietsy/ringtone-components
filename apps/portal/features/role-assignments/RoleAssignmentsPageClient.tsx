@@ -4,7 +4,10 @@ import { useState, useTransition, type ComponentProps } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { R1_FORMAT } from "@rightone/formatting";
 import { Banner, Button, PageHeader, Table, ViewState } from "@/components/r1";
-import { GovernanceShell } from "@/components/shells/GovernanceShell";
+import {
+  governanceSearchLabel,
+  GovernanceShell,
+} from "@/components/shells/GovernanceShell";
 import { Text } from "@/components/Text";
 import { translator } from "@/lib/i18n/translate";
 import { routes } from "@/lib/routes";
@@ -43,7 +46,7 @@ const ERROR_MESSAGES: Readonly<Record<string, string>> = {
 };
 
 export function RoleAssignmentsPageClient({
-  account,
+  staff,
   locale,
   frame,
   mock,
@@ -66,10 +69,11 @@ export function RoleAssignmentsPageClient({
 
   return (
     <GovernanceShell
-      account={account}
+      staff={staff}
       locale={locale}
       mock={mock}
       current="appointments"
+      searchLabel={governanceSearchLabel(locale)}
     >
       <div className={styles.page} data-frame={frame}>
         <PageHeader

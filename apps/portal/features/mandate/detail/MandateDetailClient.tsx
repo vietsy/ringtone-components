@@ -16,7 +16,10 @@ import {
   type Family,
 } from "@/components/r1";
 import { Text } from "@/components/Text";
-import { GovernanceShell } from "@/components/shells/GovernanceShell";
+import {
+  GovernanceShell,
+  governanceSearchLabel,
+} from "@/components/shells/GovernanceShell";
 import type { MandateState } from "@/lib/api/governance";
 import { translator } from "@/lib/i18n/translate";
 import en from "@/messages/screens/mandate-detail.en.json";
@@ -39,7 +42,7 @@ const ERROR_MESSAGES: Readonly<Record<string, string>> = {
 };
 
 export function MandateDetailClient({
-  account,
+  staff,
   outcome,
   loading,
   registerHref,
@@ -372,7 +375,12 @@ export function MandateDetailClient({
   );
 
   return (
-    <GovernanceShell account={account} locale={locale} mock={mock}>
+    <GovernanceShell
+      staff={staff}
+      searchLabel={governanceSearchLabel(locale)}
+      locale={locale}
+      mock={mock}
+    >
       <div className={styles.page} data-frame={frame}>
         {content}
       </div>

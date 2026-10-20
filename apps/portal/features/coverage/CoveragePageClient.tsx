@@ -24,7 +24,11 @@ import {
   StatusBadge,
   TextField,
 } from "@/components/r1";
-import { GovernanceShell } from "@/components/shells/GovernanceShell";
+import {
+  GovernanceShell,
+  governanceSearchLabel,
+} from "@/components/shells/GovernanceShell";
+import type { Staff } from "@/lib/api/session";
 import { Text } from "@/components/Text";
 import { translator, type Locale } from "@/lib/i18n/translate";
 import type { Frame } from "@/lib/view/frame";
@@ -44,7 +48,7 @@ import type {
 import styles from "./CoveragePageClient.module.css";
 
 interface CoveragePageClientProps {
-  account: string;
+  staff: Staff;
   locale: Locale;
   frame: Frame;
   view: CoverageView | null;
@@ -60,7 +64,7 @@ const EMPTY_QUERY: CoverageQuery = {
 };
 
 export function CoveragePageClient({
-  account,
+  staff,
   locale,
   frame,
   view,
@@ -154,7 +158,8 @@ export function CoveragePageClient({
 
   return (
     <GovernanceShell
-      account={account}
+      staff={staff}
+      searchLabel={governanceSearchLabel(locale)}
       locale={locale}
       mock
       current="coverage"

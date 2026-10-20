@@ -3,8 +3,7 @@ import {
   loadMandateDetail,
   MANDATE_DETAIL_VIEWS,
 } from "@/lib/api/mandate-detail";
-import { loadParticipationStanding } from "@/lib/api/participation";
-import { requireCmo } from "@/lib/api/session";
+import { requireStaff } from "@/lib/api/session";
 import { usesMockData } from "@/lib/api/source";
 import { getLocale } from "@/lib/i18n/locale";
 import { reviewView } from "@/lib/view/demo-view";
@@ -16,13 +15,12 @@ export async function MandateDetailPage({
   params,
   searchParams,
 }: MandateDetailPageProps) {
-  const reader = await requireCmo();
+  const reader = await requireStaff("ACT-POL-PRE", "ACT-LGL");
   const [{ mandateId }, query] = await Promise.all([params, searchParams]);
   const view = reviewView(query, MANDATE_DETAIL_VIEWS);
-  const [locale, frame, , outcome] = await Promise.all([
+  const [locale, frame, outcome] = await Promise.all([
     getLocale(),
     getFrame(query),
-    loadParticipationStanding(reader),
     // Validate the record even in the loading specimen: a query never makes an unknown ID valid.
     loadMandateDetail(mandateId, view === "loading" ? null : view),
   ]);
@@ -31,10 +29,10 @@ export async function MandateDetailPage({
   return (
     <MandateDetailClient
       mock={usesMockData()}
-      account={reader.account}
+      staff={reader}
       outcome={outcome}
       loading={view === "loading"}
-      registerHref="/org/mandate/register"
+      registerHref="/ops/governance/mandates"
       locale={locale}
       frame={frame}
     />

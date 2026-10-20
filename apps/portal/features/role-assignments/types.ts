@@ -6,6 +6,7 @@ import type {
 } from "@/components/r1";
 import type { Locale } from "@/lib/i18n/translate";
 import type { Frame } from "@/lib/view/frame";
+import type { Staff } from "@/lib/api/session";
 
 /** Feature-owned data contracts; kept independent of UI implementations, API helpers and fixtures. */
 export const ROLE_IDS = [
@@ -111,7 +112,7 @@ export interface RoleAssignmentsPageProps {
 }
 
 export interface RoleAssignmentsPageClientProps {
-  account: string;
+  staff: Staff;
   locale: Locale;
   frame: Frame;
   mock: boolean;

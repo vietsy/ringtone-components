@@ -46,7 +46,7 @@ export async function RoleAssignmentsPage({
       }
     >
       <RoleAssignmentsPageClient
-        account={staff.account}
+        staff={staff}
         locale={locale}
         frame={frame}
         mock={usesMockData()}

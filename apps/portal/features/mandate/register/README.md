@@ -2,7 +2,7 @@
 
 Figma file `m5jgAuVYNjDLvzBIrz6n1L`, content node `140:461`.
 
-`MandateRegisterPage.tsx` is the server entry: it requires the CMO session, reads locale and frame,
+`MandateRegisterPage.tsx` is the server entry: it requires an authorised Operations Console session, reads locale and frame,
 loads the API seam and passes the signed-in account to `MandateRegisterClient.tsx`. The client owns
 the shared `ConsoleShell`, its rail click handlers and the existing cookie-based language switch, and composes
 R1 controls and the table; `state.ts` normalises queries and selects the displayed rows.
@@ -29,7 +29,7 @@ review states, mobile/tablet layout and English copy follow the approved impleme
 are not additional frames supplied by the referenced node.
 
 The two header actions and each grantee link intentionally use `href="#"` pending destination URLs.
-The thin route is `app/(org)/org/mandate/register/page.tsx`.
+The thin route is `app/(ops)/ops/governance/mandates/page.tsx`.
 
 In PowerShell, start the sample portal from the repository root:
 
@@ -38,11 +38,11 @@ $env:RIGHTONE_DATA = 'mock'
 pnpm --filter @rightone/portal dev
 ```
 
-Sign in with a sample organisation account from `apps/portal/README.md`, then open:
+Sign in with an authorised staff account from `apps/portal/README.md`, then open:
 
-- `/org/mandate/register?view=populated`
-- `/org/mandate/register?view=empty&frame=phone`
-- `/org/mandate/register?view=error&frame=tablet`
+- `/ops/governance/mandates?view=populated`
+- `/ops/governance/mandates?view=empty&frame=phone`
+- `/ops/governance/mandates?view=error&frame=tablet`
 
 Use the shell's VI/EN switch for locale; `locale=` is not a locale-routing mechanism in this app.
 
@@ -58,9 +58,9 @@ WCAG audit; no axe suite is configured in the repository yet.
 ## Administration rail review
 
 The rail follows the supplied GOV screenshot: twelve entries from Mandates to Review authority,
-with the register marked current and linked to `/org/mandate/register` (not `/authorities`,
+with the register marked current and linked to `/ops/governance/mandates` (not `/authorities`,
 which belongs to another surface). Labels are translated in both catalogues and icons come from R1.
-Coverage now links to `/org/coverage`; the other ten administration routes are not implemented on this branch. Their buttons open an
+Coverage now links to `/ops/governance/coverage`; the other ten administration routes are not implemented on this branch. Their buttons open an
 explicit unavailable-screen dialog. They do not navigate to unrelated routes or silently do nothing.
-The existing organisation session gate and signed-in account are preserved. The shared shell displays the fixture queue count only in server-confirmed mock mode;
+The authorised Operations Console session gate and signed-in account are preserved. The shared shell displays the fixture queue count only in server-confirmed mock mode;
 no queue count is invented in real-data mode.

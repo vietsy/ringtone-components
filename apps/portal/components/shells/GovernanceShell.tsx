@@ -1,77 +1,68 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState, type ComponentProps, type ReactNode } from "react";
 import { Dialog } from "@/components/r1";
-import { ConsoleShell } from "@/components/shells/ConsoleShell";
 import { Text } from "@/components/Text";
+import type { Staff } from "@/lib/api/session";
 import { translator, type Locale } from "@/lib/i18n/translate";
+import { ConsoleShell } from "./ConsoleShell";
+import {
+  governanceArea,
+  governanceRail,
+  type GovernanceCurrent,
+} from "./governance-nav";
 import en from "@/messages/screens/mandate-register.en.json";
 import vi from "@/messages/screens/mandate-register.vi.json";
 
-/** Administration rail in the GOV board order. Register, coverage and appointments have routes. */
-const GOVERNANCE_RAIL = [
-  ["mandates", "key-round"],
-  ["coverage", "search"],
-  ["rules", "scale"],
-  ["appointments", "users"],
-  ["separation", "shield-check"],
-  ["projectGateway", "route"],
-  ["coordination", "layout-dashboard"],
-  ["recordDefinitions", "file-check"],
-  ["collector", "banknote"],
-  ["publicInformation", "file-text"],
-  ["technicalStandards", "link"],
-  ["reviewAuthority", "eye"],
-] as const;
+type ShellProps = ComponentProps<typeof ConsoleShell>;
 
-/** Shared GOV navigation. A preview queue count is shown only with server-confirmed mock data. */
+export { governanceSearchLabel } from "./governance-nav";
+
+/**
+ * The GOV counterpart to OpsFrame. It keeps the Governance rail while accepting the same staff-first
+ * frame inputs as the other Operations Console screens.
+ */
 export function GovernanceShell({
-  account,
+  staff,
+  searchLabel,
+  keyMap,
+  notice,
   locale,
-  mock = false,
   current = "mandates",
+  mock = false,
   mockQueueCount = 6,
   children,
 }: {
-  account: string;
+  staff: Staff;
+  searchLabel: string;
+  keyMap?: NonNullable<ShellProps["keyMap"]>;
+  notice?: ShellProps["notice"];
   locale: Locale;
+  current?: GovernanceCurrent;
   mock?: boolean;
-  current?: "mandates" | "coverage" | "appointments";
-  /** Fixture metadata; used only in server-confirmed mock mode. */
   mockQueueCount?: number;
   children: ReactNode;
 }) {
   const t = translator({ vi, en }, locale);
   const [pending, setPending] = useState<string | null>(null);
+
   return (
     <ConsoleShell
+      area={governanceArea(locale)}
+      searchLabel={searchLabel}
+      onSearch={() => setPending(searchLabel)}
+      rail={governanceRail(current, locale, setPending)}
+      account={staff.account}
       fill
-      account={account}
       locale={locale}
-      area={t("register.crumb.governance")}
-      searchLabel={t("register.search.label")}
-      onSearch={() => setPending(t("register.search.label"))}
+      {...(keyMap !== undefined ? { keyMap } : {})}
+      {...(notice !== undefined ? { notice } : {})}
       {...(mock
         ? {
             queueCount: mockQueueCount,
             onQueue: () => setPending(t("register.queue.title")),
           }
         : {})}
-      rail={GOVERNANCE_RAIL.map(([key, icon]) => ({
-        label: t(`register.nav.${key}`),
-        icon,
-        ...(key === "mandates" || key === "coverage" || key === "appointments"
-          ? {
-              href:
-                key === "mandates"
-                  ? "/org/mandate/register"
-                  : key === "coverage"
-                    ? "/org/coverage"
-                    : "/org/role-assignments",
-              current: key === current,
-            }
-          : { onClick: () => setPending(t(`register.nav.${key}`)) }),
-      }))}
     >
       {children}
       {pending !== null ? (

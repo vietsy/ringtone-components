@@ -4,14 +4,14 @@
   handling and the signed-in account passed to the client. The existing session gate stays in place; reviewer permissions are
   deferred. Even the loading review validates the requested record before showing a specimen.
 - `MandateDetailClient.tsx`: all detail UI in one component as requested: scope, timeline, evidence,
-  period and approval. It uses `GovernanceShell`, shared with the register, for the twelve-entry administration rail,
+  period and approval. It uses `components/shells/GovernanceShell`, shared with the register, for the twelve-entry administration rail,
   search, mock queue and existing VI/EN locale switch. It composes R1 components, including copy, provenance,
   file metadata and dates. Unimplemented navigation destinations show an explicit unavailable-screen dialog.
 - `types.ts`: the framework and client prop contracts. Data contracts stay in `lib/api/mandate-detail`.
 - `MandateDetail.module.css`: local classes for page layout, frame variants, table column widths and
   evidence typography. Page and Client contain no inline styles; all design lengths use R1 tokens.
 
-The thin route is `/org/mandate/detail/[mandateId]`. The sample ID is `appa`. Data comes through
+The thin route is `/ops/governance/mandates/[mandateId]`. The sample ID is `appa`. Data comes through
 the API helper, never by importing fixtures into UI. Mock data is gated by `RIGHTONE_DATA=mock`.
 Messages are the `messages/screens/mandate-detail.{vi,en}.json` pair.
 
@@ -20,7 +20,7 @@ Review views: `submitted`, `loading`, `empty`, `error`. Invalid or absent views 
 `frame=phone` stacks the columns and uses scope cards; `frame=tablet` stacks the columns with a table.
 Widths, gaps and panel insets use existing tokens; flexible columns can also wrap in a narrow container.
 
-The Sổ uỷ quyền breadcrumb returns to `/org/mandate/register`.
+The Sổ uỷ quyền breadcrumb returns to `/ops/governance/mandates`.
 The evidence link remains `#` until its real URL is supplied. The disabled coverage action keeps the
 design's explanation. Approve and Record insufficient evidence remain enabled as requested; this UI
 iteration does not connect reviewer permissions or write commands, or invent dialogs absent from Figma.
@@ -34,11 +34,11 @@ $env:RIGHTONE_DATA = 'mock'
 pnpm --filter @rightone/portal dev
 ```
 
-Sign in using a sample organisation account from `apps/portal/README.md`, then open:
+Sign in using an authorised staff account from `apps/portal/README.md`, then open:
 
-- `/org/mandate/detail/appa?view=submitted`
-- `/org/mandate/detail/appa?view=empty&frame=phone`
-- `/org/mandate/detail/appa?view=error&frame=tablet`
+- `/ops/governance/mandates/appa?view=submitted`
+- `/ops/governance/mandates/appa?view=empty&frame=phone`
+- `/ops/governance/mandates/appa?view=error&frame=tablet`
 
 Use the shell's VI/EN switch; locale is stored in `r1-locale`, not a URL prefix or query.
 
