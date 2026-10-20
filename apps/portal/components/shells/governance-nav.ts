@@ -3,7 +3,7 @@ import { translator } from "@/lib/i18n/translate";
 import en from "@/messages/screens/mandate-register.en.json";
 import vi from "@/messages/screens/mandate-register.vi.json";
 
-export type GovernanceCurrent = "mandates" | "coverage";
+export type GovernanceCurrent = "mandates" | "coverage" | "appointments";
 
 /** The governance console's fixed rail, in the order specified by the GOV boards. */
 const WORKSPACES = [
@@ -23,19 +23,33 @@ const WORKSPACES = [
 
 const words = (locale: Locale) => translator({ vi, en }, locale);
 
-export const governanceArea = (locale: Locale): string => words(locale)("register.crumb.governance");
+export const governanceArea = (locale: Locale): string =>
+  words(locale)("register.crumb.governance");
 
 /** The GOV search label is shared by every screen in this console. */
-export const governanceSearchLabel = (locale: Locale): string => words(locale)("register.search.label");
+export const governanceSearchLabel = (locale: Locale): string =>
+  words(locale)("register.search.label");
 
 /** The fixed GOV rail; only delivered routes navigate, while planned entries explain their unavailability. */
-export function governanceRail(current: GovernanceCurrent, locale: Locale, onUnavailable: (label: string) => void) {
+export function governanceRail(
+  current: GovernanceCurrent,
+  locale: Locale,
+  onUnavailable: (label: string) => void,
+) {
   const t = words(locale);
   return WORKSPACES.map(([key, icon]) => ({
     label: t(`register.nav.${key}`),
     icon,
-    ...((key === "mandates" || key === "coverage")
-      ? { href: key === "mandates" ? "/ops/governance/mandates" : "/ops/governance/coverage", current: key === current }
+    ...(key === "mandates" || key === "coverage" || key === "appointments"
+      ? {
+          href:
+            key === "mandates"
+              ? "/ops/governance/mandates"
+              : key === "coverage"
+                ? "/ops/governance/coverage"
+                : "/ops/governance/role-assignments",
+          current: key === current,
+        }
       : { onClick: () => onUnavailable(t(`register.nav.${key}`)) }),
   }));
 }

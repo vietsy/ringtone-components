@@ -17,3 +17,5 @@ service's pages, and the inspector is not admitted to the public help journey. A
     ops-nav.ts             the gateway's consoles (Vận hành, Chính sách, Giám sát) and the workspaces each
                            member's roles open; a workspace shows once its landing page exists
     OpsFrame.tsx           every staff page's frame: ConsoleShell with the console, its rail and the member
+    GovernanceShell.tsx    shared GOV rail for mandate register/detail, coverage and role assignments;
+                           locale switching and dialogs for search, queue and unavailable destinations

@@ -31,8 +31,23 @@ export const routes = {
   /** SCR-PUB-02 Scope self-assessment */
   scope: () => route("/scope"),
   /** SCR-PUB-03 Indicative amount */
-  indicativeAmount: (facts?: Readonly<Record<"assessment_date" | "premises_class" | "admin_area_key" | "floor_area_m2" | "seating_capacity", string>>) =>
-    route(facts === undefined ? "/indicative-amount" : `/indicative-amount?${new URLSearchParams(facts).toString()}`),
+  indicativeAmount: (
+    facts?: Readonly<
+      Record<
+        | "assessment_date"
+        | "premises_class"
+        | "admin_area_key"
+        | "floor_area_m2"
+        | "seating_capacity",
+        string
+      >
+    >,
+  ) =>
+    route(
+      facts === undefined
+        ? "/indicative-amount"
+        : `/indicative-amount?${new URLSearchParams(facts).toString()}`,
+    ),
   /** SCR-PUB-04 Verify a record */
   verify: () => route("/verify"),
   /** SCR-PUB-05 Verification result */
@@ -40,14 +55,33 @@ export const routes = {
 
   // (id) - stand-ins for the RightOne ID pages (id.rightone.vn) until the portal signs in through it
   /** SCR-RID-01 Sign in */
-  signIn: (attempt?: string) => route(attempt === undefined ? "/id/sign-in" : `/id/sign-in?attempt=${enc(attempt)}`),
+  signIn: (attempt?: string) =>
+    route(
+      attempt === undefined
+        ? "/id/sign-in"
+        : `/id/sign-in?attempt=${enc(attempt)}`,
+    ),
   /** SCR-RID-07 Register */
-  register: (attempt?: string) => route(attempt === undefined ? "/id/register" : `/id/register?attempt=${enc(attempt)}`),
+  register: (attempt?: string) =>
+    route(
+      attempt === undefined
+        ? "/id/register"
+        : `/id/register?attempt=${enc(attempt)}`,
+    ),
   /** SCR-RID-08 Confirm the email */
-  confirmEmail: (token?: string) => route(token === undefined ? "/id/confirm-email" : `/id/confirm-email?token=${enc(token)}`),
+  confirmEmail: (token?: string) =>
+    route(
+      token === undefined
+        ? "/id/confirm-email"
+        : `/id/confirm-email?token=${enc(token)}`,
+    ),
   /** SCR-RID-04 Choose an organisation */
   chooseOrganisation: (submitted?: string) =>
-    route(submitted === undefined ? "/id/choose-organisation" : `/id/choose-organisation?submitted=${enc(submitted)}`),
+    route(
+      submitted === undefined
+        ? "/id/choose-organisation"
+        : `/id/choose-organisation?submitted=${enc(submitted)}`,
+    ),
   /** Signing out: the session ends and the reader is back at sign-in (a route handler, no screen) */
   signOut: () => route("/id/sign-out"),
 
@@ -57,21 +91,27 @@ export const routes = {
   /** SCR-REG-02 Start an application */
   startApplication: () => route("/registration/new"),
   /** SCR-REG-03 Tell us about the premises */
-  applicationFacts: (application: string) => route(`/registration/${enc(application)}/premises`),
+  applicationFacts: (application: string) =>
+    route(`/registration/${enc(application)}/premises`),
   /** SCR-REG-04 Evidence and claims */
-  applicationEvidence: (application: string) => route(`/registration/${enc(application)}/evidence`),
+  applicationEvidence: (application: string) =>
+    route(`/registration/${enc(application)}/evidence`),
   /** SCR-REG-05 Review and explanation */
-  applicationReview: (application: string) => route(`/registration/${enc(application)}/review`),
+  applicationReview: (application: string) =>
+    route(`/registration/${enc(application)}/review`),
   /** SCR-REG-06 Attest and submit */
-  applicationSubmit: (application: string) => route(`/registration/${enc(application)}/submit`),
+  applicationSubmit: (application: string) =>
+    route(`/registration/${enc(application)}/submit`),
   /** SCR-REG-07 Application status */
-  application: (application: string) => route(`/registration/${enc(application)}`),
+  application: (application: string) =>
+    route(`/registration/${enc(application)}`),
   /** SCR-REG-08 Obligation decision */
   decision: (decision: string) => route(`/decisions/${enc(decision)}`),
   /** SCR-FIN-03 Invoices and corrective documents */
   payments: () => route("/payments"),
   /** SCR-FIN-03 One invoice or corrective document, by its number ("1C26TRO 00000418"), or a payment's invoice not issued yet (PAY-) */
-  invoice: (reference: string) => route(`/payments/invoices/${enc(reference.trim().replace(/\s+/g, "-"))}`),
+  invoice: (reference: string) =>
+    route(`/payments/invoices/${enc(reference.trim().replace(/\s+/g, "-"))}`),
   /** SCR-FIN-01 Pay an obligation */
   pay: (decision: string) => route(`/payments/${enc(decision)}/pay`),
   /** SCR-FIN-02 Payment position */
@@ -87,7 +127,9 @@ export const routes = {
   statusRecord: (record: string) => route(`/status-records/${enc(record)}`),
   /** SCR-CER-13 Status record printout */
   statusRecordPrint: (record: string, printout?: string) =>
-    route(`/status-records/${enc(record)}/print${printout === undefined ? "" : `?printout=${enc(printout)}`}`),
+    route(
+      `/status-records/${enc(record)}/print${printout === undefined ? "" : `?printout=${enc(printout)}`}`,
+    ),
   /** The Player section, reserved until its screens open */
   player: () => route("/player"),
 
@@ -101,9 +143,11 @@ export const routes = {
   /** SCR-VER-03 Start an inspection */
   fieldStartInspection: () => route("/field/inspections/new"),
   /** SCR-VER-04 Inspection in progress */
-  fieldInspection: (inspection: string) => route(`/field/inspections/${enc(inspection)}`),
+  fieldInspection: (inspection: string) =>
+    route(`/field/inspections/${enc(inspection)}`),
   /** SCR-VER-05 Conclude the inspection */
-  fieldConclude: (inspection: string) => route(`/field/inspections/${enc(inspection)}/conclude`),
+  fieldConclude: (inspection: string) =>
+    route(`/field/inspections/${enc(inspection)}/conclude`),
   /** SCR-VER-06 Inspection record */
   fieldRecord: (record: string) => route(`/field/records/${enc(record)}`),
 
@@ -125,15 +169,22 @@ export const routes = {
   /** The nav's Submissions: opens SCR-CAT-05 for the organisation's submissions (no list is specified, G-11) */
   orgSubmissions: () => route("/org/submissions"),
   /** SCR-CAT-05 Submission outcomes */
-  orgSubmission: (submission: string) => route(`/org/submissions/${enc(submission)}`),
+  orgSubmission: (submission: string) =>
+    route(`/org/submissions/${enc(submission)}`),
   /** SCR-CAT-24 Cancel a submission */
-  orgCancelSubmission: (submission: string) => route(`/org/submissions/${enc(submission)}/cancel`),
+  orgCancelSubmission: (submission: string) =>
+    route(`/org/submissions/${enc(submission)}/cancel`),
   /** The nav's Claims: opens SCR-CAT-07 for the organisation's claims (no list is specified, G-11) */
   orgClaims: () => route("/org/claims"),
   /** SCR-CAT-07 Claim detail and shares */
   orgClaim: (claim: string) => route(`/org/claims/${enc(claim)}`),
   /** SCR-CAT-25 Objection and data-subject request, against the catalogue decision it names */
-  orgObjection: (decision?: string) => route(decision === undefined ? "/org/objections/new" : `/org/objections/new?decision=${enc(decision)}`),
+  orgObjection: (decision?: string) =>
+    route(
+      decision === undefined
+        ? "/org/objections/new"
+        : `/org/objections/new?decision=${enc(decision)}`,
+    ),
   /** SCR-PTY-17 Verify an authorisation scope */
   orgVerify: () => route("/org/verify"),
   /** SCR-PTY-18 Verification overlap report: reserved, a CMO is refused */
@@ -151,9 +202,19 @@ export const routes = {
   /** SCR-GOV-01 Mandate register */
   governanceMandates: () => route("/ops/governance/mandates"),
   /** SCR-GOV-02 Mandate detail */
-  governanceMandate: (mandateId: string) => route(`/ops/governance/mandates/${enc(mandateId)}`),
+  governanceMandate: (mandateId: string) =>
+    route(`/ops/governance/mandates/${enc(mandateId)}`),
   /** SCR-GOV-03 Coverage lookup */
   governanceCoverage: () => route("/ops/governance/coverage"),
+
+  /** SCR-GOV-06 role appointments. */
+  /** The governance console's role appointments. */
+  roleAssignments: (params?: URLSearchParams, fragment = "") => {
+    const query = params?.toString();
+    return route(
+      `${query ? `/ops/governance/role-assignments?${query}` : "/ops/governance/role-assignments"}${fragment}`,
+    );
+  },
   /** Returns this browser's world to the seed and signs out (mock data only) */
   resetData: () => route("/id/reset"),
 
@@ -180,6 +241,11 @@ export const routes = {
  * A route with the attempt a form kept for it (`lib/api/flash.ts`): the page reads `?attempt=` to draw a refused
  * act or a form to correct where the act was.
  */
-export function withAttempt(path: ReturnType<typeof route>, attempt: string): ReturnType<typeof route> {
-  return route(`${path}${path.includes("?") ? "&" : "?"}attempt=${enc(attempt)}`);
+export function withAttempt(
+  path: ReturnType<typeof route>,
+  attempt: string,
+): ReturnType<typeof route> {
+  return route(
+    `${path}${path.includes("?") ? "&" : "?"}attempt=${enc(attempt)}`,
+  );
 }

@@ -1,0 +1,41 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0;
+  max-width: 100%;
+}
+
+.page[data-frame="phone"] {
+  max-width: var(--container-sm);
+  gap: var(--space-4);
+}
+
+.page[data-frame="tablet"] {
+  max-width: var(--container-3xl);
+}
+
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.results {
+  min-width: 0;
+}
+.table {
+  min-width: 0;
+}
+
+.table :global(.r1-table) {
+  min-width: var(--container-4xl);
+}
+
+.table :global(.r1-table) :global(.r1-end) {
+  text-align: left;
+}
+.table :global(.r1-table) > :is(thead, tbody) > tr > :not([colspan]) {
+  box-sizing: border-box;
+}

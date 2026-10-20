@@ -6,7 +6,11 @@ import { Text } from "@/components/Text";
 import type { Staff } from "@/lib/api/session";
 import { translator, type Locale } from "@/lib/i18n/translate";
 import { ConsoleShell } from "./ConsoleShell";
-import { governanceArea, governanceRail, type GovernanceCurrent } from "./governance-nav";
+import {
+  governanceArea,
+  governanceRail,
+  type GovernanceCurrent,
+} from "./governance-nav";
 import en from "@/messages/screens/mandate-register.en.json";
 import vi from "@/messages/screens/mandate-register.vi.json";
 
@@ -53,11 +57,22 @@ export function GovernanceShell({
       locale={locale}
       {...(keyMap !== undefined ? { keyMap } : {})}
       {...(notice !== undefined ? { notice } : {})}
-      {...(mock ? { queueCount: mockQueueCount, onQueue: () => setPending(t("register.queue.title")) } : {})}
+      {...(mock
+        ? {
+            queueCount: mockQueueCount,
+            onQueue: () => setPending(t("register.queue.title")),
+          }
+        : {})}
     >
       {children}
       {pending !== null ? (
-        <Dialog title={pending} locale={locale} density="console" onClose={() => setPending(null)} secondaryAction={{ label: t("register.nav.close") }}>
+        <Dialog
+          title={pending}
+          locale={locale}
+          density="console"
+          onClose={() => setPending(null)}
+          secondaryAction={{ label: t("register.nav.close") }}
+        >
           <Text>{t("register.nav.unavailable")}</Text>
         </Dialog>
       ) : null}

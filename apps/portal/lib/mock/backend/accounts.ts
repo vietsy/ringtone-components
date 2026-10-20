@@ -1,5 +1,6 @@
 import { MOCK_ARTIST } from "@/lib/mock/session";
 import { accounts, type MockAccount } from "./store";
+import { SECURITY_OWNER_EMAIL } from "@/lib/mock/role-assignments";
 
 /**
  * The accounts RightOne ID holds in the demonstration, from the canvas's data sheet: Đỗ Thu Trang, the
@@ -9,6 +10,19 @@ import { accounts, type MockAccount } from "./store";
  * someone's real address.
  */
 const SEED: readonly MockAccount[] = [
+  // Figma's security owner. The design gives no email or password; these are demo-only credentials.
+  {
+    email: SECURITY_OWNER_EMAIL,
+    name: "Hoàng Anh Tuấn",
+    role: "staff",
+    password: "RightOne-AnNinh-2026",
+    state: "active",
+    organisations: [],
+    failedAttempts: 0,
+    lockedUntil: null,
+    staffRoles: ["ACT-SEC"],
+    position: "Chủ sở hữu an ninh",
+  },
   {
     email: "trang.do@thencuaviet.vn",
     name: "Đỗ Thu Trang",
@@ -138,7 +152,18 @@ const SEED: readonly MockAccount[] = [
     password: "VanHanh-1014-luong",
     state: "active",
     organisations: [],
-    staffRoles: ["ACT-OPS", "ACT-SUP", "ACT-CAS", "ACT-FIN-OP", "ACT-EVD", "ACT-DAT", "ACT-REP", "ACT-MKT-OP", "ACT-MOD", "ACT-POL-APR"],
+    staffRoles: [
+      "ACT-OPS",
+      "ACT-SUP",
+      "ACT-CAS",
+      "ACT-FIN-OP",
+      "ACT-EVD",
+      "ACT-DAT",
+      "ACT-REP",
+      "ACT-MKT-OP",
+      "ACT-MOD",
+      "ACT-POL-APR",
+    ],
     position: "Cán bộ vận hành",
     failedAttempts: 0,
     lockedUntil: null,
@@ -187,7 +212,8 @@ const SEED: readonly MockAccount[] = [
  */
 export function accountBook(): Map<string, MockAccount> {
   const book = accounts();
-  for (const account of SEED) if (!book.has(account.email)) book.set(account.email, { ...account });
+  for (const account of SEED)
+    if (!book.has(account.email)) book.set(account.email, { ...account });
   return book;
 }
 
@@ -200,14 +226,41 @@ export function findAccount(email: string): MockAccount | null {
  * business Đỗ Thu Trang also belongs to, which RightOne does not serve (choosing it is refused, as SCR-RID-04
  * draws); and the three rights organisations of the CMO boards.
  */
-export const ORGANISATIONS: readonly { id: string; name: string; slug: string; served: boolean }[] = [
-  { id: "tcv", name: "Công ty TNHH Then Cửa Việt", slug: "then-cua-viet", served: true },
-  { id: "qnh", name: "Hộ kinh doanh Quán Nướng Hẻm 214", slug: "quan-nuong-hem-214", served: false },
-  { id: "lamhong", name: "Hội Quyền tác giả Âm nhạc Lam Hồng", slug: "lam-hong", served: true },
-  { id: "hacbach", name: "Trung tâm Quyền biểu diễn Hạc Bạch", slug: "hac-bach", served: true },
+export const ORGANISATIONS: readonly {
+  id: string;
+  name: string;
+  slug: string;
+  served: boolean;
+}[] = [
+  {
+    id: "tcv",
+    name: "Công ty TNHH Then Cửa Việt",
+    slug: "then-cua-viet",
+    served: true,
+  },
+  {
+    id: "qnh",
+    name: "Hộ kinh doanh Quán Nướng Hẻm 214",
+    slug: "quan-nuong-hem-214",
+    served: false,
+  },
+  {
+    id: "lamhong",
+    name: "Hội Quyền tác giả Âm nhạc Lam Hồng",
+    slug: "lam-hong",
+    served: true,
+  },
+  {
+    id: "hacbach",
+    name: "Trung tâm Quyền biểu diễn Hạc Bạch",
+    slug: "hac-bach",
+    served: true,
+  },
   { id: "dayan", name: "Dây Đàn Rights Agency", slug: "day-dan", served: true },
 ];
 
 export function organisationName(id: string): string {
-  return ORGANISATIONS.find((organisation) => organisation.id === id)?.name ?? id;
+  return (
+    ORGANISATIONS.find((organisation) => organisation.id === id)?.name ?? id
+  );
 }

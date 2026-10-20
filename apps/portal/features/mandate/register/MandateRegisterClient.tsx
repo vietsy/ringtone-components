@@ -14,7 +14,10 @@ import {
   Table,
   ViewState,
 } from "@/components/r1";
-import { GovernanceShell, governanceSearchLabel } from "@/components/shells/GovernanceShell";
+import {
+  GovernanceShell,
+  governanceSearchLabel,
+} from "@/components/shells/GovernanceShell";
 import { Text } from "@/components/Text";
 import type {
   MandateRegisterSnapshot,
@@ -66,7 +69,12 @@ export function MandateRegisterClient({
   const snapshot = outcome?.data ?? null;
 
   return (
-    <GovernanceShell staff={staff} searchLabel={governanceSearchLabel(locale)} locale={locale} mock={mock}>
+    <GovernanceShell
+      staff={staff}
+      searchLabel={governanceSearchLabel(locale)}
+      locale={locale}
+      mock={mock}
+    >
       <div className={styles.page} data-frame={frame}>
         <div className={styles.register} data-frame={frame}>
           <PageHeader

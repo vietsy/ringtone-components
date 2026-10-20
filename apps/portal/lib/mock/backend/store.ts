@@ -15,7 +15,12 @@
  * artist acting for themselves (ACT-ART), or a member of the gateway's staff, whose spec roles (`staffRoles`)
  * decide what they may open and do.
  */
-export type Role = "principal" | "inspector" | "cmo" | "artist" | "staff";
+export type Role =
+  | "principal"
+  | "inspector"
+  | "cmo"
+  | "artist"
+  | "staff";
 
 /** The spec's actors a member of staff may hold (docs/spec/inherited/00-FRD-Master.md, actor catalogue). */
 export type StaffRole =
@@ -76,10 +81,17 @@ interface Memory {
   flashes: Map<string, { at: number; value: unknown }>;
 }
 
-const holder = globalThis as typeof globalThis & { __rightoneMockBackend?: Memory };
+const holder = globalThis as typeof globalThis & {
+  __rightoneMockBackend?: Memory;
+};
 
 function memory(): Memory {
-  holder.__rightoneMockBackend ??= { accounts: new Map(), sessions: new Map(), tables: new Map(), flashes: new Map() };
+  holder.__rightoneMockBackend ??= {
+    accounts: new Map(),
+    sessions: new Map(),
+    tables: new Map(),
+    flashes: new Map(),
+  };
   return holder.__rightoneMockBackend;
 }
 
@@ -119,7 +131,8 @@ const FLASH_LIFETIME_MS = 10 * 60 * 1000;
 export function putFlash(id: string, value: unknown): void {
   const flashes = memory().flashes;
   const now = Date.now();
-  for (const [key, flash] of flashes) if (now - flash.at > FLASH_LIFETIME_MS) flashes.delete(key);
+  for (const [key, flash] of flashes)
+    if (now - flash.at > FLASH_LIFETIME_MS) flashes.delete(key);
   flashes.set(id, { at: now, value });
 }
 
